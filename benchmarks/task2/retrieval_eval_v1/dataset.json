@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "name": "retrieval_engineering_eval_v1",
+  "memories": [
+    {"memory_id":"travel_soundproof","domain":"travel","content":"我挑酒店时很看重隔音效果，睡眠不能被街道噪声打断。"},
+    {"memory_id":"travel_shanghai","domain":"travel","content":"独自去上海时我偏好住在市中心地铁附近。"},
+    {"memory_id":"travel_hiking","domain":"travel","content":"和朋友去山里徒步时住宿必须方便停车并能清晨出发。"},
+    {"memory_id":"travel_business","domain":"travel","content":"公司报销的商务出差可以选择价格较高但通勤方便的酒店。"},
+    {"memory_id":"travel_budget","domain":"travel","content":"自费旅行时我会严格控制住宿预算。"},
+
+    {"memory_id":"food_peanut","domain":"food","content":"我对花生严重过敏，点餐必须避开花生及其制品。"},
+    {"memory_id":"food_spicy","domain":"food","content":"我喜欢有明显辣味的菜，不必做成清淡口味。"},
+    {"memory_id":"food_sugar","domain":"food","content":"选择甜点时我希望糖分尽量低。"},
+    {"memory_id":"food_coffee","domain":"food","content":"早餐通常要有一杯不加糖的黑咖啡。"},
+    {"memory_id":"food_vegetarian","domain":"food","content":"和素食朋友聚餐时要确保有完整的无肉主菜。"},
+
+    {"memory_id":"work_focus","domain":"work","content":"上午头脑最清醒，适合安排需要长时间专注的复杂工作。"},
+    {"memory_id":"work_standup","domain":"work","content":"每日站会最好控制在十五分钟以内。"},
+    {"memory_id":"work_async","domain":"work","content":"跨时区协作优先写清楚文档，减少同步会议。"},
+    {"memory_id":"work_review","domain":"work","content":"合并代码前必须完成至少一次同事审查。"},
+    {"memory_id":"work_quiet","domain":"work","content":"处理高难度任务时我需要没有谈话干扰的工作环境。"},
+
+    {"memory_id":"exercise_swim","domain":"exercise","content":"膝盖不舒服时我用游泳替代跑步。"},
+    {"memory_id":"exercise_run","domain":"exercise","content":"天气凉爽的早晨我喜欢进行五公里慢跑。"},
+    {"memory_id":"exercise_hike","domain":"exercise","content":"周末长距离徒步前要提前补充水和电解质。"},
+    {"memory_id":"exercise_strength","domain":"exercise","content":"力量训练要保留深蹲、硬拉和推举三个基础动作。"},
+    {"memory_id":"exercise_yoga","domain":"exercise","content":"睡前做二十分钟舒缓瑜伽有助于放松。"},
+
+    {"memory_id":"shopping_durable","domain":"shopping","content":"购买电子产品时我更重视耐用和可维修，而不是最新款。"},
+    {"memory_id":"shopping_budget","domain":"shopping","content":"非必要购物每月有固定预算上限。"},
+    {"memory_id":"shopping_packaging","domain":"shopping","content":"网购时优先选择使用可回收包装的商家。"},
+    {"memory_id":"shopping_fabric","domain":"shopping","content":"贴身衣物我偏好柔软透气的天然面料。"},
+    {"memory_id":"shopping_warranty","domain":"shopping","content":"买昂贵设备时售后保修年限是重要因素。"},
+
+    {"memory_id":"social_small","domain":"social","content":"社交活动中我更自在于人数不多、可以深入聊天的小聚会。"},
+    {"memory_id":"social_surprise","domain":"social","content":"我不喜欢没有提前通知的惊喜派对。"},
+    {"memory_id":"social_friends","domain":"social","content":"和老朋友见面时我更愿意选择安静且能久坐的地方。"},
+    {"memory_id":"social_family","domain":"social","content":"家庭聚餐需要照顾长辈，地点最好无障碍且不吵。"},
+    {"memory_id":"social_network","domain":"social","content":"行业交流活动前我会准备简短的自我介绍。"},
+
+    {"memory_id":"schedule_morning","domain":"schedule","content":"每天早上九点到十一点保留为不被打断的专注时段。"},
+    {"memory_id":"schedule_late","domain":"schedule","content":"晚上九点以后不要安排工作会议。"},
+    {"memory_id":"schedule_weekly","domain":"schedule","content":"每周日晚上回顾本周并规划下一周。"},
+    {"memory_id":"schedule_break","domain":"schedule","content":"连续工作九十分钟后需要短暂离开屏幕休息。"},
+    {"memory_id":"schedule_buffer","domain":"schedule","content":"两个线下约会之间至少预留半小时交通缓冲。"},
+
+    {"memory_id":"transport_train","domain":"transport","content":"四小时以内的城际行程我通常选择高铁而不是飞机。"},
+    {"memory_id":"transport_parking","domain":"transport","content":"自驾出行前必须确认目的地附近有停车位。"},
+    {"memory_id":"transport_bike","domain":"transport","content":"三公里以内且天气合适时我愿意骑自行车。"},
+    {"memory_id":"transport_airport","domain":"transport","content":"清晨去机场时我会提前预约出租车。"},
+    {"memory_id":"transport_motion","domain":"transport","content":"我容易晕车，长途汽车应选择靠前座位并准备晕车药。"}
+  ],
+  "queries": [
+    {"query_id":"travel_q1","domain":"travel","subset":"semantic_paraphrase","query":"今晚想住个不会被外面声音吵醒的地方","positive_memory_ids":["travel_soundproof"]},
+    {"query_id":"travel_q2","domain":"travel","subset":"lexical_exact","query":"独自去上海住地铁附近","positive_memory_ids":["travel_shanghai"]},
+    {"query_id":"travel_q3","domain":"travel","subset":"mixed","query":"朋友徒步自驾住宿停车怎么安排","positive_memory_ids":["travel_hiking"]},
+    {"query_id":"travel_q4","domain":"travel","subset":"semantic_paraphrase","query":"这趟钱由单位承担，住得贵一点是否可以","positive_memory_ids":["travel_business"]},
+
+    {"query_id":"food_q1","domain":"food","subset":"lexical_exact","query":"点餐需要避开花生","positive_memory_ids":["food_peanut"]},
+    {"query_id":"food_q2","domain":"food","subset":"semantic_paraphrase","query":"菜可以做得刺激一点，不用寡淡","positive_memory_ids":["food_spicy"]},
+    {"query_id":"food_q3","domain":"food","subset":"mixed","query":"想吃负担小一点的甜品，少放糖","positive_memory_ids":["food_sugar"]},
+    {"query_id":"food_q4","domain":"food","subset":"semantic_paraphrase","query":"早饭时给我准备一杯纯咖啡不要甜味","positive_memory_ids":["food_coffee"]},
+
+    {"query_id":"work_q1","domain":"work","subset":"semantic_paraphrase","query":"最费脑子的活放在一天什么时候做","positive_memory_ids":["work_focus"]},
+    {"query_id":"work_q2","domain":"work","subset":"lexical_exact","query":"每日站会十五分钟","positive_memory_ids":["work_standup"]},
+    {"query_id":"work_q3","domain":"work","subset":"semantic_paraphrase","query":"大家时差很大，尽量别把人都叫来开会","positive_memory_ids":["work_async"]},
+    {"query_id":"work_q4","domain":"work","subset":"mixed","query":"代码合并之前需要同事检查","positive_memory_ids":["work_review"]},
+
+    {"query_id":"exercise_q1","domain":"exercise","subset":"semantic_paraphrase","query":"腿部关节疼时用什么有氧运动代替路跑","positive_memory_ids":["exercise_swim"]},
+    {"query_id":"exercise_q2","domain":"exercise","subset":"lexical_exact","query":"凉爽早晨五公里慢跑","positive_memory_ids":["exercise_run"]},
+    {"query_id":"exercise_q3","domain":"exercise","subset":"mixed","query":"周末长距离徒步补水和电解质","positive_memory_ids":["exercise_hike"]},
+    {"query_id":"exercise_q4","domain":"exercise","subset":"semantic_paraphrase","query":"晚上做点轻柔伸展帮助身体安静下来","positive_memory_ids":["exercise_yoga"]},
+
+    {"query_id":"shopping_q1","domain":"shopping","subset":"semantic_paraphrase","query":"数码产品别追新品，希望坏了还能修并用很多年","positive_memory_ids":["shopping_durable"]},
+    {"query_id":"shopping_q2","domain":"shopping","subset":"lexical_exact","query":"非必要购物预算上限","positive_memory_ids":["shopping_budget"]},
+    {"query_id":"shopping_q3","domain":"shopping","subset":"mixed","query":"网购商家使用可回收包装","positive_memory_ids":["shopping_packaging"]},
+    {"query_id":"shopping_q4","domain":"shopping","subset":"semantic_paraphrase","query":"买贵重机器时要看厂家能负责维修多久","positive_memory_ids":["shopping_warranty"]},
+
+    {"query_id":"social_q1","domain":"social","subset":"semantic_paraphrase","query":"人太多会累，想参加能认真交谈的少人数活动","positive_memory_ids":["social_small"]},
+    {"query_id":"social_q2","domain":"social","subset":"lexical_exact","query":"不要惊喜派对","positive_memory_ids":["social_surprise"]},
+    {"query_id":"social_q3","domain":"social","subset":"mixed","query":"老朋友找个安静能久坐聊天的地方","positive_memory_ids":["social_friends"]},
+    {"query_id":"social_q4","domain":"social","subset":"semantic_paraphrase","query":"带老人吃饭，餐厅进出要方便而且别太闹","positive_memory_ids":["social_family"]},
+
+    {"query_id":"schedule_q1","domain":"schedule","subset":"lexical_exact","query":"早上九点到十一点专注时段","positive_memory_ids":["schedule_morning"]},
+    {"query_id":"schedule_q2","domain":"schedule","subset":"semantic_paraphrase","query":"夜里不要再约我讨论工作","positive_memory_ids":["schedule_late"]},
+    {"query_id":"schedule_q3","domain":"schedule","subset":"mixed","query":"周日晚上回顾并规划下一周","positive_memory_ids":["schedule_weekly"]},
+    {"query_id":"schedule_q4","domain":"schedule","subset":"semantic_paraphrase","query":"看屏幕一个半小时后起来走一会儿","positive_memory_ids":["schedule_break"]},
+
+    {"query_id":"transport_q1","domain":"transport","subset":"semantic_paraphrase","query":"两个城市之间不到半天路程，坐什么比航班合适","positive_memory_ids":["transport_train"]},
+    {"query_id":"transport_q2","domain":"transport","subset":"lexical_exact","query":"自驾确认停车位","positive_memory_ids":["transport_parking"]},
+    {"query_id":"transport_q3","domain":"transport","subset":"mixed","query":"天气合适三公里以内骑自行车","positive_memory_ids":["transport_bike"]},
+    {"query_id":"transport_q4","domain":"transport","subset":"semantic_paraphrase","query":"天还没亮就要赶航班，提前叫车","positive_memory_ids":["transport_airport"]}
+  ],
+  "hard_negatives": {
+    "travel_q1":["travel_shanghai"], "travel_q2":["travel_business"],
+    "travel_q3":["transport_parking"], "travel_q4":["travel_budget"],
+    "food_q1":["food_vegetarian"], "food_q2":["food_sugar"],
+    "food_q3":["food_spicy"], "food_q4":["food_sugar"],
+    "work_q1":["schedule_morning"], "work_q2":["work_async"],
+    "work_q3":["work_standup"], "work_q4":["shopping_warranty"],
+    "exercise_q1":["exercise_run"], "exercise_q2":["schedule_morning"],
+    "exercise_q3":["travel_hiking"], "exercise_q4":["exercise_strength"],
+    "shopping_q1":["shopping_warranty"], "shopping_q2":["travel_budget"],
+    "shopping_q3":["shopping_durable"], "shopping_q4":["shopping_durable"],
+    "social_q1":["social_network"], "social_q2":["social_small"],
+    "social_q3":["social_family"], "social_q4":["social_friends"],
+    "schedule_q1":["work_focus"], "schedule_q2":["schedule_morning"],
+    "schedule_q3":["schedule_morning"], "schedule_q4":["schedule_buffer"],
+    "transport_q1":["transport_airport"], "transport_q2":["travel_hiking"],
+    "transport_q3":["transport_train"], "transport_q4":["transport_train"]
+  }
+}

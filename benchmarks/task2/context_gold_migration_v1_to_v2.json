@@ -1,0 +1,83 @@
+[
+  {
+    "case_id": "c04",
+    "change_type": "REMOVED",
+    "new_values": [],
+    "old_values": [
+      [
+        "LOCATION",
+        "destination",
+        "UNKNOWN",
+        []
+      ],
+      [
+        "PERSON",
+        "travel_party",
+        "UNKNOWN",
+        []
+      ],
+      [
+        "CONSTRAINT",
+        "payment_source",
+        "UNKNOWN",
+        []
+      ]
+    ],
+    "rationale": "No explicit applicability-relevant fact is stated.",
+    "reason_code": "QUERY_INTENT_NOT_FACT"
+  },
+  {
+    "case_id": "c21",
+    "change_type": "REMOVED",
+    "new_values": [],
+    "old_values": [
+      [
+        "LOCATION",
+        "destination",
+        "UNKNOWN",
+        []
+      ],
+      [
+        "PERSON",
+        "travel_party",
+        "UNKNOWN",
+        []
+      ],
+      [
+        "TASK",
+        "trip_type",
+        "UNKNOWN",
+        []
+      ]
+    ],
+    "rationale": "No explicit applicability-relevant fact is stated.",
+    "reason_code": "NO_EXPLICIT_RELEVANT_FACT"
+  },
+  {
+    "case_id": "c29",
+    "change_type": "REMOVED",
+    "new_values": [],
+    "old_values": [
+      [
+        "LOCATION",
+        "destination",
+        "UNKNOWN",
+        []
+      ],
+      [
+        "PERSON",
+        "travel_party",
+        "UNKNOWN",
+        []
+      ],
+      [
+        "CONSTRAINT",
+        "payment_source",
+        "UNKNOWN",
+        []
+      ]
+    ],
+    "rationale": "No explicit applicability-relevant fact is stated.",
+    "reason_code": "NO_EXPLICIT_RELEVANT_FACT"
+  }
+]

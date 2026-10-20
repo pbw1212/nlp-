@@ -1,0 +1,18 @@
+[
+  {
+    "change_type": "CHANGED_STATUS",
+    "new_status": "MATCH",
+    "old_status": "UNKNOWN",
+    "pair_id": "p03",
+    "rationale": "Sparse profile ignores axes absent from the candidate qualifier set.",
+    "reason_code": "OLD_DENSE_ABSENCE_SEMANTICS"
+  },
+  {
+    "change_type": "CHANGED_STATUS",
+    "new_status": "MATCH",
+    "old_status": "UNKNOWN",
+    "pair_id": "hp04",
+    "rationale": "Sparse profile ignores axes absent from the candidate qualifier set.",
+    "reason_code": "OLD_DENSE_ABSENCE_SEMANTICS"
+  }
+]

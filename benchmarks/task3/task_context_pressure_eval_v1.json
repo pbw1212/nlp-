@@ -1,0 +1,17 @@
+{
+  "version": "task_context_pressure_eval_v1",
+  "task_id": "shanghai-meeting-pressure",
+  "meaningful_events": 50,
+  "coverage": [
+    "multiple_goals", "critical_constraints", "constraint_correction",
+    "decision_supersession", "resolved_questions", "open_questions",
+    "dependencies", "evidence_refs", "low_priority_background",
+    "checkpoint_refresh", "restart", "fresh_external_observation"
+  ],
+  "stale_traps": [
+    {"old": "预算5000", "current": "预算4000"},
+    {"old": "周二下午航班", "current": "周三上午航班"},
+    {"old": "酒店未预订", "current": "酒店已预订"}
+  ],
+  "budgets": {"large": 5000, "medium": 900, "tight": 420}
+}

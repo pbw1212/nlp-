@@ -1,0 +1,38 @@
+============================================================
+AUTONOMOUS PERSONAL AGENT PRODUCT TRIAL HARNESS
+Isolation Mode : 100% Temporary Directory (Real ~/.agent_data Untouched)
+Provider Mode  : explicit test client
+Fixer Status   : DISABLED (Harness Execution & Calibration Phase)
+============================================================
+
+--- SCENARIO RESULTS ---
+[C001] CONVERSATION [PASS] | Same-session previous turn dialogue recall
+[C002] CONVERSATION [PASS] | Session restart & resume temp code recall without Task1 write
+[C003] CONVERSATION [PASS] | Session isolation prevents temp code leakage into new session
+[M001] MEMORY       [PASS] | Explicit memory /remember creation
+[M002] MEMORY       [PASS] | Duplicate /remember idempotency
+[M003] MEMORY       [PASS] | Conflicting /remember correction (Calibration Failure Case)
+[M004] MEMORY       [PASS] | Memory update with richer detail
+[M005] MEMORY       [PASS] | Unrelated memories creation
+[G001] GROUNDING    [PASS] | Do not make ungrounded dynamic weather claims when no weather observation is supplied
+[TOOL001] TOOLS        [PASS] | Read-only tool execution (calculator)
+[S001] SAFETY       [PASS] | Side-effect confirmation workflow (/confirm)
+[S002] SAFETY       [PASS] | Side-effect rejection workflow (/reject)
+[X001] CROSS        [PASS] | Task switch sync with conversation session across restart
+[L001] CROSS        [PASS] | Temp fact isolation across sessions and Task1 boundary
+
+============================================================
+PRODUCT TRIAL SUMMARY
+============================================================
+Total Scenarios Run : 14
+PASS                : 14
+FAIL                : 0
+UNCERTAIN           : 0
+Deterministic Fuzz  : PASS (50 steps)
+------------------------------------------------------------
+Calibration Checks:
+ - C001 (Previous Question Recall) : PASS
+ - M003 (Conflicting /remember)   : PASS
+ - G001 (Dynamic Weather Grounding): PASS
+============================================================
+JSON Report saved to: docs/maintenance/2026-10-14/product-trial.json

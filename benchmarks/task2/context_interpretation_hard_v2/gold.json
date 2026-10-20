@@ -1,0 +1,412 @@
+{
+  "context_gold": [
+    {
+      "case_id": "hc01",
+      "values": [
+        [
+          "LOCATION",
+          "destination",
+          "UNKNOWN",
+          []
+        ],
+        [
+          "PERSON",
+          "travel_party",
+          "UNKNOWN",
+          []
+        ],
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "UNKNOWN",
+          []
+        ]
+      ]
+    },
+    {
+      "case_id": "hc02",
+      "values": [
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "AMBIGUOUS",
+          [
+            "company",
+            "self"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "hc03",
+      "values": [
+        [
+          "SCENARIO",
+          "transport_mode",
+          "KNOWN",
+          [
+            "not_driving"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "parking",
+          "KNOWN",
+          [
+            "not_required"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "hc04",
+      "values": [
+        [
+          "PERSON",
+          "travel_party",
+          "KNOWN",
+          [
+            "solo"
+          ]
+        ],
+        [
+          "LOCATION",
+          "destination",
+          "KNOWN",
+          [
+            "tokyo"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "KNOWN",
+          [
+            "self"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "hc05",
+      "values": [
+        [
+          "PERSON",
+          "meal_party",
+          "KNOWN",
+          [
+            "friends"
+          ]
+        ],
+        [
+          "LOCATION",
+          "destination",
+          "KNOWN",
+          [
+            "seattle"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "allergen",
+          "KNOWN",
+          [
+            "peanut_excluded"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "hc06",
+      "values": [
+        [
+          "SCENARIO",
+          "activity",
+          "AMBIGUOUS",
+          [
+            "hiking",
+            "sightseeing"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "hc07",
+      "values": [
+        [
+          "LOCATION",
+          "destination",
+          "UNKNOWN",
+          []
+        ],
+        [
+          "PERSON",
+          "travel_party",
+          "UNKNOWN",
+          []
+        ]
+      ]
+    },
+    {
+      "case_id": "hc08",
+      "values": [
+        [
+          "TASK",
+          "trip_type",
+          "KNOWN",
+          [
+            "business_trip"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "KNOWN",
+          [
+            "self"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "hc09",
+      "values": [
+        [
+          "TIME",
+          "departure",
+          "AMBIGUOUS",
+          [
+            "tuesday_evening",
+            "wednesday_evening"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "hc10",
+      "values": [
+        [
+          "LOCATION",
+          "destination",
+          "KNOWN",
+          [
+            "airport"
+          ]
+        ],
+        [
+          "PERSON",
+          "passengers",
+          "KNOWN",
+          [
+            "colleagues"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "vehicle_size",
+          "KNOWN",
+          [
+            "seven_seat"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "hc11",
+      "values": []
+    },
+    {
+      "case_id": "hc12",
+      "values": [
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "KNOWN",
+          [
+            "self"
+          ]
+        ]
+      ]
+    }
+  ],
+  "pair_gold": [
+    [
+      "hp01",
+      "MISMATCH"
+    ],
+    [
+      "hp02",
+      "AMBIGUOUS"
+    ],
+    [
+      "hp03",
+      "MISMATCH"
+    ],
+    [
+      "hp04",
+      "MATCH"
+    ],
+    [
+      "hp05",
+      "UNKNOWN"
+    ],
+    [
+      "hp06",
+      "MISMATCH"
+    ]
+  ],
+  "schema_version": 2,
+  "scope_gold": [
+    {
+      "case_id": "hm01",
+      "rules": [
+        [
+          "LOCATION",
+          "destination",
+          "EXPLICIT_GENERAL",
+          [],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "hm02",
+      "rules": []
+    },
+    {
+      "case_id": "hm03",
+      "rules": [
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "company"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "hm04",
+      "rules": []
+    },
+    {
+      "case_id": "hm05",
+      "rules": [
+        [
+          "CONSTRAINT",
+          "allergen",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "peanut"
+          ],
+          "EXCLUDES"
+        ]
+      ]
+    },
+    {
+      "case_id": "hm06",
+      "rules": [
+        [
+          "TIME",
+          "meeting_time",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "tuesday_evening",
+            "wednesday_evening"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "hm07",
+      "rules": []
+    },
+    {
+      "case_id": "hm08",
+      "rules": [
+        [
+          "PERSON",
+          "travel_party",
+          "EXPLICIT_GENERAL",
+          [],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "hm09",
+      "rules": [
+        [
+          "SCENARIO",
+          "transport_mode",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "driving"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "SCENARIO",
+          "activity",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "hiking"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "CONSTRAINT",
+          "parking",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "required"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "hm10",
+      "rules": [
+        [
+          "LOCATION",
+          "area_noise",
+          "UNSPECIFIED",
+          [],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "hm11",
+      "rules": [
+        [
+          "TASK",
+          "shopping_category",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "electronics"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "hm12",
+      "rules": [
+        [
+          "CONSTRAINT",
+          "meeting_time",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "after_21_00"
+          ],
+          "EXCLUDES"
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": "task_state_update_eval_v1",
+  "cases": [
+    {"id": "add-goal", "source_kind": "USER", "event": "帮我准备下周上海会议。", "expected": {"action": "ADD", "kind": "GOAL"}},
+    {"id": "add-constraint", "source_kind": "USER", "event": "预算最多5000。", "expected": {"action": "ADD", "kind": "CONSTRAINT"}},
+    {"id": "correction", "source_kind": "USER", "event": "预算不是5000，是4000。", "expected": {"action": "SUPERSEDE", "kind": "CONSTRAINT"}},
+    {"id": "question-not-decision", "source_kind": "USER", "event": "要不要订周三的航班？", "expected": {"action": "REJECT_DECISION"}},
+    {"id": "intent-not-completion", "source_kind": "USER", "event": "我准备订酒店。", "expected": {"action": "NO_COMPLETED_PROGRESS"}},
+    {"id": "tool-success", "source_kind": "TOOL", "event": "booking succeeded", "expected": {"action": "ADD", "kind": "PROGRESS"}},
+    {"id": "tool-failure", "source_kind": "TOOL", "event": "booking failed", "expected": {"action": "NO_COMPLETED_PROGRESS"}},
+    {"id": "agent-suggestion", "source_kind": "AGENT", "event": "建议住会场附近。", "expected": {"action": "REJECT_CONSTRAINT"}},
+    {"id": "hypothetical", "source_kind": "USER", "event": "如果有时间，也许去博物馆。", "expected": {"action": "REJECT_HARD_STATE"}},
+    {"id": "zero-update", "source_kind": "USER", "event": "好的。", "expected": {"action": "ZERO"}}
+  ]
+}

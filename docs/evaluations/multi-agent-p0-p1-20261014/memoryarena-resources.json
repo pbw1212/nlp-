@@ -1,0 +1,83 @@
+{
+  "upstream": "https://github.com/ZexueHe/MemoryArena",
+  "revision": "6cd9de14b71915e39ac742a20dc33785e14b6aab",
+  "database_files": [
+    {
+      "path": "flights/clean_Flights_2022.csv",
+      "present": false,
+      "sha256": null
+    },
+    {
+      "path": "restaurants/clean_restaurant_2022.csv",
+      "present": true,
+      "sha256": "afe116614304234f743f045852a985e11cbde80463c41ad84c38a14f282c9859"
+    },
+    {
+      "path": "accommodations/clean_accommodations_2022.csv",
+      "present": true,
+      "sha256": "2fc30ba27f91d9d332b52137b4fe996d513f676794215f5d64b6bb94dd7badd4"
+    },
+    {
+      "path": "attractions/attractions.csv",
+      "present": true,
+      "sha256": "fcac4410253884bbdc86ff74fa0d7370a51101bea565b89af602283e7b217cc3"
+    },
+    {
+      "path": "googleDistanceMatrix/distance.csv",
+      "present": true,
+      "sha256": "7dc1a26dc7877ae96ce63e74be0d9660bbdef96ffccaffce441128e3a4864a27"
+    },
+    {
+      "path": "background/citySet_with_states.txt",
+      "present": true,
+      "sha256": "0722d12ec48f308a1fd9d3b0b5c7055d5136e8122b9b3b31031c23fd46542414"
+    }
+  ],
+  "full_travel_ready": false,
+  "official_group_evaluation_run": false,
+  "score": null,
+  "redistribution_license_verified": false,
+  "minimal_external_tool": {
+    "name": "CitySearch",
+    "state": "California",
+    "result": [
+      "San Diego",
+      "Redding",
+      "Sacramento",
+      "Fresno",
+      "San Luis Obispo",
+      "Oakland",
+      "Santa Barbara",
+      "Stockton",
+      "Santa Rosa",
+      "Bakersfield",
+      "Santa Ana",
+      "Santa Maria",
+      "San Jose",
+      "Burbank",
+      "Arcata",
+      "Butte",
+      "Palm Springs",
+      "Los Angeles",
+      "Long Beach",
+      "San Francisco",
+      "Monterey"
+    ],
+    "executed": true
+  },
+  "dataset_probe": {
+    "url": "https://datasets-server.huggingface.co/rows?dataset=ZexueHe%2Fmemoryarena&config=group_travel_planner&split=test&offset=0&length=1",
+    "status": "AVAILABLE",
+    "response_sha256": "d395d51a7b924106b49027c4626936635fad79fac9beaa6349f7be0a8e3582d4",
+    "group_id": 1,
+    "question_count": 8,
+    "row_keys": [
+      "answers",
+      "base_person",
+      "id",
+      "questions"
+    ],
+    "total_rows": 270,
+    "agent_access_to_gold": false
+  }
+}

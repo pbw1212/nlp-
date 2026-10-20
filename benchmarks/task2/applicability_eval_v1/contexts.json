@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "contexts": [
+    {"query_id":"q01_solo_shanghai","values":[{"dimension":"PERSON","field":"party","state":"KNOWN","values":["solo"]},{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["shanghai"]},{"dimension":"SCENARIO","field":"scenario","state":"KNOWN","values":["city_trip"]}]},
+    {"query_id":"q02_friends_hiking","values":[{"dimension":"PERSON","field":"party","state":"KNOWN","values":["friends"]},{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["mountain"]},{"dimension":"TASK","field":"task","state":"KNOWN","values":["hiking"]},{"dimension":"SCENARIO","field":"scenario","state":"KNOWN","values":["outdoor_trip"]},{"dimension":"CONSTRAINT","field":"parking","state":"KNOWN","values":["required"]}]},
+    {"query_id":"q03_family_seaside","values":[{"dimension":"PERSON","field":"party","state":"KNOWN","values":["family"]},{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["seaside"]},{"dimension":"SCENARIO","field":"scenario","state":"KNOWN","values":["family_vacation"]},{"dimension":"CONSTRAINT","field":"room_type","state":"KNOWN","values":["family_room"]}]},
+    {"query_id":"q04_business_company","values":[{"dimension":"PERSON","field":"party","state":"KNOWN","values":["colleagues"]},{"dimension":"TASK","field":"task","state":"KNOWN","values":["business_trip"]},{"dimension":"CONSTRAINT","field":"payment","state":"KNOWN","values":["company"]}]},
+    {"query_id":"q05_self_vacation_budget","values":[{"dimension":"TASK","field":"task","state":"KNOWN","values":["vacation"]},{"dimension":"CONSTRAINT","field":"payment","state":"KNOWN","values":["self"]},{"dimension":"CONSTRAINT","field":"budget","state":"KNOWN","values":["limited"]}]},
+    {"query_id":"q06_airport_layover","values":[{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["airport"]},{"dimension":"TASK","field":"task","state":"KNOWN","values":["layover"]},{"dimension":"SCENARIO","field":"scenario","state":"KNOWN","values":["transit"]}]},
+    {"query_id":"q07_business_any_location","values":[{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["mountain"]},{"dimension":"TASK","field":"task","state":"KNOWN","values":["business_trip"]}]},
+    {"query_id":"q08_breakfast_unspecified","values":[{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["shanghai"]}]},
+    {"query_id":"q09_soundproof_conditional","values":[{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["busy_area"]},{"dimension":"CONSTRAINT","field":"soundproof","state":"KNOWN","values":["true"]}]},
+    {"query_id":"q10_spicy_daily_meal","values":[{"dimension":"TASK","field":"task","state":"KNOWN","values":["daily_meal"]}]},
+    {"query_id":"q11_peanut_safe_meal","values":[{"dimension":"CONSTRAINT","field":"ingredients","state":"KNOWN","values":["soy"]}]},
+    {"query_id":"q12_peanut_conflict","values":[{"dimension":"CONSTRAINT","field":"ingredients","state":"KNOWN","values":["peanuts"]}]},
+    {"query_id":"q13_coffee_after_three","values":[{"dimension":"TIME","field":"time_period","state":"KNOWN","values":["after_15"]}]},
+    {"query_id":"q14_coffee_morning","values":[{"dimension":"TIME","field":"time_period","state":"KNOWN","values":["morning"]}]},
+    {"query_id":"q15_morning_coding","values":[{"dimension":"TIME","field":"time_period","state":"KNOWN","values":["weekday_morning"]},{"dimension":"TASK","field":"task","state":"KNOWN","values":["coding"]}]},
+    {"query_id":"q16_remote_work","values":[{"dimension":"TASK","field":"task","state":"KNOWN","values":["remote_work"]},{"dimension":"CONSTRAINT","field":"network","state":"KNOWN","values":["stable"]}]},
+    {"query_id":"q17_office_meeting","values":[{"dimension":"TIME","field":"time_period","state":"KNOWN","values":["afternoon"]},{"dimension":"TASK","field":"task","state":"KNOWN","values":["office_meeting"]}]},
+    {"query_id":"q18_weekend_run","values":[{"dimension":"TIME","field":"time_period","state":"KNOWN","values":["weekend"]},{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["riverside"]},{"dimension":"SCENARIO","field":"scenario","state":"KNOWN","values":["good_weather"]}]},
+    {"query_id":"q19_rainy_gym","values":[{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["gym"]},{"dimension":"SCENARIO","field":"scenario","state":"KNOWN","values":["rainy_day"]}]},
+    {"query_id":"q20_personal_shopping","values":[{"dimension":"TASK","field":"task","state":"KNOWN","values":["personal_shopping"]},{"dimension":"CONSTRAINT","field":"payment","state":"KNOWN","values":["self"]},{"dimension":"CONSTRAINT","field":"budget","state":"KNOWN","values":["limited"]}]},
+    {"query_id":"q21_company_equipment","values":[{"dimension":"TASK","field":"task","state":"KNOWN","values":["work_purchase"]},{"dimension":"CONSTRAINT","field":"payment","state":"KNOWN","values":["company"]}]},
+    {"query_id":"q22_long_train","values":[{"dimension":"TASK","field":"task","state":"KNOWN","values":["long_train"]}]},
+    {"query_id":"q23_airport_late_taxi","values":[{"dimension":"LOCATION","field":"location","state":"KNOWN","values":["airport"]},{"dimension":"TIME","field":"time_period","state":"KNOWN","values":["late_night"]}]},
+    {"query_id":"q24_roadtrip_parking","values":[{"dimension":"TASK","field":"task","state":"KNOWN","values":["road_trip"]},{"dimension":"CONSTRAINT","field":"parking","state":"KNOWN","values":["required"]}]},
+    {"query_id":"q25_friends_dining","values":[{"dimension":"PERSON","field":"party","state":"KNOWN","values":["friends"]},{"dimension":"SCENARIO","field":"scenario","state":"KNOWN","values":["group_dining"]}]},
+    {"query_id":"q26_family_early_dinner","values":[{"dimension":"PERSON","field":"party","state":"KNOWN","values":["family"]},{"dimension":"TIME","field":"time_period","state":"KNOWN","values":["early_evening"]}]},
+    {"query_id":"q27_ambiguous_payment","values":[{"dimension":"PERSON","field":"party","state":"KNOWN","values":["colleagues"]},{"dimension":"TASK","field":"task","state":"KNOWN","values":["business_trip"]},{"dimension":"CONSTRAINT","field":"payment","state":"AMBIGUOUS","values":["company","self"]}]},
+    {"query_id":"q28_ambiguous_work_time","values":[{"dimension":"TIME","field":"time_period","state":"AMBIGUOUS","values":["weekday_morning","afternoon"]},{"dimension":"TASK","field":"task","state":"KNOWN","values":["coding"]}]}
+  ]
+}

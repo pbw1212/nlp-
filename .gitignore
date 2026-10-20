@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Runtime databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+.agent_data/
+.demo_data/
+artifacts/
+/.runtime/
+
+# External reference checkouts and source snapshots stay outside this checkout
+repos/
+reference_repos/
+Reference Repos/
+
+# User-retained raw project materials (local only; never commit)
+his.txt
+ins.md
+note.md
+points.md
+task1_complete_spec.md
+todo.md
+短期工作集提示词.txt
+记忆检索部分提示词.txt
+docs/source-materials/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store

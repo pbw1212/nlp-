@@ -1,0 +1,101 @@
+{
+  "label": "deterministic engineering regression fixture; not a research benchmark",
+  "memories": [
+    {
+      "memory_id": "bench_shanghai_solo",
+      "content": "独自去上海旅行时，我通常更喜欢住市中心，出行方便。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"locations": ["上海"], "topics": ["住宿", "旅行"], "scopes": ["独自旅行"]}
+    },
+    {
+      "memory_id": "bench_hiking_friends",
+      "content": "和朋友去山里徒步时，我更看重停车方便，最好能早点出发。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"persons": ["朋友"], "topics": ["徒步"], "scopes": ["朋友结伴旅行"]}
+    },
+    {
+      "memory_id": "bench_hotel_evolution",
+      "initial_content": "我以前更喜欢安静的酒店。",
+      "content": "现在热闹一点的区域也可以，只要酒店隔音好。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"topics": ["酒店住宿"], "conditions": ["隔音好"]}
+    },
+    {
+      "memory_id": "bench_business_company_paid",
+      "content": "如果是公司报销的商务出差，我可以接受价格更高、位置更方便的酒店。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"topics": ["商务出差", "酒店"], "conditions": ["公司报销"]}
+    },
+    {
+      "memory_id": "bench_self_paid_budget",
+      "content": "自己付钱旅行时，我通常会控制住宿预算。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"topics": ["旅行预算", "住宿"], "conditions": ["自费"]}
+    },
+    {
+      "memory_id": "bench_spicy_food",
+      "content": "我喜欢吃辣，但不喜欢太甜的食物。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"topics": ["饮食偏好"], "keywords": ["吃辣"]}
+    },
+    {
+      "memory_id": "bench_work_morning",
+      "content": "上午是我最专注的工作时间，尽量少安排会议。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"topics": ["工作习惯"], "conditions": ["上午"]}
+    },
+    {
+      "memory_id": "bench_weekend_running",
+      "content": "周末天气合适时，我喜欢沿河跑步。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"topics": ["运动"], "keywords": ["跑步"]}
+    },
+    {
+      "memory_id": "bench_coffee",
+      "content": "下午三点以后我通常不喝咖啡，以免影响睡眠。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"topics": ["饮食", "睡眠"], "keywords": ["咖啡"]}
+    },
+    {
+      "memory_id": "bench_train_seat",
+      "content": "乘坐长途火车时我更喜欢靠窗座位。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"topics": ["交通"], "keywords": ["火车", "靠窗"]}
+    },
+    {
+      "memory_id": "bench_family_trip",
+      "content": "和家人旅行时，住宿最好有家庭房和早餐。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"persons": ["家人"], "topics": ["家庭旅行", "住宿"]}
+    },
+    {
+      "memory_id": "bench_beijing_museum",
+      "content": "去北京时我喜欢安排博物馆，并提前预约。",
+      "authority": "EXPLICIT_USER",
+      "metadata": {"locations": ["北京"], "topics": ["文化旅行"]}
+    },
+    {
+      "memory_id": "bench_remote_work",
+      "content": "远程工作时我需要稳定网络和安静的房间。",
+      "authority": "INFERRED",
+      "metadata": {"topics": ["远程工作"], "conditions": ["稳定网络"]}
+    },
+    {
+      "memory_id": "bench_peanut_allergy",
+      "content": "用户可能对花生过敏，点餐前需要再次确认。",
+      "authority": "INFERRED",
+      "metadata": {"topics": ["饮食安全"], "keywords": ["花生过敏"]}
+    }
+  ],
+  "queries": [
+    {"query_id": "q_shanghai", "query": "上海旅行住哪里出行方便？", "expected": ["bench_shanghai_solo"]},
+    {"query_id": "q_hiking", "query": "和朋友去山里徒步，停车和早点出发怎么安排？", "expected": ["bench_hiking_friends"]},
+    {"query_id": "q_soundproof", "query": "热闹区域的酒店隔音要求是什么？", "expected": ["bench_hotel_evolution"]},
+    {"query_id": "q_business", "query": "公司报销的商务出差能否住价格更高的酒店？", "expected": ["bench_business_company_paid"]},
+    {"query_id": "q_budget", "query": "自己付钱旅行时住宿预算怎么控制？", "expected": ["bench_self_paid_budget"]},
+    {"query_id": "q_food", "query": "我的吃辣和饮食偏好是什么？", "expected": ["bench_spicy_food"]},
+    {"query_id": "q_work", "query": "上午专注工作时要不要少开会？", "expected": ["bench_work_morning"]},
+    {"query_id": "q_sport", "query": "周末适合做什么跑步运动？", "expected": ["bench_weekend_running"]},
+    {"query_id": "q_hotel_general", "query": "独自上海旅行、自费预算、商务出差和酒店隔音分别有什么住宿偏好？", "expected": ["bench_shanghai_solo", "bench_hotel_evolution", "bench_business_company_paid", "bench_self_paid_budget"]}
+  ]
+}

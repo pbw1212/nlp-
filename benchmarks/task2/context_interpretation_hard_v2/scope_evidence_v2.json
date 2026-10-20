@@ -1,0 +1,101 @@
+[
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm01",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm01",
+    "field": "LOCATION.destination",
+    "memory_id": "hm01",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm03",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm03",
+    "field": "CONSTRAINT.payment_source",
+    "memory_id": "hm03",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm05",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm05",
+    "field": "CONSTRAINT.allergen",
+    "memory_id": "hm05",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm06",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm06",
+    "field": "TIME.meeting_time",
+    "memory_id": "hm06",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm08",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm08",
+    "field": "PERSON.travel_party",
+    "memory_id": "hm08",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm09",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm09",
+    "field": "SCENARIO.transport_mode",
+    "memory_id": "hm09",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm09",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm09",
+    "field": "SCENARIO.activity",
+    "memory_id": "hm09",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm09",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm09",
+    "field": "CONSTRAINT.parking",
+    "memory_id": "hm09",
+    "rule_index": 2
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm10",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm10",
+    "field": "LOCATION.area_noise",
+    "memory_id": "hm10",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm11",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm11",
+    "field": "TASK.shopping_category",
+    "memory_id": "hm11",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "hm12",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:hm12",
+    "field": "CONSTRAINT.meeting_time",
+    "memory_id": "hm12",
+    "rule_index": 0
+  }
+]

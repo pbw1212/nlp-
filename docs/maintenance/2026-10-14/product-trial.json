@@ -1,0 +1,110 @@
+{
+  "summary": {
+    "total": 14,
+    "pass": 14,
+    "fail": 0,
+    "uncertain": 0,
+    "fuzz_passed": true,
+    "fuzz_violations": []
+  },
+  "scenarios": [
+    {
+      "scenario_id": "C001",
+      "category": "conversation",
+      "description": "Same-session previous turn dialogue recall",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "C002",
+      "category": "conversation",
+      "description": "Session restart & resume temp code recall without Task1 write",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "C003",
+      "category": "conversation",
+      "description": "Session isolation prevents temp code leakage into new session",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "M001",
+      "category": "memory",
+      "description": "Explicit memory /remember creation",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "M002",
+      "category": "memory",
+      "description": "Duplicate /remember idempotency",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "M003",
+      "category": "memory",
+      "description": "Conflicting /remember correction (Calibration Failure Case)",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "M004",
+      "category": "memory",
+      "description": "Memory update with richer detail",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "M005",
+      "category": "memory",
+      "description": "Unrelated memories creation",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "G001",
+      "category": "grounding",
+      "description": "Do not make ungrounded dynamic weather claims when no weather observation is supplied",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "TOOL001",
+      "category": "tools",
+      "description": "Read-only tool execution (calculator)",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "S001",
+      "category": "safety",
+      "description": "Side-effect confirmation workflow (/confirm)",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "S002",
+      "category": "safety",
+      "description": "Side-effect rejection workflow (/reject)",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "X001",
+      "category": "cross",
+      "description": "Task switch sync with conversation session across restart",
+      "status": "PASS",
+      "failed_reasons": []
+    },
+    {
+      "scenario_id": "L001",
+      "category": "cross",
+      "description": "Temp fact isolation across sessions and Task1 boundary",
+      "status": "PASS",
+      "failed_reasons": []
+    }
+  ]
+}

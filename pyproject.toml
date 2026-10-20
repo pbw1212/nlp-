@@ -1,0 +1,8 @@
+[build-system]
+requires = ["setuptools>=59.6"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["code/tests"]
+norecursedirs = ["reference_repos", "Reference Repos", "repos", ".git", ".venv", "venv"]
+addopts = "-ra"

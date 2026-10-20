@@ -1,0 +1,219 @@
+{
+  "date": "2026-10-14",
+  "requests": 22,
+  "cases": [
+    {
+      "case": "memory_add",
+      "input": "live-add",
+      "expected": "数据库和索引一条Python偏好",
+      "actual": {
+        "memory_id": "mem_1eeadc3e44fe",
+        "results": [
+          [
+            "mem_1eeadc3e44fe",
+            "rev_8472218aace747b49eeaac9430ba9346"
+          ]
+        ],
+        "revision_id": "rev_8472218aace747b49eeaac9430ba9346"
+      },
+      "status": "PASS",
+      "requests": 1
+    },
+    {
+      "case": "memory_deduplicate",
+      "input": "live-duplicate",
+      "expected": "同一memory，无新增revision",
+      "actual": {
+        "operation": "NOOP",
+        "memory_id": "mem_1eeadc3e44fe"
+      },
+      "status": "PASS",
+      "requests": 1
+    },
+    {
+      "case": "memory_correct",
+      "input": "live-correct",
+      "expected": "同一memory由Python更正为Julia",
+      "actual": {
+        "memory_id": "mem_1eeadc3e44fe",
+        "results": [
+          [
+            "mem_1eeadc3e44fe",
+            "rev_f3e074cd096b4460850e56b0636a76bb"
+          ]
+        ],
+        "revision_id": "rev_f3e074cd096b4460850e56b0636a76bb"
+      },
+      "status": "PASS",
+      "requests": 1
+    },
+    {
+      "case": "memory_remove",
+      "input": "live-remove",
+      "expected": "移入RECYCLED，有效读取与索引排除",
+      "actual": {
+        "memory_id": "mem_1eeadc3e44fe",
+        "results": [
+          [
+            "mem_1eeadc3e44fe",
+            "RECYCLED"
+          ]
+        ],
+        "retention": "RECYCLED"
+      },
+      "status": "PASS",
+      "requests": 1
+    },
+    {
+      "case": "transient_filter",
+      "input": "live-transient",
+      "expected": "无长期memory写入",
+      "actual": {
+        "results": []
+      },
+      "status": "PASS",
+      "requests": 1
+    },
+    {
+      "case": "inferred_memory",
+      "input": "live-inferred",
+      "expected": "长期汇报偏好有版本和来源",
+      "actual": {
+        "memory_id": "mem_6fb72f3152ab",
+        "results": [
+          [
+            "mem_6fb72f3152ab",
+            "rev_c52a5c679d86409094421e8e4cc2bf41"
+          ]
+        ],
+        "revision_id": "rev_c52a5c679d86409094421e8e4cc2bf41"
+      },
+      "status": "PASS",
+      "requests": 2
+    },
+    {
+      "case": "restart_consistency",
+      "input": "重启管理器",
+      "expected": "当前版本一致",
+      "actual": "首轮脚本断言通过",
+      "status": "PASS",
+      "requests": 0
+    },
+    {
+      "case": "conversation_turn_1",
+      "input": "临时练习代号青石",
+      "expected": "完整应用轮次SUCCESS且对话记录落库",
+      "actual": "首轮执行日志PASS；原始回复随临时目录部分清理已删除，不补造文本",
+      "status": "PASS",
+      "requests": 3
+    },
+    {
+      "case": "conversation_turn_2",
+      "input": "A三步，B五步",
+      "expected": "完整应用轮次SUCCESS且对话记录落库",
+      "actual": "首轮执行日志PASS；原始回复随临时目录部分清理已删除，不补造文本",
+      "status": "PASS",
+      "requests": 3
+    },
+    {
+      "case": "conversation_turn_3",
+      "input": "方案A几步",
+      "expected": "完整应用轮次SUCCESS且对话记录落库",
+      "actual": "首轮执行日志PASS；原始回复随临时目录部分清理已删除，不补造文本",
+      "status": "PASS",
+      "requests": 3
+    },
+    {
+      "case": "conversation_turn_4",
+      "input": "A增加一步",
+      "expected": "完整应用轮次SUCCESS且对话记录落库",
+      "actual": "首轮执行日志PASS；原始回复随临时目录部分清理已删除，不补造文本",
+      "status": "PASS",
+      "requests": 3
+    },
+    {
+      "case": "conversation_turn_5",
+      "input": "复述代号及A步数",
+      "expected": "完整应用轮次SUCCESS且对话记录落库",
+      "actual": "首轮执行日志PASS；原始回复随临时目录部分清理已删除，不补造文本",
+      "status": "PASS",
+      "requests": 3
+    },
+    {
+      "case": "sqlite_integrity",
+      "input": "完整性检查",
+      "expected": "integrity_check=ok且无外键错误",
+      "actual": "首轮断言通过",
+      "status": "PASS",
+      "requests": 0
+    }
+  ],
+  "durable_evidence": {
+    "memories": [
+      {
+        "memory_id": "mem_1eeadc3e44fe",
+        "retention_disposition": "RECYCLED",
+        "current_revision_id": "rev_f3e074cd096b4460850e56b0636a76bb"
+      },
+      {
+        "memory_id": "mem_6fb72f3152ab",
+        "retention_disposition": "ACTIVE",
+        "current_revision_id": "rev_c52a5c679d86409094421e8e4cc2bf41"
+      }
+    ],
+    "revisions": [
+      {
+        "memory_id": "mem_1eeadc3e44fe",
+        "revision_no": 1,
+        "content": "我长期喜欢使用Python进行数据分析",
+        "semantic_validity": "CONTRADICTED"
+      },
+      {
+        "memory_id": "mem_1eeadc3e44fe",
+        "revision_no": 2,
+        "content": "我以后长期使用Julia进行数据分析，替代Python",
+        "semantic_validity": "CURRENT"
+      },
+      {
+        "memory_id": "mem_6fb72f3152ab",
+        "revision_no": 1,
+        "content": "The user prefers clear and concise work reports and wants this preference to continue.",
+        "semantic_validity": "CURRENT"
+      }
+    ],
+    "events": [
+      {
+        "event_id": "live-add",
+        "state": "APPLIED",
+        "result_metadata_json": "{\"memory_id\": \"mem_1eeadc3e44fe\", \"results\": [[\"mem_1eeadc3e44fe\", \"rev_8472218aace747b49eeaac9430ba9346\"]], \"revision_id\": \"rev_8472218aace747b49eeaac9430ba9346\"}"
+      },
+      {
+        "event_id": "live-duplicate",
+        "state": "APPLIED",
+        "result_metadata_json": "{\"operation\": \"NOOP\", \"memory_id\": \"mem_1eeadc3e44fe\"}"
+      },
+      {
+        "event_id": "live-correct",
+        "state": "APPLIED",
+        "result_metadata_json": "{\"memory_id\": \"mem_1eeadc3e44fe\", \"results\": [[\"mem_1eeadc3e44fe\", \"rev_f3e074cd096b4460850e56b0636a76bb\"]], \"revision_id\": \"rev_f3e074cd096b4460850e56b0636a76bb\"}"
+      },
+      {
+        "event_id": "live-remove",
+        "state": "APPLIED",
+        "result_metadata_json": "{\"memory_id\": \"mem_1eeadc3e44fe\", \"results\": [[\"mem_1eeadc3e44fe\", \"RECYCLED\"]], \"retention\": \"RECYCLED\"}"
+      },
+      {
+        "event_id": "live-transient",
+        "state": "APPLIED",
+        "result_metadata_json": "{\"results\": []}"
+      },
+      {
+        "event_id": "live-inferred",
+        "state": "APPLIED",
+        "result_metadata_json": "{\"memory_id\": \"mem_6fb72f3152ab\", \"results\": [[\"mem_6fb72f3152ab\", \"rev_c52a5c679d86409094421e8e4cc2bf41\"]], \"revision_id\": \"rev_c52a5c679d86409094421e8e4cc2bf41\"}"
+      }
+    ]
+  },
+  "harness_issue": "全部13项断言完成后，测试脚本自己的sqlite3.connect上下文未关闭导致Windows临时目录清理失败。已修复为closing，增加每案例即时保存；本报告以首轮日志和残留数据库恢复，未重复消耗22次API。",
+  "limits": "多轮PASS检查轮次和持久化，不等于模型回答语义正确；缺失的原始回复不能逐字核验。Token usage首轮未保存，不能补造。"
+}

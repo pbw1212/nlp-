@@ -1,0 +1,44 @@
+{
+  "comembench_dataset": {
+    "url": "https://huggingface.co/api/datasets/anonymous-submission-333/anonymous-submission",
+    "http_status": 200,
+    "bytes_read": 2504,
+    "oversize": false,
+    "revision": "d1cef0fb70ada0ddf9b80d23aa30ed86ee56e016",
+    "gated": false,
+    "files": [
+      ".gitattributes",
+      "LICENSE",
+      "README.md",
+      "data/benchmark_instances.jsonl",
+      "data/control_instances.jsonl",
+      "data/math_cases.jsonl",
+      "data/node_contexts.jsonl",
+      "data/polluted_instances.jsonl",
+      "data/retrieval_corpora.jsonl",
+      "data/topology_descriptors.jsonl",
+      "data/workflow_families.jsonl",
+      "schemas/artifact.schema.json",
+      "schemas/benchmark_instance.schema.json",
+      "schemas/case_init.schema.json",
+      "schemas/handoff_oracle.schema.json",
+      "schemas/memory_proposal.schema.json",
+      "schemas/node_context.schema.json",
+      "schemas/node_view.schema.json",
+      "schemas/swe_image_manifest.json",
+      "schemas/workflow_family.schema.json"
+    ],
+    "fixed_revision_readme_probe": {
+      "status": "UNAVAILABLE",
+      "error_type": "TimeoutError",
+      "scorer_run": false
+    }
+  },
+  "flight_folder": {
+    "url": "https://drive.google.com/drive/folders/1fHBg6Ro4bSbTBgxeQZ6piYNtmqy8a_kK?usp=sharing",
+    "http_status": 200,
+    "bytes_read": 310433,
+    "oversize": false,
+    "saved_local": ".runtime\\p0-memoryarena-flight-folder.html"
+  }
+}

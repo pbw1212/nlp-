@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-14",
+  "additional_budget": 8,
+  "cases": [
+    {
+      "case": "inferred_language_preservation",
+      "status": "PASS",
+      "input": "中文长期汇报偏好",
+      "actual": "用户多年来一直喜欢清晰简洁的工作汇报，并希望今后继续保持这一偏好。",
+      "result": {
+        "event_id": "language-source",
+        "processed": true,
+        "updated": true,
+        "idempotent_replay": false,
+        "pending_events": 0,
+        "episodes_processed": 1,
+        "new_memories_created": 1,
+        "memories_removed": 0,
+        "lifecycle_changes": 1,
+        "consolidation_run_id": "run_f052c0afe5b62381527d7db2dce0b3113e271cf798106f67e4f44565e0b1db50"
+      }
+    },
+    {
+      "case": "retrieval_after_language_preservation",
+      "status": "PASS",
+      "expected": "同语言查询选中已存偏好",
+      "selected_ids": [
+        "mem_6b6a4ed01fbb"
+      ]
+    }
+  ],
+  "bundle": {
+    "schema_version": "evidence_bundle_v1",
+    "request_id": "live-language-retrieval",
+    "query": "清晰简洁工作汇报",
+    "selected": [
+      {
+        "memory_id": "mem_6b6a4ed01fbb",
+        "revision_id": "rev_7c105d513c7e4a1ea2333f57055ed1a8",
+        "text": "用户多年来一直喜欢清晰简洁的工作汇报，并希望今后继续保持这一偏好。",
+        "original_rank": 1,
+        "original_score": 4.22854131234066,
+        "score_breakdown": {
+          "content_bm25": 4.027549014324932,
+          "metadata_overlap": 0.2009922980157281,
+          "dense_similarity": null,
+          "fusion_rrf": null
+        },
+        "provenance_refs": [
+          "provenance:prov_4112a5844c924ef2b8bfedb90d9d5b16"
+        ],
+        "applicability_status": "UNKNOWN",
+        "applicability_decision": "RETAIN_WITH_UNCERTAINTY",
+        "applicability_reasons": [
+          "CANDIDATE_SCOPE_UNSPECIFIED"
+        ],
+        "conflict_status": "NO_CONFLICT",
+        "conflict_key": null,
+        "conflict_losing_memory_ids": [],
+        "source_trace": [
+          "recall_rank:1",
+          "applicability_gate"
+        ],
+        "current_safe": true
+      }
+    ],
+    "sufficiency": {
+      "status": "PARTIAL",
+      "reason_codes": [
+        "UNCERTAINTY_OR_OMISSION_PRESENT"
+      ],
+      "missing_aspects": [],
+      "uncertainties": [
+        "mem_6b6a4ed01fbb"
+      ],
+      "unresolved_conflicts": []
+    },
+    "rejected_or_omitted": [],
+    "warnings": [],
+    "pipeline_identity": [
+      "task2_evidence_pipeline_v1"
+    ],
+    "retrieval_trace": {
+      "recall": {
+        "query_variants": [
+          "清晰简洁工作汇报"
+        ],
+        "candidate_counts": {
+          "清晰简洁工作汇报": 1
+        },
+        "stages": [
+          "lexical_bm25",
+          "graph_no_edges"
+        ],
+        "warnings": []
+      },
+      "applicability": {
+        "assessment_count": 1,
+        "rejected_count": 0,
+        "warning_count": 0
+      }
+    },
+    "budgets": {
+      "max_items": 8,
+      "max_chars_per_item": 600,
+      "max_total_chars": 3000
+    }
+  },
+  "usage": {
+    "request_count": 4,
+    "input_tokens": 5110,
+    "output_tokens": 479,
+    "prompt_cache_miss_tokens": 5110
+  }
+}

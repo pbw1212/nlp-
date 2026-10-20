@@ -1,0 +1,398 @@
+[
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m01",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m01",
+    "field": "PERSON.travel_party",
+    "memory_id": "m01",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m01",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m01",
+    "field": "LOCATION.destination",
+    "memory_id": "m01",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m02",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m02",
+    "field": "TASK.trip_type",
+    "memory_id": "m02",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m02",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m02",
+    "field": "CONSTRAINT.payment_source",
+    "memory_id": "m02",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m03",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m03",
+    "field": "LOCATION.destination",
+    "memory_id": "m03",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m05",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m05",
+    "field": "CONSTRAINT.allergen",
+    "memory_id": "m05",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m06",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m06",
+    "field": "PERSON.travel_party",
+    "memory_id": "m06",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m06",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m06",
+    "field": "SCENARIO.activity",
+    "memory_id": "m06",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m06",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m06",
+    "field": "CONSTRAINT.parking",
+    "memory_id": "m06",
+    "rule_index": 2
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m07",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m07",
+    "field": "PERSON.travel_party",
+    "memory_id": "m07",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m08",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m08",
+    "field": "LOCATION.area_noise",
+    "memory_id": "m08",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m09",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m09",
+    "field": "TASK.trip_type",
+    "memory_id": "m09",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m09",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m09",
+    "field": "CONSTRAINT.payment_source",
+    "memory_id": "m09",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m09",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m09",
+    "field": "CONSTRAINT.hotel_budget",
+    "memory_id": "m09",
+    "rule_index": 2
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m10",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m10",
+    "field": "PERSON.travel_party",
+    "memory_id": "m10",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m10",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m10",
+    "field": "CONSTRAINT.accessibility",
+    "memory_id": "m10",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m11",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m11",
+    "field": "SCENARIO.trip_type",
+    "memory_id": "m11",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m11",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m11",
+    "field": "CONSTRAINT.layover_duration",
+    "memory_id": "m11",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m12",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m12",
+    "field": "TASK.shopping_category",
+    "memory_id": "m12",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m13",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m13",
+    "field": "TIME.day_type",
+    "memory_id": "m13",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m13",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m13",
+    "field": "TIME.focus_window",
+    "memory_id": "m13",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m14",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m14",
+    "field": "CONSTRAINT.weather",
+    "memory_id": "m14",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m15",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m15",
+    "field": "PERSON.travel_party",
+    "memory_id": "m15",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m15",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m15",
+    "field": "CONSTRAINT.pet_friendly",
+    "memory_id": "m15",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m17",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m17",
+    "field": "SCENARIO.transport_mode",
+    "memory_id": "m17",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m17",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m17",
+    "field": "SCENARIO.activity",
+    "memory_id": "m17",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m17",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m17",
+    "field": "CONSTRAINT.parking",
+    "memory_id": "m17",
+    "rule_index": 2
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m18",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m18",
+    "field": "LOCATION.workplace",
+    "memory_id": "m18",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m19",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m19",
+    "field": "TASK.meal_type",
+    "memory_id": "m19",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m19",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m19",
+    "field": "CONSTRAINT.noise",
+    "memory_id": "m19",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m20",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m20",
+    "field": "SCENARIO.transport_mode",
+    "memory_id": "m20",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m20",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m20",
+    "field": "CONSTRAINT.seat",
+    "memory_id": "m20",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m21",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m21",
+    "field": "TIME.meal_time",
+    "memory_id": "m21",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m22",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m22",
+    "field": "PERSON.meeting_party",
+    "memory_id": "m22",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m23",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m23",
+    "field": "TASK.shopping_context",
+    "memory_id": "m23",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m24",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m24",
+    "field": "TIME.departure",
+    "memory_id": "m24",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m24",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m24",
+    "field": "SCENARIO.trip_type",
+    "memory_id": "m24",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m25",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m25",
+    "field": "TASK.trip_type",
+    "memory_id": "m25",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m25",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m25",
+    "field": "CONSTRAINT.hotel_budget",
+    "memory_id": "m25",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m27",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m27",
+    "field": "CONSTRAINT.meeting_time",
+    "memory_id": "m27",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m28",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m28",
+    "field": "PERSON.travel_party",
+    "memory_id": "m28",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m28",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m28",
+    "field": "SCENARIO.trip_type",
+    "memory_id": "m28",
+    "rule_index": 1
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m29",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m29",
+    "field": "PERSON.social_party",
+    "memory_id": "m29",
+    "rule_index": 0
+  },
+  {
+    "axis_relevance": "Explicit qualifier or condition in source text; sparse profile rule retained.",
+    "case_id": "m30",
+    "evidence_kind": "SOURCE_TEXT",
+    "evidence_ref": "memory:m30",
+    "field": "LOCATION.area_noise",
+    "memory_id": "m30",
+    "rule_index": 0
+  }
+]

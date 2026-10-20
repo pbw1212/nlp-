@@ -1,0 +1,1563 @@
+[
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\scripts\\__pycache__\\__init__.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\scripts\\__pycache__\\__init__.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\scripts\\__pycache__\\main_agent_semantic_eval.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\scripts\\__pycache__\\main_agent_semantic_eval.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\scripts\\__pycache__\\personal_agent_app_server.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\scripts\\__pycache__\\personal_agent_app_server.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\scripts\\__pycache__\\task2_applicability_acceptance.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\scripts\\__pycache__\\task2_applicability_acceptance.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\scripts\\__pycache__\\task2_eval_support.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\scripts\\__pycache__\\task2_eval_support.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\scripts\\__pycache__\\task2_interpretation_eval_support.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\scripts\\__pycache__\\task2_interpretation_eval_support.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\scripts\\__pycache__\\task2_recall_acceptance.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\scripts\\__pycache__\\task2_recall_acceptance.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\scripts\\__pycache__\\task2_retrieval_eval_support.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\scripts\\__pycache__\\task2_retrieval_eval_support.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\scripts\\__pycache__\\task2_semantic_hardening_eval.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\scripts\\__pycache__\\task2_semantic_hardening_eval.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\__pycache__\\__init__.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\__pycache__\\__init__.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\agent\\__pycache__\\__init__.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\agent\\__pycache__\\__init__.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\agent\\__pycache__\\journal.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\agent\\__pycache__\\journal.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\agent\\__pycache__\\loop.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\agent\\__pycache__\\loop.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\agent\\__pycache__\\main_agent.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\agent\\__pycache__\\main_agent.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\agent\\__pycache__\\models.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\agent\\__pycache__\\models.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\agent\\__pycache__\\prompt_composer.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\agent\\__pycache__\\prompt_composer.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\agent\\__pycache__\\reasoner.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\agent\\__pycache__\\reasoner.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\agent\\__pycache__\\tooling.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\agent\\__pycache__\\tooling.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\api\\__pycache__\\memory_manager.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\api\\__pycache__\\memory_manager.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\app\\__pycache__\\__init__.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\app\\__pycache__\\__init__.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\app\\__pycache__\\console.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\app\\__pycache__\\console.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\app\\__pycache__\\mcp.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\app\\__pycache__\\mcp.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\app\\__pycache__\\serialization.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\app\\__pycache__\\serialization.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\app\\__pycache__\\storage.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\app\\__pycache__\\storage.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\app\\__pycache__\\tools.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\app\\__pycache__\\tools.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\app\\__pycache__\\workspace.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\app\\__pycache__\\workspace.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\conversation\\__pycache__\\__init__.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\conversation\\__pycache__\\__init__.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\conversation\\__pycache__\\context_manager.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\conversation\\__pycache__\\context_manager.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\conversation\\__pycache__\\models.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\conversation\\__pycache__\\models.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\conversation\\__pycache__\\repository.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\conversation\\__pycache__\\repository.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\core\\__pycache__\\config.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\core\\__pycache__\\config.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\core\\__pycache__\\diagnostics.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\core\\__pycache__\\diagnostics.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\core\\__pycache__\\errors.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\core\\__pycache__\\errors.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\core\\__pycache__\\paths.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\core\\__pycache__\\paths.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\core\\__pycache__\\schema.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\core\\__pycache__\\schema.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\lifecycle\\__pycache__\\consolidation.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\lifecycle\\__pycache__\\consolidation.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\lifecycle\\__pycache__\\crud_engine.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\lifecycle\\__pycache__\\crud_engine.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\lifecycle\\__pycache__\\nemori_distiller.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\lifecycle\\__pycache__\\nemori_distiller.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\llm\\__pycache__\\errors.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\llm\\__pycache__\\errors.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\llm\\__pycache__\\llm_client.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\llm\\__pycache__\\llm_client.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\__init__.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\__init__.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\assertions.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\assertions.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\models.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\models.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\observer.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\observer.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\runner.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\runner.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\scenarios.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\product_trial\\__pycache__\\scenarios.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\__init__.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\__init__.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\applicability_metrics.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\applicability_metrics.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\applicability_models.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\applicability_models.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\applicability_ontology.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\applicability_ontology.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\applicability.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\applicability.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\dense.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\dense.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\embedding.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\embedding.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\evidence.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\evidence.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\facade.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\facade.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\graph.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\graph.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\hybrid.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\hybrid.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\interpretation_models.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\interpretation_models.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\interpretation_provider.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\interpretation_provider.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\interpreters.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\interpreters.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\lexical.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\lexical.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\metrics.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\metrics.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\models.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\models.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\protocols.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\protocols.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\recall.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\recall.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\rerank.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\rerank.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\semantic_pipeline.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\semantic_pipeline.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\tokenizer.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\retrieval\\__pycache__\\tokenizer.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\router\\__pycache__\\memory_router.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\router\\__pycache__\\memory_router.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\runtime\\__pycache__\\__init__.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\runtime\\__pycache__\\__init__.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\runtime\\__pycache__\\adapter.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\runtime\\__pycache__\\adapter.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\runtime\\__pycache__\\agent_runtime.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\runtime\\__pycache__\\agent_runtime.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\runtime\\__pycache__\\builder.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\runtime\\__pycache__\\builder.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\runtime\\__pycache__\\config.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\runtime\\__pycache__\\config.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\runtime\\__pycache__\\errors.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\runtime\\__pycache__\\errors.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\runtime\\__pycache__\\events.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\runtime\\__pycache__\\events.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\runtime\\__pycache__\\models.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\runtime\\__pycache__\\models.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\runtime\\__pycache__\\task_router.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\runtime\\__pycache__\\task_router.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\storage\\__pycache__\\repository.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\storage\\__pycache__\\repository.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\storage\\__pycache__\\sqlite_manager.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\storage\\__pycache__\\sqlite_manager.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\storage\\__pycache__\\sqlite_utils.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\storage\\__pycache__\\sqlite_utils.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\storage\\__pycache__\\vector_store.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\storage\\__pycache__\\vector_store.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\task_state\\__pycache__\\__init__.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\task_state\\__pycache__\\__init__.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\task_state\\__pycache__\\context.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\task_state\\__pycache__\\context.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\task_state\\__pycache__\\interpreter.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\task_state\\__pycache__\\interpreter.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\task_state\\__pycache__\\maintenance.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\task_state\\__pycache__\\maintenance.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\task_state\\__pycache__\\models.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\task_state\\__pycache__\\models.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\task_state\\__pycache__\\repository.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\task_state\\__pycache__\\repository.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\task_state\\__pycache__\\service.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\task_state\\__pycache__\\service.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\src\\memory\\task_state\\__pycache__\\updater.cpython-313.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\src\\memory\\task_state\\__pycache__\\updater.cpython-313.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\conftest.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\conftest.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_agent_events.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_agent_events.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_agent_runtime.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_agent_runtime.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_app_server_protocol.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_app_server_protocol.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_applicability_benchmark.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_applicability_benchmark.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_applicability_evaluation.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_applicability_evaluation.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_applicability_ontology.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_applicability_ontology.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_applicability.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_applicability.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_conversation_session.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_conversation_session.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_evidence_pipeline.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_evidence_pipeline.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_failure_truthfulness.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_failure_truthfulness.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_ingestion_journal.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_ingestion_journal.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_interpretation_evaluation.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_interpretation_evaluation.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_lifecycle.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_lifecycle.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_local_tools.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_local_tools.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_main_agent.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_main_agent.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_maintenance_regressions.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_maintenance_regressions.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_mcp.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_mcp.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_migration.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_migration.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_personal_agent_app.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_personal_agent_app.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_post_freeze_production_fixes.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_post_freeze_production_fixes.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_product_trial_harness.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_product_trial_harness.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_provider_modes.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_provider_modes.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_recall_benchmark.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_recall_benchmark.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_recall.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_recall.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_retrieval_backends.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_retrieval_backends.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_retrieval_enhancements.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_retrieval_enhancements.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_retrieval_evaluation.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_retrieval_evaluation.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_revisions.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_revisions.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_runtime_integration_hardening.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_runtime_integration_hardening.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_semantic_eval_harness.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_semantic_eval_harness.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_semantic_interpretation.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_semantic_interpretation.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_sqlite_integrity.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_sqlite_integrity.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_storage.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_storage.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_task_state_maintenance.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_task_state_maintenance.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_task_state_updates.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_task_state_updates.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_task_state.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_task_state.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_task3d_final.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_task3d_final.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_web_tools.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_web_tools.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\tests\\__pycache__\\test_workspace_scope.cpython-313-pytest-8.3.4.pyc",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\tests\\__pycache__\\test_workspace_scope.cpython-313-pytest-8.3.4.pyc"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\.pytest_cache\\.gitignore",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\.pytest_cache\\.gitignore"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\.pytest_cache\\CACHEDIR.TAG",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\.pytest_cache\\CACHEDIR.TAG"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\.pytest_cache\\README.md",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\.pytest_cache\\README.md"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\.pytest_cache\\v\\cache\\lastfailed",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\.pytest_cache\\v\\cache\\lastfailed"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\.pytest_cache\\v\\cache\\nodeids",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\.pytest_cache\\v\\cache\\nodeids"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\.pytest_cache\\v\\cache\\stepwise",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\.pytest_cache\\v\\cache\\stepwise"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\__init__.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\__init__.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\agent\\__init__.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\agent\\__init__.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\agent\\journal.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\agent\\journal.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\agent\\loop.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\agent\\loop.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\agent\\main_agent.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\agent\\main_agent.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\agent\\models.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\agent\\models.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\agent\\prompt_composer.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\agent\\prompt_composer.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\agent\\reasoner.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\agent\\reasoner.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\agent\\tooling.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\agent\\tooling.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\api\\memory_manager.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\api\\memory_manager.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\app\\__init__.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\app\\__init__.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\app\\console.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\app\\console.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\app\\mcp.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\app\\mcp.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\app\\serialization.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\app\\serialization.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\app\\storage.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\app\\storage.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\app\\tools.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\app\\tools.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\app\\workspace.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\app\\workspace.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\conversation\\__init__.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\conversation\\__init__.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\conversation\\context_manager.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\conversation\\context_manager.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\conversation\\models.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\conversation\\models.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\conversation\\repository.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\conversation\\repository.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\core\\config.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\core\\config.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\core\\diagnostics.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\core\\diagnostics.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\core\\errors.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\core\\errors.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\core\\paths.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\core\\paths.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\core\\schema.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\core\\schema.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\lifecycle\\consolidation.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\lifecycle\\consolidation.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\lifecycle\\crud_engine.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\lifecycle\\crud_engine.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\lifecycle\\nemori_distiller.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\lifecycle\\nemori_distiller.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\llm\\errors.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\llm\\errors.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\llm\\llm_client.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\llm\\llm_client.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\product_trial\\__init__.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\product_trial\\__init__.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\product_trial\\assertions.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\product_trial\\assertions.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\product_trial\\extended_scenarios.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\product_trial\\extended_scenarios.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\product_trial\\models.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\product_trial\\models.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\product_trial\\observer.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\product_trial\\observer.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\product_trial\\runner.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\product_trial\\runner.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\product_trial\\scenarios.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\product_trial\\scenarios.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\__init__.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\__init__.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\applicability_metrics.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\applicability_metrics.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\applicability_models.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\applicability_models.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\applicability_ontology.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\applicability_ontology.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\applicability.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\applicability.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\dense.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\dense.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\embedding.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\embedding.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\evidence.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\evidence.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\facade.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\facade.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\graph.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\graph.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\hybrid.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\hybrid.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\interpretation_models.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\interpretation_models.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\interpretation_provider.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\interpretation_provider.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\interpreters.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\interpreters.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\lexical.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\lexical.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\metrics.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\metrics.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\models.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\models.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\protocols.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\protocols.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\recall.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\recall.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\rerank.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\rerank.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\semantic_pipeline.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\semantic_pipeline.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\retrieval\\tokenizer.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\retrieval\\tokenizer.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\router\\memory_router.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\router\\memory_router.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\runtime\\__init__.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\runtime\\__init__.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\runtime\\adapter.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\runtime\\adapter.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\runtime\\agent_runtime.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\runtime\\agent_runtime.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\runtime\\builder.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\runtime\\builder.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\runtime\\config.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\runtime\\config.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\runtime\\errors.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\runtime\\errors.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\runtime\\events.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\runtime\\events.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\runtime\\models.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\runtime\\models.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\runtime\\task_router.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\runtime\\task_router.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\storage\\repository.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\storage\\repository.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\storage\\sqlite_manager.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\storage\\sqlite_manager.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\storage\\sqlite_utils.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\storage\\sqlite_utils.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\storage\\vector_store.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\storage\\vector_store.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\task_state\\__init__.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\task_state\\__init__.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\task_state\\context.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\task_state\\context.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\task_state\\interpreter.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\task_state\\interpreter.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\task_state\\maintenance.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\task_state\\maintenance.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\task_state\\models.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\task_state\\models.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\task_state\\repository.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\task_state\\repository.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\task_state\\service.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\task_state\\service.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\build\\lib\\src\\memory\\task_state\\updater.py",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\build\\lib\\src\\memory\\task_state\\updater.py"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\mapas_agent_memory.egg-info\\dependency_links.txt",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\mapas_agent_memory.egg-info\\dependency_links.txt"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\mapas_agent_memory.egg-info\\PKG-INFO",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\mapas_agent_memory.egg-info\\PKG-INFO"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\mapas_agent_memory.egg-info\\requires.txt",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\mapas_agent_memory.egg-info\\requires.txt"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\mapas_agent_memory.egg-info\\SOURCES.txt",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\mapas_agent_memory.egg-info\\SOURCES.txt"
+  },
+  {
+    "affects_runtime": false,
+    "archive_path": "D:\\MAPAS-maintenance-archive-20261014\\verification-artifacts\\MAPAS\\code\\mapas_agent_memory.egg-info\\top_level.txt",
+    "operation": "archive",
+    "reason": "C: final validation cache or build output",
+    "file": "MAPAS\\code\\mapas_agent_memory.egg-info\\top_level.txt"
+  }
+]

@@ -1,0 +1,715 @@
+{
+  "context_gold": [
+    {
+      "case_id": "dc_friends_hike",
+      "values": [
+        [
+          "PERSON",
+          "travel_party",
+          "KNOWN",
+          [
+            "friends"
+          ]
+        ],
+        [
+          "SCENARIO",
+          "activity",
+          "KNOWN",
+          [
+            "hiking"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "parking",
+          "KNOWN",
+          [
+            "required"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_company_trip",
+      "values": [
+        [
+          "TASK",
+          "trip_type",
+          "KNOWN",
+          [
+            "business_trip"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "KNOWN",
+          [
+            "company"
+          ]
+        ],
+        [
+          "LOCATION",
+          "destination",
+          "KNOWN",
+          [
+            "london"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_intent_only",
+      "values": []
+    },
+    {
+      "case_id": "dc_ambiguous_payment",
+      "values": [
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "AMBIGUOUS",
+          [
+            "company",
+            "self"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_unknown_payment",
+      "values": [
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "UNKNOWN",
+          []
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_family_pet",
+      "values": [
+        [
+          "PERSON",
+          "travel_party",
+          "KNOWN",
+          [
+            "family"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "pet",
+          "KNOWN",
+          [
+            "required"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_mixed_destination",
+      "values": [
+        [
+          "PERSON",
+          "travel_party",
+          "KNOWN",
+          [
+            "colleagues"
+          ]
+        ],
+        [
+          "LOCATION",
+          "destination",
+          "KNOWN",
+          [
+            "shanghai"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "KNOWN",
+          [
+            "company"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_no_drive",
+      "values": [
+        [
+          "SCENARIO",
+          "transport_mode",
+          "KNOWN",
+          [
+            "not_driving"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "parking",
+          "KNOWN",
+          [
+            "not_required"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_solo_budget",
+      "values": [
+        [
+          "PERSON",
+          "travel_party",
+          "KNOWN",
+          [
+            "solo"
+          ]
+        ],
+        [
+          "LOCATION",
+          "destination",
+          "KNOWN",
+          [
+            "shanghai"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "KNOWN",
+          [
+            "self"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_weekend_morning",
+      "values": [
+        [
+          "TIME",
+          "day_type",
+          "KNOWN",
+          [
+            "weekend"
+          ]
+        ],
+        [
+          "TIME",
+          "departure",
+          "UNKNOWN",
+          []
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_breakfast_bare",
+      "values": []
+    },
+    {
+      "case_id": "dc_breakfast_work",
+      "values": [
+        [
+          "TASK",
+          "trip_type",
+          "KNOWN",
+          [
+            "business_trip"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_breakfast_general",
+      "values": [
+        [
+          "LOCATION",
+          "destination",
+          "KNOWN",
+          [
+            "anywhere"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_correction",
+      "values": [
+        [
+          "PERSON",
+          "travel_party",
+          "KNOWN",
+          [
+            "solo"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_negation",
+      "values": [
+        [
+          "CONSTRAINT",
+          "dietary_restriction",
+          "KNOWN",
+          [
+            "peanut"
+          ]
+        ],
+        [
+          "CONSTRAINT",
+          "parking",
+          "KNOWN",
+          [
+            "not_required"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_target_not_scope",
+      "values": []
+    },
+    {
+      "case_id": "dc_scope_axis",
+      "values": [
+        [
+          "TASK",
+          "trip_type",
+          "KNOWN",
+          [
+            "business_trip"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_shopping",
+      "values": [
+        [
+          "TASK",
+          "shopping_category",
+          "KNOWN",
+          [
+            "running shoes"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_schedule",
+      "values": [
+        [
+          "TIME",
+          "day_type",
+          "KNOWN",
+          [
+            "workday"
+          ]
+        ],
+        [
+          "TASK",
+          "meeting_mode",
+          "KNOWN",
+          [
+            "online"
+          ]
+        ]
+      ]
+    },
+    {
+      "case_id": "dc_missing",
+      "values": [
+        [
+          "LOCATION",
+          "destination",
+          "UNKNOWN",
+          []
+        ],
+        [
+          "PERSON",
+          "travel_party",
+          "UNKNOWN",
+          []
+        ]
+      ]
+    }
+  ],
+  "pair_gold": [
+    [
+      "dp_00",
+      "MATCH"
+    ],
+    [
+      "dp_01",
+      "MATCH"
+    ],
+    [
+      "dp_02",
+      "MATCH"
+    ],
+    [
+      "dp_03",
+      "MATCH"
+    ],
+    [
+      "dp_04",
+      "MATCH"
+    ],
+    [
+      "dp_05",
+      "MATCH"
+    ],
+    [
+      "dp_06",
+      "MATCH"
+    ],
+    [
+      "dp_07",
+      "MATCH"
+    ],
+    [
+      "dp_08",
+      "MATCH"
+    ],
+    [
+      "dp_09",
+      "MATCH"
+    ]
+  ],
+  "schema_version": 2,
+  "scope_gold": [
+    {
+      "case_id": "dm_friends_hike",
+      "rules": [
+        [
+          "PERSON",
+          "travel_party",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "friends"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "SCENARIO",
+          "activity",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "hiking"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "CONSTRAINT",
+          "parking",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "required"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_company_trip",
+      "rules": [
+        [
+          "TASK",
+          "trip_type",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "business_trip"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "company"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "LOCATION",
+          "destination",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "london"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_intent_only",
+      "rules": []
+    },
+    {
+      "case_id": "dm_ambiguous_payment",
+      "rules": []
+    },
+    {
+      "case_id": "dm_unknown_payment",
+      "rules": []
+    },
+    {
+      "case_id": "dm_family_pet",
+      "rules": [
+        [
+          "PERSON",
+          "travel_party",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "family"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "CONSTRAINT",
+          "pet",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "required"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_mixed_destination",
+      "rules": [
+        [
+          "PERSON",
+          "travel_party",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "colleagues"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "LOCATION",
+          "destination",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "shanghai"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "company"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_no_drive",
+      "rules": [
+        [
+          "SCENARIO",
+          "transport_mode",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "not_driving"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "CONSTRAINT",
+          "parking",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "not_required"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_solo_budget",
+      "rules": [
+        [
+          "PERSON",
+          "travel_party",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "solo"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "LOCATION",
+          "destination",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "shanghai"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "CONSTRAINT",
+          "payment_source",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "self"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_weekend_morning",
+      "rules": [
+        [
+          "TIME",
+          "day_type",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "weekend"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_breakfast_bare",
+      "rules": []
+    },
+    {
+      "case_id": "dm_breakfast_work",
+      "rules": [
+        [
+          "TASK",
+          "trip_type",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "business_trip"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_breakfast_general",
+      "rules": [
+        [
+          "LOCATION",
+          "destination",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "anywhere"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_correction",
+      "rules": [
+        [
+          "PERSON",
+          "travel_party",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "solo"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_negation",
+      "rules": [
+        [
+          "CONSTRAINT",
+          "dietary_restriction",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "peanut"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "CONSTRAINT",
+          "parking",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "not_required"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_target_not_scope",
+      "rules": []
+    },
+    {
+      "case_id": "dm_scope_axis",
+      "rules": [
+        [
+          "TASK",
+          "trip_type",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "business_trip"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_shopping",
+      "rules": [
+        [
+          "TASK",
+          "shopping_category",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "running shoes"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_schedule",
+      "rules": [
+        [
+          "TIME",
+          "day_type",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "workday"
+          ],
+          "REQUIRES"
+        ],
+        [
+          "TASK",
+          "meeting_mode",
+          "EXPLICIT_CONSTRAINT",
+          [
+            "online"
+          ],
+          "REQUIRES"
+        ]
+      ]
+    },
+    {
+      "case_id": "dm_missing",
+      "rules": []
+    }
+  ]
+}

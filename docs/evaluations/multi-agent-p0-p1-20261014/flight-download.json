@@ -1,0 +1,13 @@
+{
+  "source_folder": "https://drive.google.com/drive/folders/1fHBg6Ro4bSbTBgxeQZ6piYNtmqy8a_kK",
+  "file_id": "1dNtxHFv7k0PeMHI0smZk8t-dBlWLA0Gz",
+  "display_size": "291M",
+  "byte_limit": 350000000,
+  "full_file_downloaded": false,
+  "status": "RESOURCE_LIMIT",
+  "error_type": "ValueError",
+  "http_status": null,
+  "partial_bytes": 22020096,
+  "partial_kept_out_of_database": true,
+  "reason": "300-second download cap exceeded"
+}

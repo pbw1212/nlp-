@@ -1,0 +1,279 @@
+{
+  "contexts": [
+    {
+      "case_id": "hc_friends_hike",
+      "language": "zh",
+      "text": "周末我和几个朋友开车去山里徒步，必须方便停车。"
+    },
+    {
+      "case_id": "hc_company_trip",
+      "language": "en",
+      "text": "This is a company-paid business trip to London."
+    },
+    {
+      "case_id": "hc_intent_only",
+      "language": "zh",
+      "text": "帮我找一家酒店。"
+    },
+    {
+      "case_id": "hc_ambiguous_payment",
+      "language": "mixed",
+      "text": "费用可能 company paid，也可能 self-paid。"
+    },
+    {
+      "case_id": "hc_unknown_payment",
+      "language": "en",
+      "text": "The payment source is relevant, but I do not know who will pay yet."
+    },
+    {
+      "case_id": "hc_family_pet",
+      "language": "en",
+      "text": "I am travelling with my family and need a pet-friendly hotel."
+    },
+    {
+      "case_id": "hc_mixed_destination",
+      "language": "mixed",
+      "text": "和 colleagues 去 Shanghai 出差，酒店由公司付款。"
+    },
+    {
+      "case_id": "hc_no_drive",
+      "language": "zh",
+      "text": "这次不开车，不需要停车位。"
+    },
+    {
+      "case_id": "hc_solo_budget",
+      "language": "zh",
+      "text": "我独自去上海，预算由自己承担。"
+    },
+    {
+      "case_id": "hc_weekend_morning",
+      "language": "en",
+      "text": "We need to leave early on the weekend; the exact time is unknown."
+    },
+    {
+      "case_id": "hc_breakfast_bare",
+      "language": "zh",
+      "text": "我喜欢早餐丰富的酒店。"
+    },
+    {
+      "case_id": "hc_breakfast_work",
+      "language": "en",
+      "text": "I like rich hotel breakfasts when traveling for work."
+    },
+    {
+      "case_id": "hc_breakfast_general",
+      "language": "mixed",
+      "text": "不管去哪，breakfast 都要丰富。"
+    },
+    {
+      "case_id": "hc_correction",
+      "language": "zh",
+      "text": "原本和朋友去，后来改成我自己去。"
+    },
+    {
+      "case_id": "hc_negation",
+      "language": "en",
+      "text": "No peanuts are allowed, and parking is not required."
+    },
+    {
+      "case_id": "hc_target_not_scope",
+      "language": "zh",
+      "text": "我喜欢安静的房间。"
+    },
+    {
+      "case_id": "hc_scope_axis",
+      "language": "en",
+      "text": "I prefer quiet rooms when traveling for work."
+    },
+    {
+      "case_id": "hc_shopping",
+      "language": "mixed",
+      "text": "周末去买 running shoes，不限品牌。"
+    },
+    {
+      "case_id": "hc_schedule",
+      "language": "zh",
+      "text": "工作日早上开会，会议是 online。"
+    },
+    {
+      "case_id": "hc_missing",
+      "language": "en",
+      "text": "I need a place to stay, but the destination and party are undecided."
+    }
+  ],
+  "memories": [
+    {
+      "case_id": "hm_friends_hike",
+      "language": "zh",
+      "memory_id": "hm_friends_hike",
+      "text": "周末我和几个朋友开车去山里徒步，必须方便停车。"
+    },
+    {
+      "case_id": "hm_company_trip",
+      "language": "en",
+      "memory_id": "hm_company_trip",
+      "text": "This is a company-paid business trip to London."
+    },
+    {
+      "case_id": "hm_intent_only",
+      "language": "zh",
+      "memory_id": "hm_intent_only",
+      "text": "帮我找一家酒店。"
+    },
+    {
+      "case_id": "hm_ambiguous_payment",
+      "language": "mixed",
+      "memory_id": "hm_ambiguous_payment",
+      "text": "费用可能 company paid，也可能 self-paid。"
+    },
+    {
+      "case_id": "hm_unknown_payment",
+      "language": "en",
+      "memory_id": "hm_unknown_payment",
+      "text": "The payment source is relevant, but I do not know who will pay yet."
+    },
+    {
+      "case_id": "hm_family_pet",
+      "language": "en",
+      "memory_id": "hm_family_pet",
+      "text": "I am travelling with my family and need a pet-friendly hotel."
+    },
+    {
+      "case_id": "hm_mixed_destination",
+      "language": "mixed",
+      "memory_id": "hm_mixed_destination",
+      "text": "和 colleagues 去 Shanghai 出差，酒店由公司付款。"
+    },
+    {
+      "case_id": "hm_no_drive",
+      "language": "zh",
+      "memory_id": "hm_no_drive",
+      "text": "这次不开车，不需要停车位。"
+    },
+    {
+      "case_id": "hm_solo_budget",
+      "language": "zh",
+      "memory_id": "hm_solo_budget",
+      "text": "我独自去上海，预算由自己承担。"
+    },
+    {
+      "case_id": "hm_weekend_morning",
+      "language": "en",
+      "memory_id": "hm_weekend_morning",
+      "text": "We need to leave early on the weekend; the exact time is unknown."
+    },
+    {
+      "case_id": "hm_breakfast_bare",
+      "language": "zh",
+      "memory_id": "hm_breakfast_bare",
+      "text": "我喜欢早餐丰富的酒店。"
+    },
+    {
+      "case_id": "hm_breakfast_work",
+      "language": "en",
+      "memory_id": "hm_breakfast_work",
+      "text": "I like rich hotel breakfasts when traveling for work."
+    },
+    {
+      "case_id": "hm_breakfast_general",
+      "language": "mixed",
+      "memory_id": "hm_breakfast_general",
+      "text": "不管去哪，breakfast 都要丰富。"
+    },
+    {
+      "case_id": "hm_correction",
+      "language": "zh",
+      "memory_id": "hm_correction",
+      "text": "原本和朋友去，后来改成我自己去。"
+    },
+    {
+      "case_id": "hm_negation",
+      "language": "en",
+      "memory_id": "hm_negation",
+      "text": "No peanuts are allowed, and parking is not required."
+    },
+    {
+      "case_id": "hm_target_not_scope",
+      "language": "zh",
+      "memory_id": "hm_target_not_scope",
+      "text": "我喜欢安静的房间。"
+    },
+    {
+      "case_id": "hm_scope_axis",
+      "language": "en",
+      "memory_id": "hm_scope_axis",
+      "text": "I prefer quiet rooms when traveling for work."
+    },
+    {
+      "case_id": "hm_shopping",
+      "language": "mixed",
+      "memory_id": "hm_shopping",
+      "text": "周末去买 running shoes，不限品牌。"
+    },
+    {
+      "case_id": "hm_schedule",
+      "language": "zh",
+      "memory_id": "hm_schedule",
+      "text": "工作日早上开会，会议是 online。"
+    },
+    {
+      "case_id": "hm_missing",
+      "language": "en",
+      "memory_id": "hm_missing",
+      "text": "I need a place to stay, but the destination and party are undecided."
+    }
+  ],
+  "pairs": [
+    {
+      "context_case_id": "hc_friends_hike",
+      "memory_case_id": "hm_friends_hike",
+      "pair_id": "hp_00"
+    },
+    {
+      "context_case_id": "hc_company_trip",
+      "memory_case_id": "hm_company_trip",
+      "pair_id": "hp_01"
+    },
+    {
+      "context_case_id": "hc_intent_only",
+      "memory_case_id": "hm_intent_only",
+      "pair_id": "hp_02"
+    },
+    {
+      "context_case_id": "hc_ambiguous_payment",
+      "memory_case_id": "hm_ambiguous_payment",
+      "pair_id": "hp_03"
+    },
+    {
+      "context_case_id": "hc_unknown_payment",
+      "memory_case_id": "hm_unknown_payment",
+      "pair_id": "hp_04"
+    },
+    {
+      "context_case_id": "hc_family_pet",
+      "memory_case_id": "hm_family_pet",
+      "pair_id": "hp_05"
+    },
+    {
+      "context_case_id": "hc_mixed_destination",
+      "memory_case_id": "hm_mixed_destination",
+      "pair_id": "hp_06"
+    },
+    {
+      "context_case_id": "hc_no_drive",
+      "memory_case_id": "hm_no_drive",
+      "pair_id": "hp_07"
+    },
+    {
+      "context_case_id": "hc_solo_budget",
+      "memory_case_id": "hm_solo_budget",
+      "pair_id": "hp_08"
+    },
+    {
+      "context_case_id": "hc_weekend_morning",
+      "memory_case_id": "hm_weekend_morning",
+      "pair_id": "hp_09"
+    }
+  ],
+  "schema_version": 2
+}

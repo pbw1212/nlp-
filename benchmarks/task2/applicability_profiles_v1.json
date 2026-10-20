@@ -1,0 +1,40 @@
+{
+  "label": "deterministic engineering applicability annotations; not Task 1 data or a research benchmark",
+  "profiles": [
+    {
+      "memory_id": "app_solo_shanghai",
+      "rules": [
+        {"dimension": "LOCATION", "field": "location", "scope_state": "EXPLICIT_CONSTRAINT", "values": ["Shanghai"], "evidence_refs": ["profile:location"]},
+        {"dimension": "SCENARIO", "field": "trip_scenario", "scope_state": "EXPLICIT_CONSTRAINT", "values": ["solo_travel"], "evidence_refs": ["profile:trip_scenario"]}
+      ]
+    },
+    {
+      "memory_id": "app_friends_hiking",
+      "rules": [
+        {"dimension": "PERSON", "field": "travel_party", "scope_state": "EXPLICIT_CONSTRAINT", "values": ["friends"], "evidence_refs": ["profile:travel_party"]},
+        {"dimension": "LOCATION", "field": "location", "scope_state": "EXPLICIT_CONSTRAINT", "values": ["mountain"], "evidence_refs": ["profile:location"]},
+        {"dimension": "SCENARIO", "field": "trip_scenario", "scope_state": "EXPLICIT_CONSTRAINT", "values": ["hiking_trip"], "evidence_refs": ["profile:trip_scenario"]}
+      ]
+    },
+    {
+      "memory_id": "app_business_hotel",
+      "rules": [
+        {"dimension": "TASK", "field": "trip_task", "scope_state": "EXPLICIT_CONSTRAINT", "values": ["business_trip"], "evidence_refs": ["profile:trip_task"]},
+        {"dimension": "CONSTRAINT", "field": "payment_source", "scope_state": "EXPLICIT_CONSTRAINT", "operator": "REQUIRES", "values": ["company"], "evidence_refs": ["profile:payment_source"]}
+      ]
+    },
+    {
+      "memory_id": "app_general_transport",
+      "rules": [
+        {"dimension": "LOCATION", "field": "location", "scope_state": "EXPLICIT_GENERAL", "evidence_refs": ["profile:explicit_any_location"]}
+      ]
+    },
+    {"memory_id": "app_breakfast", "rules": []},
+    {
+      "memory_id": "app_no_peanuts",
+      "rules": [
+        {"dimension": "CONSTRAINT", "field": "meal_ingredients", "scope_state": "EXPLICIT_CONSTRAINT", "operator": "EXCLUDES", "values": ["peanuts"], "evidence_refs": ["profile:meal_ingredients"]}
+      ]
+    }
+  ]
+}

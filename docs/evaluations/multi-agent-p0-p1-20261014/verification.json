@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-14",
+  "baseline_head": "425bb9da3764ae4a54b473d036d3484a65f8b0bc",
+  "baseline": {
+    "tests": 411,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 410
+  },
+  "final": {
+    "tests": 433,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 432
+  },
+  "new_collaboration_tests": 22,
+  "ruff": "passed on new collaboration modules, scripts and tests",
+  "black": "passed on same files",
+  "cli_jsonl_help": "passed",
+  "wheel": {
+    "name": "mapas_agent_memory-0.1.0-py3-none-any.whl",
+    "sha256": "7092d8697af8e0e308083ad48ed53dd974d41c3f0be6f9a6852e6b06add347c7",
+    "new_modules_included": 6,
+    "packaged_sources_match_worktree": true
+  },
+  "environment": {
+    "python": "3.13.5",
+    "os": "Windows",
+    "sqlite": "3.45.3",
+    "dependencies": {
+      "pytest": "8.3.4",
+      "jsonschema": "4.23.0",
+      "pandas": "2.2.3",
+      "numpy": "2.1.3",
+      "requests": "2.32.3"
+    }
+  },
+  "code_hashes": {
+    "code/src/memory/collaboration/budget.py": "648d616c34eb7e3776e58d295433263c7b204aac54ec96e9e9582a601041a513",
+    "code/src/memory/collaboration/coordinator.py": "4f14f6284b4b08d4f4ee6f1b08d17a20c59de259c0233c1394a1d1b700c6557c",
+    "code/src/memory/collaboration/models.py": "de35380c0dd57e8afdbb2164a7cc2f137b4eea0a0d3edf7ed3530de2dc90299f",
+    "code/src/memory/collaboration/repository.py": "221223eaa08df50257d74f09f3624395f3aecdd6d06cca56994f88571afc966d",
+    "code/src/memory/collaboration/roles.py": "144e02751b1adb361522edfbac0d811f882d0592c5ef7e9e4f217477a75facae",
+    "code/src/memory/collaboration/__init__.py": "34d02312caf535372a1efc23820f383c597d3e3e58df32e43549e8f317ff863c",
+    "code/src/memory/agent/main_agent.py": "51740d2c359fd305ed1b1eebeadd22b752999435c06b1032cdad77231611c1f8",
+    "code/src/memory/app/console.py": "3503a8fa60f03745b09706c53e03161dc08195440a7008121855933f0554f460",
+    "code/scripts/personal_agent.py": "54b41b32ab8d81f387945fd4fa624bbbb30e17fc2462ec82b3fd781759b58a02",
+    "code/scripts/personal_agent_app_server.py": "dc3b7a8c994adfd735d84c0866603bb95edae2bd02dae3a2f8eaf1f9120c9929",
+    "code/scripts/collaboration_smoke.py": "c1c6928848dd7b0f30e3570e129d716673aea4ed92c40637175fd2fc9975bdff",
+    "code/scripts/memoryarena_resource_probe.py": "523bfc868965dd675771892c1337db99aff20271fc955f3437c7136171629f08",
+    "code/tests/test_collaboration.py": "f31da94bf01edd5917ab18f2372cdc7bdf021697e5dba289fb1e1dfaa6705077"
+  },
+  "live_smoke": {
+    "status": "passed",
+    "model_calls": 9,
+    "actual_input_plus_output_tokens": 17034,
+    "kind": "engineering integration, not official task-group benchmark",
+    "completed_before_subsequent_fault-boundary_regressions": true,
+    "returned_model_identity_retained": false
+  },
+  "phase_status": {
+    "P0_baseline": "complete",
+    "P0_full_travel_environment": "partial: flight download capped; partial file excluded",
+    "P1_minimal_collaboration": "implemented and validated",
+    "P2_to_P5": "not implemented"
+  },
+  "github_push_performed": false
+}

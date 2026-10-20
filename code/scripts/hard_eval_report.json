@@ -1,0 +1,113 @@
+{
+  "model": "glm-4-flash",
+  "total": 8,
+  "passed": 0,
+  "accuracy": 0.0,
+  "elapsed_seconds": 135.8,
+  "records": [
+    {
+      "qid": "H01",
+      "category": "H1 相似记忆干扰",
+      "question": "我下午想喝咖啡的话，按我的喜好你会推荐什么？",
+      "answer": "",
+      "memories": [],
+      "passed": false,
+      "reasons": [
+        "运行异常"
+      ],
+      "error": "RuntimeError: DeepSeek API 调用失败（重试 3 次）: HTTP Error 401: Unauthorized",
+      "manual_review": null
+    },
+    {
+      "qid": "H02",
+      "category": "H1 相似记忆干扰",
+      "question": "我周三晚上有什么安排？",
+      "answer": "",
+      "memories": [],
+      "passed": false,
+      "reasons": [
+        "运行异常"
+      ],
+      "error": "RuntimeError: DeepSeek API 调用失败（重试 3 次）: HTTP Error 401: Unauthorized",
+      "manual_review": null
+    },
+    {
+      "qid": "H03",
+      "category": "H2 细粒度纠正",
+      "question": "我的生日是哪天？",
+      "answer": "",
+      "memories": [],
+      "passed": false,
+      "reasons": [
+        "运行异常"
+      ],
+      "error": "RuntimeError: DeepSeek API 调用失败（重试 3 次）: HTTP Error 401: Unauthorized",
+      "manual_review": null
+    },
+    {
+      "qid": "H04",
+      "category": "H2 细粒度纠正",
+      "question": "我现在住在哪个城市？",
+      "answer": "",
+      "memories": [],
+      "passed": false,
+      "reasons": [
+        "运行异常"
+      ],
+      "error": "RuntimeError: DeepSeek API 调用失败（重试 3 次）: HTTP Error 401: Unauthorized",
+      "manual_review": null
+    },
+    {
+      "qid": "H05",
+      "category": "H3 多跳推理",
+      "question": "我导师的实验室在哪里？",
+      "answer": "",
+      "memories": [],
+      "passed": false,
+      "reasons": [
+        "运行异常"
+      ],
+      "error": "RuntimeError: DeepSeek API 调用失败（重试 3 次）: HTTP Error 401: Unauthorized",
+      "manual_review": null
+    },
+    {
+      "qid": "H06",
+      "category": "H4 模糊指代",
+      "question": "上次说的那个东西多少钱来着？",
+      "answer": "",
+      "memories": [],
+      "passed": false,
+      "reasons": [
+        "缺少要点 ['899']"
+      ],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "H07",
+      "category": "H5 负向断言",
+      "question": "帮我看看这份有花生酱的菜单我能吃吗？",
+      "answer": "",
+      "memories": [],
+      "passed": false,
+      "reasons": [
+        "运行异常"
+      ],
+      "error": "RuntimeError: DeepSeek API 调用失败（重试 3 次）: HTTP Error 401: Unauthorized",
+      "manual_review": null
+    },
+    {
+      "qid": "H08",
+      "category": "H6 长时序＋跨会话",
+      "question": "我的日本旅行定在几月？",
+      "answer": "",
+      "memories": [],
+      "passed": false,
+      "reasons": [
+        "运行异常"
+      ],
+      "error": "RuntimeError: DeepSeek API 调用失败（重试 3 次）: HTTP Error 401: Unauthorized",
+      "manual_review": null
+    }
+  ]
+}

@@ -1,0 +1,348 @@
+{
+  "model": "deepseek-chat",
+  "total": 19,
+  "passed": 18,
+  "accuracy": 0.9473684210526315,
+  "by_category": {
+    "A 显式记忆回忆": {
+      "passed": 4,
+      "total": 4
+    },
+    "B 对话自动记忆": {
+      "passed": 3,
+      "total": 3
+    },
+    "C 记忆更新纠正": {
+      "passed": 3,
+      "total": 3
+    },
+    "D 跨会话持久": {
+      "passed": 2,
+      "total": 2
+    },
+    "E 会话隔离": {
+      "passed": 2,
+      "total": 2
+    },
+    "F 适用性拦截": {
+      "passed": 3,
+      "total": 3
+    },
+    "G 多任务上下文": {
+      "passed": 1,
+      "total": 2
+    }
+  },
+  "elapsed_seconds": 100.7,
+  "api_calls": 93,
+  "records": [
+    {
+      "qid": "A01",
+      "category": "A 显式记忆回忆",
+      "question": "我有什么食物过敏吗？",
+      "answer": "根据您的记录，您对花生过敏。建议您在饮食中避免花生及含有花生成分的食品，并留意食品标签。",
+      "memories": [
+        {
+          "memory_id": "mem_cfd58613ab89",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我对花生过敏"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "A02",
+      "category": "A 显式记忆回忆",
+      "question": "我的生日是哪天？",
+      "answer": "你的生日是 3 月 14 日。",
+      "memories": [
+        {
+          "memory_id": "mem_cc548894876d",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我的生日是 3 月 14 日"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "A03",
+      "category": "A 显式记忆回忆",
+      "question": "我每周几打篮球？",
+      "answer": "根据您的记录，您每周三晚上打篮球。",
+      "memories": [
+        {
+          "memory_id": "mem_7e915bee3adf",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我每周三晚上打篮球"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "A04",
+      "category": "A 显式记忆回忆",
+      "question": "我的猫叫什么名字？",
+      "answer": "你的猫叫年糕，是一只橘猫。",
+      "memories": [
+        {
+          "memory_id": "mem_02a81782e4f9",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我的猫叫年糕，是一只橘猫"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "B01",
+      "category": "B 对话自动记忆",
+      "question": "我下个月要搬去哪个城市？",
+      "answer": "根据你之前提到的信息，你下个月要搬去**杭州**工作。",
+      "memories": [],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "B02",
+      "category": "B 对话自动记忆",
+      "question": "我最近在学习什么乐器？",
+      "answer": "根据我们之前的对话，你最近开始学习小提琴，并且每天坚持练习半小时。这是一个很好的习惯，持之以恒比偶尔长时间练习更有效。如果你需要，我可以帮你制定练习计划、记录进度或查找适合初学者的资料。",
+      "memories": [],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "B03",
+      "category": "B 对话自动记忆",
+      "question": "我喝咖啡有什么习惯？",
+      "answer": "根据你之前告诉我的，你喝咖啡的习惯是：不加糖。",
+      "memories": [],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "C01",
+      "category": "C 记忆更新纠正",
+      "question": "我现在吃香菜吗？",
+      "answer": "根据记忆，你现在不吃香菜了。",
+      "memories": [
+        {
+          "memory_id": "mem_870344f7f92f",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "用户现在不吃香菜了。"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "C02",
+      "category": "C 记忆更新纠正",
+      "question": "我的手机号是多少？",
+      "answer": "您的手机号是 13900002222。",
+      "memories": [
+        {
+          "memory_id": "mem_b3850c62ac0c",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我的手机号是 13900002222"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "C03",
+      "category": "C 记忆更新纠正",
+      "question": "我现在一般几点睡觉？",
+      "answer": "根据你之前的描述，从上个月开始你已经把睡觉时间调整到晚上十一点半了。所以你现在一般是晚上十一点半左右睡觉。",
+      "memories": [],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "D01",
+      "category": "D 跨会话持久",
+      "question": "我的项目名称叫什么？",
+      "answer": "你的项目名称叫北极星。",
+      "memories": [
+        {
+          "memory_id": "mem_34fcc54c8955",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我的项目名称叫北极星"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "D02",
+      "category": "D 跨会话持久",
+      "question": "我导师姓什么？",
+      "answer": "您的导师姓陈，是计算机学院的。",
+      "memories": [
+        {
+          "memory_id": "mem_6507f6777553",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我导师姓陈，是计算机学院的"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "E01",
+      "category": "E 会话隔离",
+      "question": "我的临时代号是什么？",
+      "answer": "抱歉，我目前没有关于您“临时代号”的任何信息。您可能是在其他系统或上下文中被分配了某个代号，但我这边并没有记录。如果您能提供更多背景（例如是在哪个平台、哪个任务中分配的），我可以帮您进一步查找或确认。",
+      "memories": [],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "E02",
+      "category": "E 会话隔离",
+      "question": "我的取件码是多少？",
+      "answer": "抱歉，我目前没有关于您取件码的任何信息。取件码通常由快递公司或驿站通过短信、App 推送等方式单独发送给您，我无法访问您的短信、快递账户或相关实时数据。\n\n建议您：\n1. 查看手机短信或快递 App（如菜鸟、丰巢、各快递公司官方应用）中的取件通知；\n2. 若在驿站/快递柜，可查看收到的取件码短信或凭条；\n3. 若找不到，可联系对应快递公司或驿站客服查询。\n\n如果您能提供更多上下文（例如快递单号、驿站名称等），我可以帮您整理查询思路，但无法直接获取您的取件码。",
+      "memories": [],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "F01",
+      "category": "F 适用性拦截",
+      "question": "推荐几个适合我和朋友一起徒步的地方？",
+      "answer": "为了给你推荐适合和朋友一起徒步的地方，我需要先了解一些信息，比如你所在的城市或计划出行的地区、期望的难度和时长、以及预算等。如果你能提供这些，我可以帮你搜索合适的路线。在没有具体信息前，我可以先给你一些通用的选择建议：\n\n1. **城市周边国家公园或自然保护区**：通常有成熟的步道，适合不同体能水平，且风景优美。\n2. **山地或丘陵地区**：如果喜欢挑战，可以选择有海拔变化的路线，但要注意天气和装备。\n3. **沿海或湖畔步道**：风景开阔，适合轻松徒步和社交。\n\n你可以告诉我你的具体位置或偏好，我再帮你查找更精确的推荐。",
+      "memories": [
+        {
+          "memory_id": "mem_fbd0e6cc15c5",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我喜欢独自去上海旅行"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "F02",
+      "category": "F 适用性拦截",
+      "question": "帮我看看这份甜品菜单有什么推荐？",
+      "answer": "我注意到您之前提到过“我不吃辣”，不过甜品菜单通常不涉及辣味，所以这一点可能不影响推荐。不过，您还没有提供具体的甜品菜单内容，我无法直接查看。请您将菜单内容（例如文字、图片或文件）发送给我，我会根据您的口味偏好（比如不吃辣、喜欢甜度适中或低糖等）为您推荐合适的甜品。",
+      "memories": [
+        {
+          "memory_id": "mem_3159fbeea90e",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我不吃辣"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "F03",
+      "category": "F 适用性拦截",
+      "question": "我的 MacBook 连不上打印机怎么办？",
+      "answer": "MacBook 连不上打印机，可以按以下步骤排查：\n\n1. **检查基础连接**：确认打印机已开机、指示灯正常，且与 MacBook 在同一 Wi-Fi 网络（无线打印机）或 USB 线连接牢固（有线打印机）。\n2. **查看系统设置**：打开「系统设置」→「打印机与扫描仪」，点击左下角「+」添加打印机，看能否发现目标设备。若能看到但状态异常，可先移除再重新添加。\n3. **重启相关设备**：依次重启打印机、MacBook 和路由器（若为无线连接），很多临时故障可由此解决。\n4. **更新驱动与系统**：确保 macOS 已更新到最新版本；部分打印机需从官网下载对应驱动，可访问打印机品牌官网查询。\n5. **检查打印队列**：若之前有卡住的任务，打开「打印机与扫描仪」双击打印机，点击「打印队列」清除所有任务。\n6. **尝试其他连接方式**：若无线连接失败，可尝试用 USB 线直连测试；若 USB 正常，则问题多出在网络设置。\n\n如果以上步骤仍无法解决，请告诉我打印机品牌型号、连接方式（USB/无线）以及 MacBook 的 macOS 版本，我可以帮你进一步排查。",
+      "memories": [
+        {
+          "memory_id": "mem_8fa841f3018b",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "用户使用 Windows 台式机办公。"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "G01",
+      "category": "G 多任务上下文",
+      "question": "我的论文什么时候截止？",
+      "answer": "",
+      "memories": [
+        {
+          "memory_id": "mem_7a06436347f7",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "论文截止日期是 6 月 30 日"
+        },
+        {
+          "memory_id": "mem_deca49f8172b",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "我每周健身四次"
+        }
+      ],
+      "passed": false,
+      "reasons": [
+        "缺少要点 ['6 月 30', '6月30', '六月三十']"
+      ],
+      "error": "",
+      "manual_review": null
+    },
+    {
+      "qid": "G02",
+      "category": "G 多任务上下文",
+      "question": "我每周健身几次？",
+      "answer": "根据当前的任务上下文，我还没有看到你关于每周健身次数的具体信息。为了帮你制定合适的健身计划，我需要了解一些情况：\n\n1. 你的健身目标是什么（增肌、减脂、保持健康等）？\n2. 你目前的运动基础如何（新手、有一定基础、经常锻炼）？\n3. 你每周大概能抽出多少天、每次多长时间来健身？\n4. 有没有伤病或需要特别注意的地方？\n\n你可以先告诉我这些信息，我再帮你确定每周健身几次比较合适。",
+      "memories": [
+        {
+          "memory_id": "mem_995577e16bf8",
+          "type": "CORE_PROFILE",
+          "status": "CURRENT",
+          "content": "论文用 LaTeX 排版"
+        }
+      ],
+      "passed": true,
+      "reasons": [],
+      "error": "",
+      "manual_review": null
+    }
+  ]
+}

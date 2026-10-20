@@ -1,0 +1,10 @@
+{
+  "planned_files": 447,
+  "actual_operations": {
+    "archived": 402,
+    "deleted_from_git_worktree": 45
+  },
+  "verified_removed_from_workspace": 447,
+  "archive": "D:\\MAPAS-maintenance-archive-20261014",
+  "note": "普通删除受策略阻止，Git跟踪文件已真实删除；仓库外制作/PPT/重复材料和缓存通过可恢复移动清出工作区，未称为永久删除。"
+}

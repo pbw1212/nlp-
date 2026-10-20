@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "contexts": [
+    {"case_id":"hc01","language":"en","text":"Could you recommend a hotel? I have not decided where, who will join, or who will pay."},
+    {"case_id":"hc02","language":"zh","text":"这次可能公司付款，也可能我自己付，现在还不能确定。"},
+    {"case_id":"hc03","language":"mixed","text":"这次 not driving，也不需要 parking。"},
+    {"case_id":"hc04","language":"en","text":"I am travelling alone to Tokyo and paying for the trip myself."},
+    {"case_id":"hc05","language":"en","text":"Dinner with friends in Seattle; the meal must contain no peanuts."},
+    {"case_id":"hc06","language":"zh","text":"还没决定去徒步还是普通观光，两种都有可能。"},
+    {"case_id":"hc07","language":"mixed","text":"请安排住宿，destination 尚未确定，同行人也没定。"},
+    {"case_id":"hc08","language":"en","text":"It is a business trip, but I am paying personally."},
+    {"case_id":"hc09","language":"en","text":"We might depart Tuesday evening or Wednesday evening; both remain possible."},
+    {"case_id":"hc10","language":"zh","text":"去机场接同事，需要一辆七座车。"},
+    {"case_id":"hc11","language":"en","text":"I need help with breakfast ideas."},
+    {"case_id":"hc12","language":"zh","text":"之前说公司付，其实已经改成我自己付。"}
+  ],
+  "memories": [
+    {"case_id":"hm01","language":"en","memory_id":"hm01","text":"No matter where I travel, I prefer accommodation near public transport."},
+    {"case_id":"hm02","language":"zh","memory_id":"hm02","text":"我喜欢早餐丰富的酒店。"},
+    {"case_id":"hm03","language":"en","memory_id":"hm03","text":"When my employer pays, I can choose a more expensive hotel."},
+    {"case_id":"hm04","language":"zh","memory_id":"hm04","text":"我偏好安静的房间。"},
+    {"case_id":"hm05","language":"en","memory_id":"hm05","text":"Never serve me peanuts."},
+    {"case_id":"hm06","language":"en","memory_id":"hm06","text":"For meetings on Tuesday or Wednesday evening, prepare the materials early."},
+    {"case_id":"hm07","language":"zh","memory_id":"hm07","text":"我曾经在上海吃过一家餐厅。"},
+    {"case_id":"hm08","language":"mixed","memory_id":"hm08","text":"Regardless of who joins the trip，我都优先选择直达交通。"},
+    {"case_id":"hm09","language":"en","memory_id":"hm09","text":"When driving to hiking areas, parking is required."},
+    {"case_id":"hm10","language":"zh","memory_id":"hm10","text":"热闹区域也可以，只要房间隔音好。"},
+    {"case_id":"hm11","language":"en","memory_id":"hm11","text":"When buying electronics, I prefer durable products."},
+    {"case_id":"hm12","language":"zh","memory_id":"hm12","text":"不要把会议安排在晚上九点以后。"}
+  ],
+  "pairs": [
+    {"pair_id":"hp01","context_case_id":"hc04","memory_case_id":"hm03"},
+    {"pair_id":"hp02","context_case_id":"hc02","memory_case_id":"hm03"},
+    {"pair_id":"hp03","context_case_id":"hc03","memory_case_id":"hm09"},
+    {"pair_id":"hp04","context_case_id":"hc05","memory_case_id":"hm05"},
+    {"pair_id":"hp05","context_case_id":"hc11","memory_case_id":"hm02"},
+    {"pair_id":"hp06","context_case_id":"hc08","memory_case_id":"hm03"}
+  ]
+}

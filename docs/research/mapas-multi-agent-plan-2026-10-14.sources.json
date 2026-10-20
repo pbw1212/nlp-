@@ -1,0 +1,215 @@
+{
+  "date": "2026-10-14",
+  "status": "design_approved_p0_p1_implemented_external_preparation_partial",
+  "repository_head": "425bb9da3764ae4a54b473d036d3484a65f8b0bc",
+  "course": {
+    "file_name": "NLP初步课设与平时作业安排-贺瑞芳-20260920.pdf",
+    "sha256": "00fb4020cfb2e2ba988cc3f51ffb1ff5b0555cf9ac23d9609fc96d2aa20e6fd4",
+    "pages": 18,
+    "topic_pages": [
+      5,
+      6
+    ],
+    "visual_checked_pages": [
+      1,
+      5,
+      6
+    ]
+  },
+  "sources": [
+    {
+      "name": "MemoryArena",
+      "primary_url": "https://arxiv.org/abs/2602.16313",
+      "text_or_protocol_url": "https://arxiv.org/pdf/2602.16313v2",
+      "read_scope": "PDF methods and benchmark protocol, pages 1-4; official setup",
+      "official_code_or_project": "https://github.com/ZexueHe/MemoryArena",
+      "paper_experiments_run": false,
+      "author_code_reused": false,
+      "pdf_sha256": "7478c3b9294b483a32350a5844be6fa596e3ee18abc6dba33b1827780a86af0d",
+      "pdf_pages": 31
+    },
+    {
+      "name": "MemoBrain",
+      "primary_url": "https://aclanthology.org/2026.findings-acl.127/",
+      "text_or_protocol_url": "https://aclanthology.org/2026.findings-acl.127.pdf",
+      "read_scope": "Formal PDF methods pages 3-5, experiment protocol pages 6-7",
+      "official_code_or_project": "https://github.com/qhjqhj00/MemoBrain",
+      "paper_experiments_run": false,
+      "author_code_reused": false,
+      "pdf_sha256": "7338204f343095c03ef845e01e56205966988239c18e2c1c0bbd11d75af1f526",
+      "pdf_pages": 17
+    },
+    {
+      "name": "MAGE",
+      "primary_url": "https://arxiv.org/abs/2606.06090",
+      "text_or_protocol_url": "https://arxiv.org/pdf/2606.06090v1",
+      "read_scope": "PDF state-tree and operations, methods pages 3-6",
+      "official_code_or_project": null,
+      "paper_experiments_run": false,
+      "author_code_reused": false,
+      "pdf_sha256": "1ecff2417d2892bf1b8578d3b0346386fa51dbfcbcfea839481000c48849eb5c",
+      "pdf_pages": 16
+    },
+    {
+      "name": "TierMem",
+      "primary_url": "https://arxiv.org/abs/2602.17913",
+      "text_or_protocol_url": "https://arxiv.org/pdf/2602.17913v1",
+      "read_scope": "PDF tier/router/writeback/training protocol, pages 3-4",
+      "official_code_or_project": null,
+      "paper_experiments_run": false,
+      "author_code_reused": false,
+      "pdf_sha256": "22dc00d8441af5c7cd80793d644b417c51ea2043641ed8c25ab43ccd3dab24ce",
+      "pdf_pages": 22
+    },
+    {
+      "name": "Experience-Following",
+      "primary_url": "https://aclanthology.org/2026.acl-long.27/",
+      "text_or_protocol_url": "https://aclanthology.org/2026.acl-long.27.pdf",
+      "read_scope": "Formal PDF memory addition/deletion and evaluation, pages 3-6",
+      "official_code_or_project": "https://github.com/yuplin2333/agent_memory_manage",
+      "paper_experiments_run": false,
+      "author_code_reused": false,
+      "pdf_sha256": "2c3992d238f5d6dec4ed96faae0a82e3b88edc6e37b26d8622a2b780f2160400",
+      "pdf_pages": 23
+    },
+    {
+      "name": "Near-Miss",
+      "primary_url": "https://aclanthology.org/2026.gem-main.30/",
+      "text_or_protocol_url": "https://aclanthology.org/2026.gem-main.30.pdf",
+      "read_scope": "Workshop PDF guards and process informedness, pages 2-5",
+      "official_code_or_project": "https://github.com/AgentToolkit/toolguard-violation-analysis",
+      "paper_experiments_run": false,
+      "author_code_reused": false,
+      "pdf_sha256": "cfba2ef16f9c379b5675b88dac01f82f0f631fad6aebb0a7c992646b23fff7a2",
+      "pdf_pages": 13
+    },
+    {
+      "name": "AMA",
+      "primary_url": "https://aclanthology.org/2026.findings-acl.152/",
+      "text_or_protocol_url": "https://aclanthology.org/2026.findings-acl.152.pdf",
+      "read_scope": "Formal PDF roles and methods pages 3-5; ablations/cost pages 6-8",
+      "official_code_or_project": "https://github.com/Sherlockwz/AMA",
+      "paper_experiments_run": false,
+      "author_code_reused": false,
+      "pdf_sha256": "3f0fc52625defb9fc647458ac3ea15c28aeb6322672d1ecce9303a736be021fb",
+      "pdf_pages": 22
+    },
+    {
+      "name": "Collaboration scaling study",
+      "primary_url": "https://www.nature.com/articles/s42256-026-01268-y",
+      "text_or_protocol_url": "https://arxiv.org/abs/2512.08296",
+      "read_scope": "Formal abstract and author preprint introduction/budget protocol; not a universal threshold",
+      "official_code_or_project": "https://github.com/ybkim95/agent-scaling",
+      "paper_experiments_run": false,
+      "author_code_reused": false,
+      "pdf_sha256": "028f329010d95143915db8db6ce1ad26a4e844b66e4abd6b36fdb39651aff7fd",
+      "pdf_pages": 44
+    },
+    {
+      "name": "PlanFence",
+      "primary_url": "https://arxiv.org/abs/2609.03340v2",
+      "text_or_protocol_url": "https://arxiv.org/html/2609.03340v2",
+      "read_scope": "Original HTML sections 3-4 and Appendix E.3 limitations; preprint",
+      "official_code_or_project": null,
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "MACE",
+      "primary_url": "https://arxiv.org/abs/2609.21533v1",
+      "text_or_protocol_url": "https://arxiv.org/html/2609.21533v1",
+      "read_scope": "Original HTML empirical controls and methodology sections 4-5; preprint",
+      "official_code_or_project": null,
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "ToCoMAS",
+      "primary_url": "https://arxiv.org/abs/2609.37953v1",
+      "text_or_protocol_url": "https://arxiv.org/html/2609.37953v1",
+      "read_scope": "Original HTML sections 3-4 responsibility, handoff and memory policies; preprint",
+      "official_code_or_project": null,
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "CoMemBench",
+      "primary_url": "https://arxiv.org/abs/2609.32192v1",
+      "text_or_protocol_url": "https://comembench.world/",
+      "read_scope": "Original abstract and official site data/evaluation access and denominator rules; evaluator access not tested",
+      "official_code_or_project": "https://comembench.world/",
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "CoMem",
+      "primary_url": "https://arxiv.org/abs/2609.15009",
+      "text_or_protocol_url": null,
+      "read_scope": "Original abstract only; algorithm/code not reproduced",
+      "official_code_or_project": null,
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "AIM",
+      "primary_url": "https://arxiv.org/abs/2609.12320",
+      "text_or_protocol_url": null,
+      "read_scope": "Original abstract only; privacy classifier not adopted",
+      "official_code_or_project": null,
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "MAST",
+      "primary_url": "https://arxiv.org/abs/2503.13657",
+      "text_or_protocol_url": "https://openreview.net/pdf?id=MqBzKkb8eK",
+      "read_scope": "Original abstract and taxonomy overview; full protocol not reproduced",
+      "official_code_or_project": null,
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "ActiveMem",
+      "primary_url": "https://arxiv.org/abs/2606.10532",
+      "text_or_protocol_url": null,
+      "read_scope": "Original abstract only; optional future direction",
+      "official_code_or_project": null,
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "LongMemEval-V2",
+      "primary_url": "https://arxiv.org/abs/2605.12493",
+      "text_or_protocol_url": null,
+      "read_scope": "Original abstract and official repository overview; not executed",
+      "official_code_or_project": "https://github.com/xiaowu0162/LongMemEval-V2",
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "LongMemEval original",
+      "primary_url": "https://github.com/xiaowu0162/LongMemEval",
+      "text_or_protocol_url": null,
+      "read_scope": "Official repository setup and QA/retrieval scoring distinctions; not executed",
+      "official_code_or_project": "https://github.com/xiaowu0162/LongMemEval",
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    },
+    {
+      "name": "Qwen3-Embedding/Reranker",
+      "primary_url": "https://github.com/QwenLM/Qwen3-Embedding",
+      "text_or_protocol_url": null,
+      "read_scope": "Official implementation/model interface; remote deployment not attempted",
+      "official_code_or_project": "https://github.com/QwenLM/Qwen3-Embedding",
+      "paper_experiments_run": false,
+      "author_code_reused": false
+    }
+  ],
+  "notes": [
+    "Read scopes are bounded and do not imply complete paper reproduction.",
+    "Downloaded source PDFs and extracted text are local ignored research cache, not redistributable project deliverables.",
+    "No production changes, paid API tests, remote GPU access, or training in this planning round."
+  ],
+  "approved_implementation_scope": "P0-P1",
+  "implementation_report": "../phases/multi-agent-p0-p1-20261014.md"
+}

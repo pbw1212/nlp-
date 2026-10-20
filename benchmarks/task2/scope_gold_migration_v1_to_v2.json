@@ -1,0 +1,145 @@
+[
+  {
+    "case_id": "m04",
+    "change_type": "REMOVED",
+    "memory_id": "m04",
+    "new_rule": null,
+    "old_rule": [
+      "LOCATION",
+      "destination",
+      "UNSPECIFIED",
+      [],
+      "REQUIRES"
+    ],
+    "rationale": "Sparse contract requires positive axis relevance evidence.",
+    "reason_code": "ABSENCE_NOT_AXIS"
+  },
+  {
+    "case_id": "m04",
+    "change_type": "REMOVED",
+    "memory_id": "m04",
+    "new_rule": null,
+    "old_rule": [
+      "TASK",
+      "trip_type",
+      "UNSPECIFIED",
+      [],
+      "REQUIRES"
+    ],
+    "rationale": "Sparse contract requires positive axis relevance evidence.",
+    "reason_code": "ABSENCE_NOT_AXIS"
+  },
+  {
+    "case_id": "m13",
+    "change_type": "CHANGED_STATE_AND_VALUE",
+    "memory_id": "m13",
+    "new_rule": [
+      "TIME",
+      "day_type",
+      "EXPLICIT_CONSTRAINT",
+      [
+        "workday"
+      ],
+      "REQUIRES"
+    ],
+    "old_rule": [
+      "TIME",
+      "day_type",
+      "EXPLICIT_GENERAL",
+      [],
+      "REQUIRES"
+    ],
+    "rationale": "Every workday constrains the workday category; it is not universal across day types.",
+    "reason_code": "GENERAL_EVIDENCE_MISSING"
+  },
+  {
+    "case_id": "m16",
+    "change_type": "REMOVED",
+    "memory_id": "m16",
+    "new_rule": null,
+    "old_rule": [
+      "PERSON",
+      "social_party",
+      "UNSPECIFIED",
+      [],
+      "REQUIRES"
+    ],
+    "rationale": "Sparse contract requires positive axis relevance evidence.",
+    "reason_code": "TARGET_NOT_SCOPE"
+  },
+  {
+    "case_id": "m26",
+    "change_type": "REMOVED",
+    "memory_id": "m26",
+    "new_rule": null,
+    "old_rule": [
+      "LOCATION",
+      "location",
+      "UNSPECIFIED",
+      [],
+      "REQUIRES"
+    ],
+    "rationale": "Sparse contract requires positive axis relevance evidence.",
+    "reason_code": "ABSENCE_NOT_AXIS"
+  },
+  {
+    "case_id": "m26",
+    "change_type": "REMOVED",
+    "memory_id": "m26",
+    "new_rule": null,
+    "old_rule": [
+      "PERSON",
+      "meal_party",
+      "UNSPECIFIED",
+      [],
+      "REQUIRES"
+    ],
+    "rationale": "Sparse contract requires positive axis relevance evidence.",
+    "reason_code": "ABSENCE_NOT_AXIS"
+  },
+  {
+    "case_id": "hm02",
+    "change_type": "REMOVED",
+    "memory_id": "hm02",
+    "new_rule": null,
+    "old_rule": [
+      "LOCATION",
+      "destination",
+      "UNSPECIFIED",
+      [],
+      "REQUIRES"
+    ],
+    "rationale": "Sparse contract requires positive axis relevance evidence.",
+    "reason_code": "ABSENCE_NOT_AXIS"
+  },
+  {
+    "case_id": "hm02",
+    "change_type": "REMOVED",
+    "memory_id": "hm02",
+    "new_rule": null,
+    "old_rule": [
+      "TASK",
+      "trip_type",
+      "UNSPECIFIED",
+      [],
+      "REQUIRES"
+    ],
+    "rationale": "Sparse contract requires positive axis relevance evidence.",
+    "reason_code": "ABSENCE_NOT_AXIS"
+  },
+  {
+    "case_id": "hm04",
+    "change_type": "REMOVED",
+    "memory_id": "hm04",
+    "new_rule": null,
+    "old_rule": [
+      "LOCATION",
+      "area_noise",
+      "UNSPECIFIED",
+      [],
+      "REQUIRES"
+    ],
+    "rationale": "Sparse contract requires positive axis relevance evidence.",
+    "reason_code": "TARGET_NOT_SCOPE"
+  }
+]

@@ -1,0 +1,13 @@
+name: mapas
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - -e .
+      - pytest>=9,<10
+      - coverage>=7,<8
+variables:
+  PYTHONNOUSERSITE: "1"
+  PYTHONPATH: ""

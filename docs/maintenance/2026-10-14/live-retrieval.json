@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-14",
+  "additional_budget": 8,
+  "bundle": {
+    "schema_version": "evidence_bundle_v1",
+    "request_id": "maintenance-live-retrieval",
+    "query": "请根据我长期喜欢清晰简洁工作汇报的偏好，准备汇报提纲",
+    "selected": [],
+    "sufficiency": {
+      "status": "INSUFFICIENT",
+      "reason_codes": [
+        "NO_ELIGIBLE_EVIDENCE"
+      ],
+      "missing_aspects": [],
+      "uncertainties": [],
+      "unresolved_conflicts": []
+    },
+    "rejected_or_omitted": [],
+    "warnings": [],
+    "pipeline_identity": [
+      "task2_evidence_pipeline_v1"
+    ],
+    "retrieval_trace": {
+      "recall": {
+        "query_variants": [
+          "请根据我长期喜欢清晰简洁工作汇报的偏好，准备汇报提纲"
+        ],
+        "candidate_counts": {
+          "请根据我长期喜欢清晰简洁工作汇报的偏好，准备汇报提纲": 0
+        },
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      },
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      }
+    },
+    "budgets": {
+      "max_items": 8,
+      "max_chars_per_item": 600,
+      "max_total_chars": 3000
+    }
+  },
+  "checks": {
+    "current_preference_selected": false,
+    "recycled_language_excluded": true
+  },
+  "status": "FAIL",
+  "usage": {
+    "request_count": 0,
+    "input_tokens": 0,
+    "output_tokens": 0
+  }
+}

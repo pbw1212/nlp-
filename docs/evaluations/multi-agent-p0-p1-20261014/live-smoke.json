@@ -1,0 +1,227 @@
+{
+  "kind": "engineering_smoke",
+  "official_benchmark_score": null,
+  "requested_model": "deepseek-v4-flash",
+  "limits": {
+    "max_model_calls": 12,
+    "max_token_units": 120000,
+    "deadline_seconds": 150,
+    "max_completion_tokens": 2048
+  },
+  "gpu_used": false,
+  "fake_model_used": false,
+  "input": "Use CitySearch on the offline MemoryArena database to list the first three cities returned for California, in the original order. Use one subtask and only this tool. Do not use web search or assume this is a live travel recommendation.",
+  "expected": [
+    "San Diego",
+    "Redding",
+    "Sacramento"
+  ],
+  "result": {
+    "root_turn_id": "live-p1-smoke",
+    "task_id": "task_362f062ba0c5",
+    "agent_run_id": "ma_582395f77c2bb5c1b26ca88c",
+    "status": "SUCCESS",
+    "request_turn_id": "live-p1-smoke",
+    "final_response": "CitySearch was invoked exactly once with state=\"California\" (tool_call_id call_0cec1fe039e6, status SUCCEEDED). The first three cities in the exact order returned are: 1. San Diego, 2. Redding, 3. Sacramento. These are offline MemoryArena database entries, not live weather, availability, or travel recommendations.",
+    "executed_tool_call_ids": [
+      "call_0cec1fe039e6"
+    ],
+    "pending_action": null,
+    "step_count": 2,
+    "warnings": [],
+    "error_info": null,
+    "trace_metadata": {
+      "execution_mode": "multi_fixed",
+      "verified_subtasks": [
+        "citysearch_ca"
+      ],
+      "tool_stage_traces": [
+        {
+          "stage": "TASK_RESOLUTION",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.0007033348083496094
+        },
+        {
+          "stage": "TASK_UPDATE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 2.290668487548828
+        },
+        {
+          "stage": "MAINTENANCE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 1.1920928955078125e-06
+        },
+        {
+          "stage": "CONTEXT_BUILD",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.0030057430267333984
+        }
+      ],
+      "collaboration_run_id": "ma_582395f77c2bb5c1b26ca88c",
+      "collaboration_usage": {
+        "model_calls": 9,
+        "charged_token_units": 17034,
+        "calls": [
+          {
+            "role": "Runtime",
+            "operation": "task_binding_decision_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 488,
+            "usage_json": "{\"input_tokens\":461,\"output_tokens\":27,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":205}",
+            "elapsed": 1.1763461000227835,
+            "usage": {
+              "input_tokens": 461,
+              "output_tokens": 27,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 205
+            }
+          },
+          {
+            "role": "Runtime",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2726,
+            "usage_json": "{\"input_tokens\":2322,\"output_tokens\":404,\"prompt_cache_hit_tokens\":1664,\"prompt_cache_miss_tokens\":658}",
+            "elapsed": 2.0680930000089575,
+            "usage": {
+              "input_tokens": 2322,
+              "output_tokens": 404,
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 658
+            }
+          },
+          {
+            "role": "Planner",
+            "operation": "collaboration_planner_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2378,
+            "usage_json": "{\"input_tokens\":2240,\"output_tokens\":138,\"prompt_cache_hit_tokens\":0,\"prompt_cache_miss_tokens\":2240}",
+            "elapsed": 1.751760799990734,
+            "usage": {
+              "input_tokens": 2240,
+              "output_tokens": 138,
+              "prompt_cache_hit_tokens": 0,
+              "prompt_cache_miss_tokens": 2240
+            }
+          },
+          {
+            "role": "Memory",
+            "operation": "collaboration_memory_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 580,
+            "usage_json": "{\"input_tokens\":513,\"output_tokens\":67,\"prompt_cache_hit_tokens\":0,\"prompt_cache_miss_tokens\":513}",
+            "elapsed": 2.1637962000095285,
+            "usage": {
+              "input_tokens": 513,
+              "output_tokens": 67,
+              "prompt_cache_hit_tokens": 0,
+              "prompt_cache_miss_tokens": 513
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "agent_action",
+            "status": "SUCCEEDED",
+            "charged_units": 2387,
+            "usage_json": "{\"input_tokens\":2329,\"output_tokens\":58,\"prompt_cache_hit_tokens\":0,\"prompt_cache_miss_tokens\":2329,\"reasoning_tokens\":18}",
+            "elapsed": 1.4930371999798808,
+            "usage": {
+              "input_tokens": 2329,
+              "output_tokens": 58,
+              "prompt_cache_hit_tokens": 0,
+              "prompt_cache_miss_tokens": 2329,
+              "reasoning_tokens": 18
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 3386,
+            "usage_json": "{\"input_tokens\":3049,\"output_tokens\":337,\"prompt_cache_hit_tokens\":1280,\"prompt_cache_miss_tokens\":1769}",
+            "elapsed": 2.2565168000000995,
+            "usage": {
+              "input_tokens": 3049,
+              "output_tokens": 337,
+              "prompt_cache_hit_tokens": 1280,
+              "prompt_cache_miss_tokens": 1769
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "agent_action",
+            "status": "SUCCEEDED",
+            "charged_units": 2681,
+            "usage_json": "{\"input_tokens\":2494,\"output_tokens\":187,\"prompt_cache_hit_tokens\":1792,\"prompt_cache_miss_tokens\":702,\"reasoning_tokens\":75}",
+            "elapsed": 1.893015399982687,
+            "usage": {
+              "input_tokens": 2494,
+              "output_tokens": 187,
+              "prompt_cache_hit_tokens": 1792,
+              "prompt_cache_miss_tokens": 702,
+              "reasoning_tokens": 75
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 1364,
+            "usage_json": "{\"input_tokens\":1098,\"output_tokens\":266,\"prompt_cache_hit_tokens\":0,\"prompt_cache_miss_tokens\":1098}",
+            "elapsed": 2.385377200000221,
+            "usage": {
+              "input_tokens": 1098,
+              "output_tokens": 266,
+              "prompt_cache_hit_tokens": 0,
+              "prompt_cache_miss_tokens": 1098
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 1044,
+            "usage_json": "{\"input_tokens\":815,\"output_tokens\":229,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":559}",
+            "elapsed": 2.4524107999750413,
+            "usage": {
+              "input_tokens": 815,
+              "output_tokens": 229,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 559
+            }
+          }
+        ]
+      },
+      "long_term_memory_update": {
+        "attempted": false,
+        "tool_call_ids": [],
+        "route": "agent_tool_decision"
+      },
+      "event_sequence": 17
+    }
+  },
+  "receipts": [
+    {
+      "tool_call_id": "call_0cec1fe039e6",
+      "agent_run_id": "run_b78078c8adc9",
+      "agent_step_id": "step_44f94fa15754",
+      "tool_name": "CitySearch",
+      "arguments_json": "{\"state\": \"California\"}",
+      "arguments_hash": "95dbc6ce4e1b",
+      "idempotency_key": "idemp_ec24c7d88140505d",
+      "tool_effect": "READ_ONLY",
+      "idempotency_support": "NONE",
+      "status": "SUCCEEDED",
+      "runtime_reconciled": 1,
+      "result_json": "{\"error_message\": \"\", \"result_content\": \"[\\\"San Diego\\\", \\\"Redding\\\", \\\"Sacramento\\\", \\\"Fresno\\\", \\\"San Luis Obispo\\\", \\\"Oakland\\\", \\\"Santa Barbara\\\", \\\"Stockton\\\", \\\"Santa Rosa\\\", \\\"Bakersfield\\\", \\\"Santa Ana\\\", \\\"Santa Maria\\\", \\\"San Jose\\\", \\\"Burbank\\\", \\\"Arcata\\\", \\\"Butte\\\", \\\"Palm Springs\\\", \\\"Los Angeles\\\", \\\"Long Beach\\\", \\\"San Francisco\\\", \\\"Monterey\\\"]\", \"status\": \"SUCCEEDED\", \"tool_call_id\": \"call_0cec1fe039e6\", \"updated_at\": 1791967290.3474874}",
+      "created_at": 1791967290.345242,
+      "updated_at": 1791967292.6495976
+    }
+  ],
+  "engineering_assertions_passed": true,
+  "user_messages": 1
+}

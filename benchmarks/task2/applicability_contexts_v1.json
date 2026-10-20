@@ -1,0 +1,84 @@
+{
+  "label": "explicit structured engineering contexts; no natural-language extraction",
+  "contexts": [
+    {
+      "scenario_id": "A_solo_shanghai_match",
+      "memory_id": "app_solo_shanghai",
+      "expected": "MATCH",
+      "values": [
+        {"dimension": "LOCATION", "field": "location", "state": "KNOWN", "values": ["shanghai"]},
+        {"dimension": "SCENARIO", "field": "trip_scenario", "state": "KNOWN", "values": ["solo_travel"]}
+      ]
+    },
+    {
+      "scenario_id": "B_friends_hiking_mismatch",
+      "memory_id": "app_solo_shanghai",
+      "expected": "MISMATCH",
+      "values": [
+        {"dimension": "PERSON", "field": "travel_party", "state": "KNOWN", "values": ["friends"]},
+        {"dimension": "LOCATION", "field": "location", "state": "KNOWN", "values": ["mountain"]},
+        {"dimension": "SCENARIO", "field": "trip_scenario", "state": "KNOWN", "values": ["hiking_trip"]}
+      ]
+    },
+    {
+      "scenario_id": "C_company_business_match",
+      "memory_id": "app_business_hotel",
+      "expected": "MATCH",
+      "values": [
+        {"dimension": "TASK", "field": "trip_task", "state": "KNOWN", "values": ["business_trip"]},
+        {"dimension": "CONSTRAINT", "field": "payment_source", "state": "KNOWN", "values": ["company"]}
+      ]
+    },
+    {
+      "scenario_id": "D_self_paid_mismatch",
+      "memory_id": "app_business_hotel",
+      "expected": "MISMATCH",
+      "values": [
+        {"dimension": "TASK", "field": "trip_task", "state": "KNOWN", "values": ["personal_trip"]},
+        {"dimension": "CONSTRAINT", "field": "payment_source", "state": "KNOWN", "values": ["self"]}
+      ]
+    },
+    {
+      "scenario_id": "E_payment_unknown",
+      "memory_id": "app_business_hotel",
+      "expected": "UNKNOWN",
+      "values": [
+        {"dimension": "TASK", "field": "trip_task", "state": "KNOWN", "values": ["business_trip"]},
+        {"dimension": "CONSTRAINT", "field": "payment_source", "state": "UNKNOWN", "values": []}
+      ]
+    },
+    {
+      "scenario_id": "F_explicit_general",
+      "memory_id": "app_general_transport",
+      "expected": "MATCH",
+      "values": [
+        {"dimension": "LOCATION", "field": "location", "state": "KNOWN", "values": ["mountain"]}
+      ]
+    },
+    {
+      "scenario_id": "G_unspecified_scope",
+      "memory_id": "app_breakfast",
+      "expected": "UNKNOWN",
+      "values": [
+        {"dimension": "LOCATION", "field": "location", "state": "KNOWN", "values": ["shanghai"]}
+      ]
+    },
+    {
+      "scenario_id": "H_ambiguous_task",
+      "memory_id": "app_business_hotel",
+      "expected": "AMBIGUOUS",
+      "values": [
+        {"dimension": "TASK", "field": "trip_task", "state": "AMBIGUOUS", "values": ["business_trip", "personal_trip"]},
+        {"dimension": "CONSTRAINT", "field": "payment_source", "state": "KNOWN", "values": ["company"]}
+      ]
+    },
+    {
+      "scenario_id": "I_excluded_constraint",
+      "memory_id": "app_no_peanuts",
+      "expected": "MISMATCH",
+      "values": [
+        {"dimension": "CONSTRAINT", "field": "meal_ingredients", "state": "KNOWN", "values": ["peanuts"]}
+      ]
+    }
+  ]
+}
