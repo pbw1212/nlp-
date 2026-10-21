@@ -2,7 +2,7 @@
 
 MAPAS 是面向长程任务的多 Agent 个人智能体系统，基于 DeepSeek API，提供 CLI 与 JSONL 接口。当前默认使用 `single` 模式，也可显式启用实验性的四角色串行协作 `multi_fixed`（P1）。该基础层不代表系统已具备分布式多 Agent 能力，也不构成协作效果优于强单 Agent 的结论。
 
-项目名称更新日期：2026-10-20。2026-10-14 的维护报告记录当时的维护与验证状态；当前多 Agent 实现见 [P1 架构说明](docs/architecture/multi-agent-foundation.md) 和 [阶段报告](docs/phases/multi-agent-p0-p1-20261014.md)。
+当前核心算法、四项协同记忆机制与实验路线见 [MAPAS 核心算法与技术方案](docs/research/mapas-core-algorithms.md)；实际进展见 [项目进展](docs/project-progress.md)。多 Agent P1 的实现边界与阶段证据分别见 [架构说明](docs/architecture/multi-agent-foundation.md) 和 [实施报告](docs/phases/multi-agent-p0-p1-20261014.md)。
 
 ## 仓库
 
@@ -86,4 +86,4 @@ python code/scripts/personal_agent_trial.py --output-json artifacts/product_tria
 - Windows/macOS 终端沙箱工具按既有契约拒绝执行；文件工具仍受授权目录限制。
 - 真实 Provider 语义质量只有小样本证据；不能由回归通过推导长期运行全面可靠。
 
-架构/ADR、benchmarks、项目历史和研究结论保留为 MAPAS 的可追溯资料。第三方源码快照不随工作仓库分发；研究文档记录必要的上游仓库与 revision。`phases/` 和旧评估描述对应历史快照，不覆盖当前维护报告。
+架构/ADR、benchmarks、项目历史和研究结论保留为 MAPAS 的可追溯资料。第三方源码快照不随工作仓库分发；研究文档记录必要的上游仓库与 revision。`phases/` 和旧评估描述对应历史快照，不覆盖当前架构及进展文档。

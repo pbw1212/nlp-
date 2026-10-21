@@ -4,7 +4,7 @@
 
 当前 Git 远端和同步前核验要求以[仓库绑定规则](repository-policy.md)为准。带日期的维护、评测和发布材料保留当时的仓库字段，仅供历史追溯，不作为当前 Git 操作的远端指引。
 
-新增可选多 Agent 基础层：使用与限制见 [当前架构](architecture/multi-agent-foundation.md)，验收及外部数据缺口见 [P0–P1 报告](phases/multi-agent-p0-p1-20261014.md)。默认单 Agent 路径保留。
+核心算法、论文联系、阶段边界与研究方案见 [MAPAS 核心算法与技术方案](research/mapas-core-algorithms.md)；当前架构及协作范围见 [系统架构](architecture/overview.md) 与 [多 Agent P1](architecture/multi-agent-foundation.md)。阶段测试证据见 [P0–P1 报告](phases/multi-agent-p0-p1-20261014.md)。
 
 本目录是项目可维护知识的 source of truth。Protected-local 原始材料不属于 canonical Git，也不是正式规格；所需设计知识必须整理进本目录。
 
@@ -20,8 +20,9 @@
 
 - 项目名称与兼容约定：[ADR-0023](decisions/ADR-0023-project-rename-to-mapas.md)。
 - 使用产品：[`cli-user-guide.md`](cli-user-guide.md)；CLI、全局数据目录、工作区、工具、MCP 和两种输出模式均以此为准。
+- 研究算法：[`research/mapas-core-algorithms.md`](research/mapas-core-algorithms.md)。
 - 理解系统：[`architecture/overview.md`](architecture/overview.md) 与 [`architecture/system-integration.md`](architecture/system-integration.md)。
-- 查看当前进度：[`project-progress.md`](project-progress.md)。
+- 查看当前进度：[`project-progress.md`](project-progress.md)；早期记录见 [`history/project-progress-2026-09-05.md`](history/project-progress-2026-09-05.md)。
 - 使用 JSONL host：查看 `code/scripts/personal_agent_app_server.py` 的模块说明和 `system-integration.md` 的协议列表。
 
 `phases/`、`evaluations/` 和带日期的 `research/` 文件是历史记录或研究证据，

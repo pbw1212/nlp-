@@ -1,4 +1,4 @@
-> 2026-10-14 维护覆盖：完整 UI/HTTP Demo/桌面包装已移除，保留 CLI/JSONL；下文包含历史冻结阶段说明。当前架构、运行入口和验证以 [维护报告](maintenance/2026-10-14/Agent系统维护与升级准备报告.md) 为准。
+> 本表追踪需求、设计决策、代码与历史验收。当前技术方案、运行入口和协作实现状态分别见 [核心算法](research/mapas-core-algorithms.md)、[当前架构](architecture/overview.md) 与 [项目进展](project-progress.md)。带日期的报告保留其原始证据时点。
 
 # Requirement / Decision / Implementation Traceability
 
@@ -27,7 +27,7 @@
 | Autonomous Product Trial Harness | Test Infrastructure | `code/src/memory/product_trial/`, `code/scripts/personal_agent_trial.py` | `code/tests/test_product_trial_harness.py`, 14 scenarios PASS | Product Trial | current release |
 | Explicit Memory Generic Lifecycle Routing | Bugfix / Architecture Restoration | Forensic Audit REJECTED `642fbd`; `bad9e0b` RESTORED `NemoriDistiller.propose_explicit_lifecycle` + `_validate_proposals` + `apply_proposals_atomic` | `test_production_hardcoding_overfit_guard`, `test_generic_explicit_route_arbitrary_unseen_domain` | Explicit Fix | main history commit `bad9e0b` |
 | Agent-selected Memory Update | Agent internal tool + NEMORI lifecycle pipeline | `update_long_term_memory`, `run_autonomous_dream_pipeline`, durable ingestion journal | `test_personal_agent_app.py`, `test_ingestion_journal.py`, lifecycle regression tests | current release | main |
-| Inspectable adaptive user profile + recoverable implicit pruning | ADR-0021 | `get_profile_repository`, profile HTTP API, Provider `LifecycleOperation.REMOVE`, pinned/profile-type persistence guards | automatic profile removal/protection tests; structured frontend API tests | Adaptive Profile | current release |
+| Inspectable adaptive user profile + recoverable implicit pruning | ADR-0021 | `get_profile_repository`, Task 1 profile projection, Provider `LifecycleOperation.REMOVE`, pinned/profile-type persistence guards | automatic profile removal/protection tests; structured frontend API tests | Adaptive Profile | current release |
 | Runtime DTO / prompt trust boundary | ADR-0019 | `PromptComposer`, `TurnRequest`, `DistilledEvidence.text` | `test_prompt_composer_uses_distilled_text_and_keeps_current_request_last`, runtime hardening tests | 4C | current release |
 | Inferred batch provenance and replay identity | ADR-0019 | `run_autonomous_dream_pipeline`, `LongTermMemoryManager`, ingestion `result_metadata` | batch consolidation + NOOP replay hardening tests | 4C | current release |
 | Concurrent conversation idempotency and strict budgets | ADR-0019 | `ConversationRepository.append_message`, `build_conversation_context` | concurrent append/conflict + budget boundary tests | 4C | current release |
@@ -40,6 +40,8 @@
 | Resumable turns and usage/compaction observability | Runtime integration | turn lifecycle, `turn/resume`, `turn.usage`, compaction and memory events | agent event/app server/console tests | current main | `21e4b94b` |
 | Public tool catalog and approval lifecycle | Runtime integration | `ToolRegistry.describe`, tool/approval events, protocol catalog | tooling/app server tests | current main | `ffe3e8a9` |
 | Workspace search/patch and MCP stdio | Runtime integration | scoped `search_files`, `apply_patch`, `McpManager` | workspace/MCP/app server tests | current main | `50ac4cf9`, `8449bfda` |
+| P1 multi-agent serial collaboration | ADR-0022 | `collaboration/coordinator.py`, `roles.py`, `repository.py`, `budget.py`; `multi_fixed` | `test_collaboration.py`, `collaboration_smoke.py` | P0–P1 | `phases/multi-agent-p0-p1-20261014.md` |
+| Collaborative memory algorithm research | Integrated algorithm plan | `research/mapas-core-algorithms.md`, Task 1/2/3 and collaboration | MemoryArena / factorial controls / ablations planned | Current research | Pending external benchmark |
 | Protected raw project materials stay local | ADR-0008 | `.gitignore`; canonical Git excludes protected-local set | ignore/tracking/reachable-history audit | repository governance | canonical `master` |
 
 ## Maintenance rule

@@ -1,10 +1,10 @@
-> 2026-10-14 维护覆盖：完整 UI/HTTP Demo/桌面包装已移除，保留 CLI/JSONL；下文包含历史冻结阶段说明。当前架构、运行入口和验证以 [维护报告](../maintenance/2026-10-14/Agent系统维护与升级准备报告.md) 为准。
+> 本文主要说明单 Agent Runtime 与 Task 1/2/3 的集成契约；系统当前架构见 [系统总览](overview.md)，四角色链路见 [多 Agent P1](multi-agent-foundation.md)，完整算法与研究方向见 [核心算法总述](../research/mapas-core-algorithms.md)。维护报告记录对应历史时点。
 
 # 系统集成与 AgentRuntime 架构 (System Integration & Runtime Architecture)
 
-> 当前同步日期：2026-09-05。本文描述 main 分支的实现；历史阶段的名称只用于归档定位。
+> 本文保留 Runtime 的核心契约描述；四角色可选串行协作由 CollaborationCoordinator 组织。历史阶段名仅用于归档定位。
 
-本文档定义 Task 1 (Long-Term Memory)、Task 2 (Context-Aware Retrieval)、Task 3 (Task State & Working Context)、MainAgent、工具运行时和 **AgentRuntime** 的集成关系、所有权边界、生命周期流程与错误/事务语义。CLI、浏览器 Demo 和 JSONL host 都复用同一个 `PersonalAgentApp`，不各自维护 Agent 状态。
+本文档定义 Task 1 (Long-Term Memory)、Task 2 (Context-Aware Retrieval)、Task 3 (Task State & Working Context)、MainAgent、工具运行时和 **AgentRuntime** 的集成关系、所有权边界、生命周期流程与错误/事务语义。CLI 和 JSONL host 共用同一套 `PersonalAgentApp` 运行时，不各自维护 Agent 状态。
 
 ---
 
