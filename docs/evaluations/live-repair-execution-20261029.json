@@ -1,0 +1,281 @@
+{
+  "kind": "engineering_smoke",
+  "official_benchmark_score": null,
+  "requested_model": "deepseek-v4-flash",
+  "limits": {
+    "max_model_calls": 12,
+    "max_token_units": 120000,
+    "deadline_seconds": 150,
+    "max_completion_tokens": 2048
+  },
+  "gpu_used": false,
+  "fake_model_used": false,
+  "input": "Use the calculator to compute 17*23. Use one subtask. Report the exact result.",
+  "expected": [
+    "391"
+  ],
+  "provenance_check": {
+    "conversation_bound": true,
+    "receipt_observations_bound": true,
+    "recorded_tool_calls": 1
+  },
+  "repair_execution_check": {
+    "status": "SUCCESS",
+    "answer_correct": true,
+    "separate_run": true,
+    "replay_same_run": true,
+    "model_calls": 5,
+    "replay_model_calls": 5,
+    "reused_subtasks": []
+  },
+  "artifact_revocation_check": {
+    "artifact_found": true,
+    "stale_replay_blocked": true,
+    "node_statuses": [
+      "STALE"
+    ]
+  },
+  "result": {
+    "root_turn_id": "live-p1-smoke",
+    "task_id": "task_362f062ba0c5",
+    "agent_run_id": "ma_e18097212aea806e4584eb7e",
+    "status": "SUCCESS",
+    "request_turn_id": "live-p1-smoke",
+    "final_response": "calculator 工具计算 17*23 的精确结果为 391。",
+    "executed_tool_call_ids": [
+      "call_a6fd7734e2c1"
+    ],
+    "pending_action": null,
+    "step_count": 1,
+    "warnings": [],
+    "error_info": null,
+    "trace_metadata": {
+      "execution_mode": "multi_fixed",
+      "verified_subtasks": [
+        "compute_product"
+      ],
+      "tool_stage_traces": [
+        {
+          "stage": "TASK_RESOLUTION",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.0006873607635498047
+        },
+        {
+          "stage": "TASK_UPDATE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 1.591111660003662
+        },
+        {
+          "stage": "MAINTENANCE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 1.430511474609375e-06
+        },
+        {
+          "stage": "CONTEXT_BUILD",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.0027773380279541016
+        }
+      ],
+      "memory_inputs": [],
+      "source_reads": [],
+      "observation_frontier_version": 1,
+      "reuse_context_hash": "97b91621349bbe63056f06c619b25fbbe40c84cf9c82f66a7be0e879469eac43",
+      "execution_contract_hash": "c76edaff76f90ce4dd042c57dc160b29e4e308f58b3975b8c4bbfa60c4805a4e",
+      "conversation_frontier": {
+        "session_id": "session_3c371bee7759",
+        "messages": [
+          {
+            "message_id": "msg_22d5a96aaf6d",
+            "role": "USER",
+            "source_content_hash": "4ac347b7930d603279fabf4ae77c4c1133dfe170d47ff4397fd9b8ed19c6ae30",
+            "projection_hash": "cc9c48a08e4dff3139534f6bdd74a8fb5bb8340bf0a83f627de16d56d37d7826",
+            "projection_kind": "FULL",
+            "prefix_length": 78
+          }
+        ],
+        "summary_present": false,
+        "untracked": false
+      },
+      "task_frontier": {
+        "task_id": "task_362f062ba0c5",
+        "status": "ACTIVE",
+        "entries": [
+          {
+            "entry_id": "entry_2ecf4ff9ca6847f486535e6e493c98de",
+            "kind": "GOAL",
+            "updated_at": 1793249960.1340625,
+            "content_hash": "acce21ee85ef829ab84d922b2dafe5683eade0cfd332ef10b5cb25768ed566d7",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          },
+          {
+            "entry_id": "entry_turn:live-p1-smoke:user_p1",
+            "kind": "CONSTRAINT",
+            "updated_at": 1793249962.210664,
+            "content_hash": "a2c83e70b56fde58952a9324663f26b3948307511e479a62efbed3d7e3f0092b",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          },
+          {
+            "entry_id": "entry_turn:live-p1-smoke:user_p2",
+            "kind": "CONSTRAINT",
+            "updated_at": 1793249962.210664,
+            "content_hash": "a9b26ed06f7440d725b64e7b0aeedb34a5d06764726a9ed1b009cee3f620b7f2",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          }
+        ]
+      },
+      "collaboration_run_id": "ma_e18097212aea806e4584eb7e",
+      "collaboration_usage": {
+        "model_calls": 8,
+        "charged_token_units": 13043,
+        "calls": [
+          {
+            "role": "Runtime",
+            "operation": "task_binding_decision_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 457,
+            "usage_json": "{\"input_tokens\":433,\"output_tokens\":24,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":177}",
+            "elapsed": 0.9926971999957459,
+            "usage": {
+              "input_tokens": 433,
+              "output_tokens": 24,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 177
+            }
+          },
+          {
+            "role": "Runtime",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2571,
+            "usage_json": "{\"input_tokens\":2238,\"output_tokens\":333,\"prompt_cache_hit_tokens\":1664,\"prompt_cache_miss_tokens\":574}",
+            "elapsed": 2.0579545999935362,
+            "usage": {
+              "input_tokens": 2238,
+              "output_tokens": 333,
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 574
+            }
+          },
+          {
+            "role": "Planner",
+            "operation": "collaboration_planner_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2133,
+            "usage_json": "{\"input_tokens\":2055,\"output_tokens\":78,\"prompt_cache_hit_tokens\":1152,\"prompt_cache_miss_tokens\":903}",
+            "elapsed": 1.2615718000015477,
+            "usage": {
+              "input_tokens": 2055,
+              "output_tokens": 78,
+              "prompt_cache_hit_tokens": 1152,
+              "prompt_cache_miss_tokens": 903
+            }
+          },
+          {
+            "role": "Memory",
+            "operation": "collaboration_memory_v2",
+            "status": "SUCCEEDED",
+            "charged_units": 829,
+            "usage_json": "{\"input_tokens\":796,\"output_tokens\":33,\"prompt_cache_hit_tokens\":512,\"prompt_cache_miss_tokens\":284}",
+            "elapsed": 0.5704639999894425,
+            "usage": {
+              "input_tokens": 796,
+              "output_tokens": 33,
+              "prompt_cache_hit_tokens": 512,
+              "prompt_cache_miss_tokens": 284
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "agent_action",
+            "status": "SUCCEEDED",
+            "charged_units": 2287,
+            "usage_json": "{\"input_tokens\":2214,\"output_tokens\":73,\"prompt_cache_hit_tokens\":1408,\"prompt_cache_miss_tokens\":806,\"reasoning_tokens\":37}",
+            "elapsed": 0.9837247999967076,
+            "usage": {
+              "input_tokens": 2214,
+              "output_tokens": 73,
+              "prompt_cache_hit_tokens": 1408,
+              "prompt_cache_miss_tokens": 806,
+              "reasoning_tokens": 37
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2960,
+            "usage_json": "{\"input_tokens\":2729,\"output_tokens\":231,\"prompt_cache_hit_tokens\":1920,\"prompt_cache_miss_tokens\":809}",
+            "elapsed": 1.5707339999935357,
+            "usage": {
+              "input_tokens": 2729,
+              "output_tokens": 231,
+              "prompt_cache_hit_tokens": 1920,
+              "prompt_cache_miss_tokens": 809
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 1000,
+            "usage_json": "{\"input_tokens\":848,\"output_tokens\":152,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":592}",
+            "elapsed": 1.7870590999955311,
+            "usage": {
+              "input_tokens": 848,
+              "output_tokens": 152,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 592
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 806,
+            "usage_json": "{\"input_tokens\":664,\"output_tokens\":142,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":408}",
+            "elapsed": 1.5814946999889798,
+            "usage": {
+              "input_tokens": 664,
+              "output_tokens": 142,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 408
+            }
+          }
+        ]
+      },
+      "long_term_memory_update": {
+        "attempted": false,
+        "tool_call_ids": [],
+        "route": "agent_tool_decision"
+      },
+      "event_sequence": 17
+    }
+  },
+  "receipts": [
+    {
+      "tool_call_id": "call_a6fd7734e2c1",
+      "agent_run_id": "run_1125e367b154",
+      "agent_step_id": "step_c3dfb96888cf",
+      "tool_name": "calculator",
+      "arguments_json": "{\"expression\": \"17*23\"}",
+      "arguments_hash": "7ef6586e32d4",
+      "idempotency_key": "idemp_bbcf719a8924a0fc",
+      "tool_effect": "READ_ONLY",
+      "idempotency_support": "NONE",
+      "status": "SUCCEEDED",
+      "runtime_reconciled": 1,
+      "result_json": "{\"error_message\": \"\", \"result_content\": \"计算结果: 391\", \"status\": \"SUCCEEDED\", \"tool_call_id\": \"call_a6fd7734e2c1\", \"updated_at\": 1793249965.0998921}",
+      "created_at": 1793249965.0974054,
+      "updated_at": 1793249966.6992292
+    }
+  ],
+  "engineering_assertions_passed": true,
+  "user_messages": 1
+}

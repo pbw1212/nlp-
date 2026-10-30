@@ -5,15 +5,15 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from src.memory.retrieval.evidence import EvidenceBundle
 from src.memory.task_state.maintenance import MaintenanceResult
 from src.memory.task_state.models import (
     ActiveWorkingContext,
     ExternalObservation,
-    TaskAnalysis,
     StructuredTaskContext,
+    TaskAnalysis,
     TaskStateUpdateReceipt,
 )
 
@@ -46,7 +46,7 @@ class TurnStageTrace:
 
     stage: TurnStage
     status: TurnStageStatus
-    warnings: Tuple[str, ...] = ()
+    warnings: tuple[str, ...] = ()
     duration_seconds: float = 0.0
 
 
@@ -59,7 +59,7 @@ class TurnErrorInfo:
     code: str
     safe_message: str
     retryable: bool = False
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -73,9 +73,9 @@ class TurnRequest:
 
     turn_id: str
     user_input: str
-    task_id: Optional[str] = None
-    session_id: Optional[str] = None
-    external_observations: Tuple[ExternalObservation, ...] = ()
+    task_id: str | None = None
+    session_id: str | None = None
+    external_observations: tuple[ExternalObservation, ...] = ()
     timestamp: float = field(default_factory=time.time)
     skip_task_state_update: bool = False
 
@@ -85,7 +85,7 @@ class TurnRequest:
         if not isinstance(self.user_input, str) or not self.user_input.strip():
             raise ValueError("user_input 不能为空")
         if not isinstance(self.skip_task_state_update, bool):
-            raise ValueError("skip_task_state_update 必须是布尔值")
+            raise ValueError("skip_task_state_update 必须是布尔值")  # noqa: TRY004
 
 
 @dataclass(frozen=True)
@@ -94,11 +94,12 @@ class ToolCallResult:
 
     tool_call_id: str
     tool_name: str
-    arguments: Dict[str, Any]
+    arguments: dict[str, Any]
     status: ToolCallStatus
     result_content: str = ""
     error_message: str = ""
     timestamp: float = field(default_factory=time.time)
+    source_observations: tuple[dict[str, Any], ...] = ()
 
     def __post_init__(self) -> None:
         if not self.tool_call_id:
@@ -106,9 +107,19 @@ class ToolCallResult:
         if not self.tool_name:
             raise ValueError("tool_name 不能为空")
         if not isinstance(self.arguments, dict):
-            raise ValueError("arguments 必须是 JSON object/dict")
-        if not isinstance(self.result_content, str) or not isinstance(self.error_message, str):
-            raise ValueError("tool result_content/error_message 必须是字符串")
+            raise ValueError("arguments 必须是 JSON object/dict")  # noqa: TRY004
+        if (
+            not isinstance(self.source_observations, tuple)
+            or any(not isinstance(item, dict) for item in self.source_observations)
+            or len(self.source_observations) > 8
+        ):
+            raise ValueError("source observations must be a bounded tuple of objects")
+        if not isinstance(self.result_content, str) or not isinstance(
+            self.error_message, str
+        ):
+            raise ValueError(  # noqa: TRY004
+                "tool result_content/error_message 必须是字符串"
+            )
         if self.status is ToolCallStatus.SUCCESS and self.error_message:
             raise ValueError("SUCCESS tool result 不能包含 error_message")
         if self.status is ToolCallStatus.FAILED:
@@ -124,14 +135,14 @@ class AgentTurnContext:
 
     turn_id: str
     task_id: str
-    receipt: Optional[TaskStateUpdateReceipt]
-    maintenance: Optional[MaintenanceResult]
-    evidence_bundle: Optional[EvidenceBundle]
+    receipt: TaskStateUpdateReceipt | None
+    maintenance: MaintenanceResult | None
+    evidence_bundle: EvidenceBundle | None
     working_context: ActiveWorkingContext
     structured_task_context: StructuredTaskContext
-    task_analysis: Optional[TaskAnalysis] = None
-    warnings: Tuple[str, ...] = ()
-    stage_traces: Tuple[TurnStageTrace, ...] = ()
+    task_analysis: TaskAnalysis | None = None
+    warnings: tuple[str, ...] = ()
+    stage_traces: tuple[TurnStageTrace, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -139,11 +150,11 @@ class TurnExecutionResult:
     """Top-level runtime execution output for a turn or tool result ingestion."""
 
     turn_id: str
-    task_id: Optional[str]
-    context: Optional[AgentTurnContext]
-    stage_traces: Tuple[TurnStageTrace, ...]
-    error_info: Optional[TurnErrorInfo] = None
-    warnings: Tuple[str, ...] = ()
+    task_id: str | None
+    context: AgentTurnContext | None
+    stage_traces: tuple[TurnStageTrace, ...]
+    error_info: TurnErrorInfo | None = None
+    warnings: tuple[str, ...] = ()
 
     @property
     def is_success(self) -> bool:

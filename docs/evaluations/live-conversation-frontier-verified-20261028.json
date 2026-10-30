@@ -1,0 +1,215 @@
+{
+  "kind": "engineering_smoke",
+  "official_benchmark_score": null,
+  "requested_model": "deepseek-v4-flash",
+  "limits": {
+    "max_model_calls": 12,
+    "max_token_units": 120000,
+    "deadline_seconds": 150,
+    "max_completion_tokens": 2048
+  },
+  "gpu_used": false,
+  "fake_model_used": false,
+  "input": "Use the calculator to compute 17*23. Use one subtask. Report the exact result.",
+  "expected": [
+    "391"
+  ],
+  "provenance_check": {
+    "conversation_bound": true,
+    "receipt_observations_bound": true,
+    "recorded_tool_calls": 1
+  },
+  "history_invalidation_check": {
+    "prior_recorded": true,
+    "stale_replay_blocked": true,
+    "node_statuses": [
+      "STALE"
+    ]
+  },
+  "result": {
+    "root_turn_id": "live-p1-smoke",
+    "task_id": "__unbound__",
+    "agent_run_id": "ma_9dade8d2e1aad90b1e16534b",
+    "status": "SUCCESS",
+    "request_turn_id": "live-p1-smoke",
+    "final_response": "calculator 返回 17*23 = 391，最终答复按原样报告了 391。\n\n[系统说明] 本轮回答已生成，但任务状态未写入；如需记录这项修改，请确认目标和约束后重新说明。",
+    "executed_tool_call_ids": [
+      "call_ebf5701b00ce"
+    ],
+    "pending_action": null,
+    "step_count": 1,
+    "warnings": [
+      "This turn has no Task 3 binding.",
+      "Task 3 proposals were discarded because this turn is unbound"
+    ],
+    "error_info": null,
+    "trace_metadata": {
+      "execution_mode": "multi_fixed",
+      "verified_subtasks": [
+        "compute"
+      ],
+      "tool_stage_traces": [],
+      "memory_inputs": [],
+      "source_reads": [],
+      "conversation_frontier": {
+        "session_id": "session_3fd1e604882b",
+        "messages": [
+          {
+            "message_id": "msg_84a34b5d252a",
+            "role": "USER",
+            "source_content_hash": "4ac347b7930d603279fabf4ae77c4c1133dfe170d47ff4397fd9b8ed19c6ae30",
+            "projection_hash": "cc9c48a08e4dff3139534f6bdd74a8fb5bb8340bf0a83f627de16d56d37d7826",
+            "projection_kind": "FULL",
+            "prefix_length": 78
+          },
+          {
+            "message_id": "msg_21f3533ffd8c",
+            "role": "USER",
+            "source_content_hash": "a158464e452794f24bca1849be1e07fc20c88d06603a8be566f48772d032065b",
+            "projection_hash": "70ff4b5f3253ef6695b447a5e3b26a255c7e67953eccaa7474272bb83225618c",
+            "projection_kind": "FULL",
+            "prefix_length": 49
+          }
+        ],
+        "summary_present": false,
+        "untracked": false
+      },
+      "task_frontier": {
+        "task_id": "__unbound__",
+        "unbound": true
+      },
+      "collaboration_run_id": "ma_9dade8d2e1aad90b1e16534b",
+      "collaboration_usage": {
+        "model_calls": 7,
+        "charged_token_units": 9036,
+        "calls": [
+          {
+            "role": "Runtime",
+            "operation": "task_binding_decision_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 452,
+            "usage_json": "{\"input_tokens\":433,\"output_tokens\":19,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":177}",
+            "elapsed": 0.6701329000061378,
+            "usage": {
+              "input_tokens": 433,
+              "output_tokens": 19,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 177
+            }
+          },
+          {
+            "role": "Runtime",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2191,
+            "usage_json": "{\"input_tokens\":1902,\"output_tokens\":289,\"prompt_cache_hit_tokens\":1664,\"prompt_cache_miss_tokens\":238}",
+            "elapsed": 1.3553587999776937,
+            "usage": {
+              "input_tokens": 1902,
+              "output_tokens": 289,
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 238
+            }
+          },
+          {
+            "role": "Planner",
+            "operation": "collaboration_planner_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 1543,
+            "usage_json": "{\"input_tokens\":1471,\"output_tokens\":72,\"prompt_cache_hit_tokens\":1280,\"prompt_cache_miss_tokens\":191}",
+            "elapsed": 1.262485499959439,
+            "usage": {
+              "input_tokens": 1471,
+              "output_tokens": 72,
+              "prompt_cache_hit_tokens": 1280,
+              "prompt_cache_miss_tokens": 191
+            }
+          },
+          {
+            "role": "Memory",
+            "operation": "collaboration_memory_v2",
+            "status": "SUCCEEDED",
+            "charged_units": 819,
+            "usage_json": "{\"input_tokens\":786,\"output_tokens\":33,\"prompt_cache_hit_tokens\":512,\"prompt_cache_miss_tokens\":274}",
+            "elapsed": 0.729330400004983,
+            "usage": {
+              "input_tokens": 786,
+              "output_tokens": 33,
+              "prompt_cache_hit_tokens": 512,
+              "prompt_cache_miss_tokens": 274
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "agent_action",
+            "status": "SUCCEEDED",
+            "charged_units": 2252,
+            "usage_json": "{\"input_tokens\":2217,\"output_tokens\":35,\"prompt_cache_hit_tokens\":1408,\"prompt_cache_miss_tokens\":809,\"reasoning_tokens\":0}",
+            "elapsed": 0.7256154000060633,
+            "usage": {
+              "input_tokens": 2217,
+              "output_tokens": 35,
+              "prompt_cache_hit_tokens": 1408,
+              "prompt_cache_miss_tokens": 809,
+              "reasoning_tokens": 0
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 1006,
+            "usage_json": "{\"input_tokens\":847,\"output_tokens\":159,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":591}",
+            "elapsed": 1.3809271999634802,
+            "usage": {
+              "input_tokens": 847,
+              "output_tokens": 159,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 591
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 773,
+            "usage_json": "{\"input_tokens\":652,\"output_tokens\":121,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":396}",
+            "elapsed": 1.1017010000068694,
+            "usage": {
+              "input_tokens": 652,
+              "output_tokens": 121,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 396
+            }
+          }
+        ]
+      },
+      "long_term_memory_update": {
+        "attempted": false,
+        "tool_call_ids": [],
+        "route": "agent_tool_decision"
+      },
+      "event_sequence": 13
+    }
+  },
+  "receipts": [
+    {
+      "tool_call_id": "call_ebf5701b00ce",
+      "agent_run_id": "run_80cde9518780",
+      "agent_step_id": "step_f75b7309c3b7",
+      "tool_name": "calculator",
+      "arguments_json": "{\"expression\": \"17*23\"}",
+      "arguments_hash": "7ef6586e32d4",
+      "idempotency_key": "idemp_f760efbc096ee623",
+      "tool_effect": "READ_ONLY",
+      "idempotency_support": "NONE",
+      "status": "SUCCEEDED",
+      "runtime_reconciled": 1,
+      "result_json": "{\"error_message\": \"\", \"result_content\": \"计算结果: 391\", \"status\": \"SUCCEEDED\", \"tool_call_id\": \"call_ebf5701b00ce\", \"updated_at\": 1793173020.5354733}",
+      "created_at": 1793173020.530996,
+      "updated_at": 1793173020.54615
+    }
+  ],
+  "engineering_assertions_passed": true,
+  "user_messages": 2
+}

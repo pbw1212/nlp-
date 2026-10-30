@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Sequence
 from dataclasses import replace
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 
 from src.memory.core.config import MemoryConfig
 from src.memory.core.errors import InvalidLifecycleTransitionError, MemoryNotFoundError
@@ -15,7 +16,6 @@ from src.memory.core.schema import (
     MemoryRevision,
     MemorySnapshot,
     MemoryType,
-    Granularity,
     ProvenanceAuthority,
 )
 from src.memory.lifecycle.consolidation import ConsolidationEngine
@@ -33,8 +33,8 @@ class LongTermMemoryManager:
     def __init__(
         self,
         db_path: str = "memory_store.db",
-        llm_client: Optional[LLMClientBase] = None,
-        config: Optional[MemoryConfig] = None,
+        llm_client: LLMClientBase | None = None,
+        config: MemoryConfig | None = None,
     ):
         self.config = config or MemoryConfig(sqlite_db_path=db_path)
         self.llm_client = llm_client or build_llm_client(self.config)
@@ -45,7 +45,9 @@ class LongTermMemoryManager:
         self.vector_store = InMemoryVectorStore()
         self.router = MemoryRouter()
         for snapshot in self.sqlite_mgr.list_current():
-            self.vector_store.add_or_update(snapshot.memory_id, snapshot.revision.content)
+            self.vector_store.add_or_update(
+                snapshot.memory_id, snapshot.revision.content
+            )
         self.crud = CRUDEngine(self.sqlite_mgr, self.vector_store, self.config)
         self.distiller = NemoriDistiller(self.llm_client, self.config)
         self.consolidation = ConsolidationEngine(
@@ -56,12 +58,14 @@ class LongTermMemoryManager:
         """Rebuild the compatibility index from current-safe SQLite snapshots."""
         self.vector_store.vectors.clear()
         for snapshot in self.sqlite_mgr.list_current():
-            self.vector_store.add_or_update(snapshot.memory_id, snapshot.revision.content)
+            self.vector_store.add_or_update(
+                snapshot.memory_id, snapshot.revision.content
+            )
 
     @property
-    def pending_dialogue_buffer(self) -> List[Dict[str, str]]:
+    def pending_dialogue_buffer(self) -> list[dict[str, str]]:
         """Compatibility projection；durable source of truth 是 ingestion_events。"""
-        turns: List[Dict[str, str]] = []
+        turns: list[dict[str, str]] = []
         for event in self.sqlite_mgr.list_pending_events():
             if event.raw_text:
                 turns.append({"role": "user", "content": event.raw_text})
@@ -74,10 +78,11 @@ class LongTermMemoryManager:
         user_input: str,
         is_explicit: bool = False,
         *,
-        source_event_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        message_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        source_event_id: str | None = None,
+        session_id: str | None = None,
+        message_id: str | None = None,
+        source_text: str | None = None,
+    ) -> dict[str, Any]:
         # Semantic routing must be decided by the Provider-facing caller. The
         # storage manager accepts only the typed explicit flag and never
         # infers memory intent from local keyword rules.
@@ -87,6 +92,7 @@ class LongTermMemoryManager:
                 source_event_id=source_event_id,
                 session_id=session_id,
                 message_id=message_id,
+                source_text=source_text,
             )
             snapshot = self.sqlite_mgr.get_memory(memory_id)
             return {
@@ -120,13 +126,23 @@ class LongTermMemoryManager:
         self,
         text: str,
         *,
-        source_event_id: Optional[str],
-        session_id: Optional[str],
-        message_id: Optional[str],
+        source_event_id: str | None,
+        session_id: str | None,
+        message_id: str | None,
         authority: ProvenanceAuthority = ProvenanceAuthority.EXPLICIT_USER,
+        source_text: str | None = None,
     ) -> tuple[str, bool, bool]:
+        # The app can bind a model-extracted instruction to the actual raw USER
+        # event. Keep the instruction and original-source identities distinct.
+        if source_text is not None and (
+            not isinstance(source_text, str) or not source_text.strip()
+        ):
+            raise InvalidLifecycleTransitionError("source_text 必须是非空原始用户消息")
         event, replay = self.sqlite_mgr.register_ingestion_event(
-            text, event_id=source_event_id, session_id=session_id, message_id=message_id
+            source_text if source_text is not None else text,
+            event_id=source_event_id,
+            session_id=session_id,
+            message_id=message_id,
         )
         if replay and event.state is IngestionState.APPLIED:
             result = event.result_metadata or {}
@@ -136,7 +152,9 @@ class LongTermMemoryManager:
                 # matched identity was included in result metadata.
                 if result.get("operation") == LifecycleOperation.NOOP.value:
                     return "noop", True, False
-                raise InvalidLifecycleTransitionError("APPLIED explicit event 缺少 memory_id result")
+                raise InvalidLifecycleTransitionError(
+                    "APPLIED explicit event 缺少 memory_id result"
+                )
             return memory_id, True, False
         current_snapshots = self.sqlite_mgr.list_current()
         formatted_memories = [
@@ -180,9 +198,9 @@ class LongTermMemoryManager:
         self,
         instruction_text: str,
         *,
-        source_event_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        message_id: Optional[str] = None,
+        source_event_id: str | None = None,
+        session_id: str | None = None,
+        message_id: str | None = None,
     ) -> str:
         return self._process_explicit_with_result(
             instruction_text,
@@ -196,11 +214,11 @@ class LongTermMemoryManager:
         user_input: str,
         assistant_reply: str,
         *,
-        source_event_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        message_id: Optional[str] = None,
+        source_event_id: str | None = None,
+        session_id: str | None = None,
+        message_id: str | None = None,
         defer_consolidation: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Persist one foreground event in the retryable ingestion journal.
 
         This low-level compatibility API deliberately does not decide when to
@@ -237,9 +255,9 @@ class LongTermMemoryManager:
         user_input: str,
         *,
         source_event_id: str,
-        session_id: Optional[str] = None,
-        message_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        session_id: str | None = None,
+        message_id: str | None = None,
+    ) -> dict[str, Any]:
         """Immediately evaluate the exact current user turn for durable memory.
 
         This is the application-owned implementation behind the Agent tool.
@@ -284,14 +302,20 @@ class LongTermMemoryManager:
         digest = hashlib.sha256("\x00".join(event_ids).encode("utf-8")).hexdigest()
         return f"run_{digest}"
 
-    def run_autonomous_dream_pipeline(self, *, failure_hook: Optional[Any] = None) -> Dict[str, Any]:
+    def run_autonomous_dream_pipeline(
+        self, *, failure_hook: Any | None = None
+    ) -> dict[str, Any]:
         events = self.sqlite_mgr.list_pending_events()
         if not events:
-            return {"episodes_processed": 0, "new_memories_created": 0, "consolidation_run_id": None}
+            return {
+                "episodes_processed": 0,
+                "new_memories_created": 0,
+                "consolidation_run_id": None,
+            }
         event_ids = [event.event_id for event in events]
         run_id = self._consolidation_run_id(event_ids)
-        dialogue: List[Dict[str, str]] = []
-        dialogue_event_ids: List[str] = []
+        dialogue: list[dict[str, str]] = []
+        dialogue_event_ids: list[str] = []
         for event in events:
             if event.raw_text:
                 dialogue.append({"role": "user", "content": event.raw_text})
@@ -306,21 +330,23 @@ class LongTermMemoryManager:
         durable_episodes = [
             episode for episode in episodes if episode.get("durability") == "DURABLE"
         ]
-        proposals: List[LifecycleProposal] = []
+        proposals: list[LifecycleProposal] = []
         current_snapshots = self.sqlite_mgr.list_current()
         current_memories = []
         for snapshot in current_snapshots:
             if snapshot.revision is None:
                 continue
             authorities = sorted({ref.authority.value for ref in snapshot.provenance})
-            current_memories.append({
-                "memory_id": snapshot.memory_id,
-                "content": snapshot.revision.content,
-                "memory_type": snapshot.memory_type.value,
-                "confidence": snapshot.revision.confidence,
-                "is_pinned": snapshot.is_pinned,
-                "source_authorities": authorities,
-            })
+            current_memories.append(
+                {
+                    "memory_id": snapshot.memory_id,
+                    "content": snapshot.revision.content,
+                    "memory_type": snapshot.memory_type.value,
+                    "confidence": snapshot.revision.confidence,
+                    "is_pinned": snapshot.is_pinned,
+                    "source_authorities": authorities,
+                }
+            )
         # Keep a provider-facing working set while the batch is being
         # proposed. Persistence is still one transaction, but later episodes
         # must see earlier UPDATE/CORRECT proposals instead of the stale
@@ -333,27 +359,37 @@ class LongTermMemoryManager:
             proposal = self.distiller.propose_inferred_lifecycle(
                 working_memories,
                 narrative,
-                provenance_event_id=dialogue_event_ids[episode["message_indices"][0] - 1],
+                provenance_event_id=dialogue_event_ids[
+                    episode["message_indices"][0] - 1
+                ],
             )
             # Only episode source events support this proposal. All batch
             # events are acknowledged atomically, including transient ones.
             proposal = replace(
                 proposal,
-                provenance_event_ids=tuple(dict.fromkeys(
-                    dialogue_event_ids[index - 1] for index in episode["message_indices"]
-                )),
+                provenance_event_ids=tuple(
+                    dict.fromkeys(
+                        dialogue_event_ids[index - 1]
+                        for index in episode["message_indices"]
+                    )
+                ),
             )
-            if proposal.operation is LifecycleOperation.REMOVE and proposal.target_memory_id:
+            if (
+                proposal.operation is LifecycleOperation.REMOVE
+                and proposal.target_memory_id
+            ):
                 target_memory = next(
                     (
-                        memory for memory in working_memories
+                        memory
+                        for memory in working_memories
                         if memory.get("memory_id") == proposal.target_memory_id
                     ),
                     None,
                 )
                 if target_memory is not None and (
                     target_memory.get("is_pinned") is True
-                    or target_memory.get("memory_type") not in {
+                    or target_memory.get("memory_type")
+                    not in {
                         MemoryType.CORE_PROFILE.value,
                         MemoryType.PREFERENCE_RULES.value,
                     }
@@ -371,11 +407,17 @@ class LongTermMemoryManager:
             }:
                 for memory in working_memories:
                     if memory.get("memory_id") == proposal.target_memory_id:
-                        memory["content"] = proposal.content or memory.get("content", "")
+                        memory["content"] = proposal.content or memory.get(
+                            "content", ""
+                        )
                         break
-            elif proposal.target_memory_id and proposal.operation is LifecycleOperation.REMOVE:
+            elif (
+                proposal.target_memory_id
+                and proposal.operation is LifecycleOperation.REMOVE
+            ):
                 working_memories = [
-                    memory for memory in working_memories
+                    memory
+                    for memory in working_memories
                     if memory.get("memory_id") != proposal.target_memory_id
                 ]
         if not proposals:
@@ -392,34 +434,44 @@ class LongTermMemoryManager:
         return {
             "episodes_processed": len(durable_episodes),
             "new_memories_created": sum(
-                1 for proposal in proposals if proposal.operation is LifecycleOperation.ADD
+                1
+                for proposal in proposals
+                if proposal.operation is LifecycleOperation.ADD
             ),
             "memories_removed": sum(
-                1 for proposal in proposals if proposal.operation is LifecycleOperation.REMOVE
+                1
+                for proposal in proposals
+                if proposal.operation is LifecycleOperation.REMOVE
             ),
             "lifecycle_changes": len(results),
             "consolidation_run_id": run_id,
         }
 
     def _validate_proposals(self, proposals: Sequence[LifecycleProposal]) -> None:
-        target_operations: Dict[str, List[LifecycleOperation]] = {}
+        target_operations: dict[str, list[LifecycleOperation]] = {}
         for proposal in proposals:
             proposal.validate_shape()
             if proposal.operation in {
                 LifecycleOperation.UPDATE,
                 LifecycleOperation.CORRECT,
                 LifecycleOperation.REMOVE,
-            }:
-                if not self.sqlite_mgr.get_memory(proposal.target_memory_id or ""):
-                    raise MemoryNotFoundError(proposal.target_memory_id or "")
-            if proposal.operation is LifecycleOperation.NOOP and proposal.target_memory_id:
-                if not self.sqlite_mgr.get_memory(proposal.target_memory_id):
-                    raise MemoryNotFoundError(proposal.target_memory_id)
+            } and not self.sqlite_mgr.get_memory(proposal.target_memory_id or ""):
+                raise MemoryNotFoundError(proposal.target_memory_id or "")
+            if (
+                proposal.operation is LifecycleOperation.NOOP
+                and proposal.target_memory_id
+                and not self.sqlite_mgr.get_memory(proposal.target_memory_id)
+            ):
+                raise MemoryNotFoundError(proposal.target_memory_id)
             for event_id in proposal.provenance_event_ids:
                 if self.sqlite_mgr.get_ingestion_event(event_id) is None:
-                    raise InvalidLifecycleTransitionError(f"proposal provenance event 不存在: {event_id}")
+                    raise InvalidLifecycleTransitionError(
+                        f"proposal provenance event 不存在: {event_id}"
+                    )
             if proposal.target_memory_id:
-                target_operations.setdefault(proposal.target_memory_id, []).append(proposal.operation)
+                target_operations.setdefault(proposal.target_memory_id, []).append(
+                    proposal.operation
+                )
 
         mutating = {
             LifecycleOperation.UPDATE,
@@ -427,7 +479,9 @@ class LongTermMemoryManager:
             LifecycleOperation.REMOVE,
         }
         for target_id, operations in target_operations.items():
-            if len(operations) > 1 and any(operation in mutating for operation in operations):
+            if len(operations) > 1 and any(
+                operation in mutating for operation in operations
+            ):
                 raise InvalidLifecycleTransitionError(
                     f"同一自动记忆批次对 memory_id={target_id} 提出了多个互相竞争的生命周期操作"
                 )
@@ -435,7 +489,9 @@ class LongTermMemoryManager:
     def add_memory_item(self, item: MemoryItem) -> str:
         """DEPRECATED Phase 1A facade adapter；新代码应提交 typed lifecycle input。"""
         event_id = item.metadata.source_event_id or None
-        event, replay = self.sqlite_mgr.register_ingestion_event(item.content, event_id=event_id)
+        event, replay = self.sqlite_mgr.register_ingestion_event(
+            item.content, event_id=event_id
+        )
         if replay and event.state is IngestionState.APPLIED:
             memory_id = (event.result_metadata or {}).get("memory_id")
             if not isinstance(memory_id, str) or not memory_id.strip():
@@ -446,8 +502,12 @@ class LongTermMemoryManager:
         return self.crud.add_memory(item, event_ids=[event.event_id])
 
     def update_memory_item(
-        self, memory_id: str, supplement_content: str, *, source_event_id: Optional[str] = None
-    ) -> Optional[MemoryItem]:
+        self,
+        memory_id: str,
+        supplement_content: str,
+        *,
+        source_event_id: str | None = None,
+    ) -> MemoryItem | None:
         event, replay = self.sqlite_mgr.register_ingestion_event(
             supplement_content, event_id=source_event_id
         )
@@ -461,7 +521,11 @@ class LongTermMemoryManager:
         )
 
     def correct_memory_item(
-        self, memory_id: str, corrected_content: str, *, source_event_id: Optional[str] = None
+        self,
+        memory_id: str,
+        corrected_content: str,
+        *,
+        source_event_id: str | None = None,
     ) -> MemoryItem:
         event, replay = self.sqlite_mgr.register_ingestion_event(
             corrected_content, event_id=source_event_id
@@ -472,17 +536,19 @@ class LongTermMemoryManager:
                 raise MemoryNotFoundError(memory_id)
             return existing
         return self.crud.correct_memory(
-            memory_id, corrected_content, event_ids=[event.event_id],
+            memory_id,
+            corrected_content,
+            event_ids=[event.event_id],
             authority=ProvenanceAuthority.EXPLICIT_USER,
         )
 
     def rise_abstract_memories(
-        self, fine_ids: List[str], abstract_content: str, memory_type: MemoryType
+        self, fine_ids: list[str], abstract_content: str, memory_type: MemoryType
     ) -> MemoryItem:
         return self.crud.rise_abstract_memory(fine_ids, abstract_content, memory_type)
 
     def merge_abstract_memories(
-        self, fine_ids: List[str], abstract_content: str, memory_type: MemoryType
+        self, fine_ids: list[str], abstract_content: str, memory_type: MemoryType
     ) -> MemoryItem:
         """Compatibility：仍表示 RISE 新 identity；cross-identity merge deferred。"""
         return self.rise_abstract_memories(fine_ids, abstract_content, memory_type)
@@ -493,22 +559,22 @@ class LongTermMemoryManager:
     def archive_memory(self, memory_id: str) -> bool:
         return self.crud.archive_memory(memory_id)
 
-    def restore_memory_from_recycle_bin(self, memory_id: str) -> Optional[MemoryItem]:
+    def restore_memory_from_recycle_bin(self, memory_id: str) -> MemoryItem | None:
         return self.crud.restore_from_recycle_bin(memory_id)
 
-    def get_active_memories(self) -> List[MemoryItem]:
+    def get_active_memories(self) -> list[MemoryItem]:
         return self.sqlite_mgr.list_memories(ActiveStatus.ACTIVE)
 
-    def get_recycle_bin_memories(self) -> List[MemoryItem]:
+    def get_recycle_bin_memories(self) -> list[MemoryItem]:
         return self.sqlite_mgr.list_memories(ActiveStatus.IN_RECYCLE_BIN)
 
-    def get_current(self, memory_id: str) -> Optional[MemorySnapshot]:
+    def get_current(self, memory_id: str) -> MemorySnapshot | None:
         return self.sqlite_mgr.get_current(memory_id)
 
-    def list_current(self) -> List[MemorySnapshot]:
+    def list_current(self) -> list[MemorySnapshot]:
         return self.sqlite_mgr.list_current()
 
-    def get_history(self, memory_id: str) -> List[MemoryRevision]:
+    def get_history(self, memory_id: str) -> list[MemoryRevision]:
         return self.sqlite_mgr.get_history(memory_id)
 
     def get_revision_provenance(self, revision_id: str):
@@ -521,7 +587,9 @@ class LongTermMemoryManager:
             item.is_pinned = is_pinned
             self.sqlite_mgr.save_operational_state(item)
 
-    def set_time_decay_switch(self, memory_id: str, enable_time_decay: bool = True) -> None:
+    def set_time_decay_switch(
+        self, memory_id: str, enable_time_decay: bool = True
+    ) -> None:
         item = self.sqlite_mgr.get_memory(memory_id)
         if item:
             item.enable_time_decay = enable_time_decay

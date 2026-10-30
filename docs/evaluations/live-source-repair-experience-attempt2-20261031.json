@@ -1,0 +1,52 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 2048
+  },
+  "checks": {
+    "bound_three_node_task": true,
+    "restart_selective_repair": true,
+    "repeat_resume_no_calls": true,
+    "experience_admitted": true
+  },
+  "initial": {
+    "status": "SUCCESS",
+    "answer": "两个文件均已通过 read_file 读取，并报告了精确值及其字段名：left.txt 中字段名 left_value 的值为 17（15 字节，sha256 6f0d497985b8fc4fa5246e34d071cb2e750c34f57965f4ccb13f294446e70cec，未截断）；right.txt 中字段名 right_value 的值为 23。三个子目标（left、right、merge）均已覆盖，merge 依赖 left 与 right，且合并结果与各自读取结果一致。",
+    "model_calls": 15,
+    "error": null
+  },
+  "repair": {
+    "status": "SUCCESS",
+    "answer": "left.txt 的 left_value=91；right.txt 的 right_value=23。两个精确值均标注了对应字段名，且与各自的 read_file 读取结果一致。",
+    "model_calls": 8,
+    "reused_subtasks": [
+      "right"
+    ],
+    "executed_tool_calls": 1
+  },
+  "experience": {
+    "state": "ACTIVE",
+    "decision": null,
+    "experience_id": "ma_1f4beb5b982629c3232fed88"
+  },
+  "consumer": {
+    "status": "FAILED",
+    "answer": null,
+    "experience_inputs": [
+      {
+        "experience_id": "ma_1f4beb5b982629c3232fed88",
+        "revision_id": "822c41f14ec8c0515a8bd9addd6fb7ea2e211b0272817fbf903868b90f25e99b"
+      }
+    ],
+    "model_calls": 5
+  },
+  "engineering_assertions_passed": false,
+  "error_type": "AssertionError"
+}

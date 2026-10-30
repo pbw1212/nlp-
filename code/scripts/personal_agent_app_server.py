@@ -21,17 +21,16 @@ import json
 import logging
 import os
 import sys
-from typing import Any, Dict, Iterable, Mapping, Optional, TextIO
-
+from collections.abc import Iterable, Mapping
+from typing import Any, TextIO
 
 CODE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if CODE_ROOT not in sys.path:
     sys.path.insert(0, CODE_ROOT)
 
 from src.memory.app.console import PersonalAgentApp
-from src.memory.core.diagnostics import log_boundary_failure
 from src.memory.app.serialization import _serialize_result
-
+from src.memory.core.diagnostics import log_boundary_failure
 
 # Keep the v1 wire identifier for existing JSONL clients. The product-facing
 # server name is MAPAS; changing this token would be a protocol break.
@@ -49,33 +48,46 @@ class JsonlAppServer:
 
     def _write(self, message: Mapping[str, Any]) -> None:
         safe_message = self.app._json_safe_event_value(dict(message))
-        self.output.write(json.dumps(safe_message, ensure_ascii=False, separators=(",", ":")) + "\n")
+        self.output.write(
+            json.dumps(safe_message, ensure_ascii=False, separators=(",", ":")) + "\n"
+        )
         self.output.flush()
 
     def _response(self, request_id: Any, result: Mapping[str, Any]) -> None:
         self._write({"jsonrpc": "2.0", "id": request_id, "result": dict(result)})
 
-    def _error(self, request_id: Any, code: int, message: str, data: Optional[Mapping[str, Any]] = None) -> None:
-        error: Dict[str, Any] = {"code": code, "message": message}
+    def _error(
+        self,
+        request_id: Any,
+        code: int,
+        message: str,
+        data: Mapping[str, Any] | None = None,
+    ) -> None:
+        error: dict[str, Any] = {"code": code, "message": message}
         if data:
             error["data"] = dict(data)
         self._write({"jsonrpc": "2.0", "id": request_id, "error": error})
 
     def _notify_events(self, events: Iterable[Any]) -> None:
         for event in events:
-            self._write({
-                "jsonrpc": "2.0",
-                "method": "event",
-                "params": event.to_dict(),
-            })
+            self._write(
+                {
+                    "jsonrpc": "2.0",
+                    "method": "event",
+                    "params": event.to_dict(),
+                }
+            )
 
-    def _thread(self, session_id: str) -> Dict[str, Any]:
+    def _thread(self, session_id: str) -> dict[str, Any]:
         session = self.app.conversation_repo.get_session(session_id)
         if session is None:
-            if session_id == self.app.active_session_id and not getattr(self.app, "_session_persisted", False):
+            if session_id == self.app.active_session_id and not getattr(
+                self.app, "_session_persisted", False
+            ):
                 return {
                     "threadId": session_id,
-                    "title": getattr(self.app, "_pending_session_title", None) or "新会话（尚未开始）",
+                    "title": getattr(self.app, "_pending_session_title", None)
+                    or "新会话（尚未开始）",
                     "taskId": None,
                     "status": "PENDING",
                     "createdAt": None,
@@ -91,7 +103,7 @@ class JsonlAppServer:
             "updatedAt": session.updated_at,
         }
 
-    def _handle(self, method: str, params: Mapping[str, Any]) -> Dict[str, Any]:
+    def _handle(self, method: str, params: Mapping[str, Any]) -> dict[str, Any]:
         if method == "initialize":
             self.initialized = True
             return {
@@ -101,6 +113,8 @@ class JsonlAppServer:
                     "threads": True,
                     "turns": True,
                     "turnResume": True,
+                    "collaborationRepair": self.app.collaboration is not None,
+                    "proceduralExperiences": self.app.collaboration is not None,
                     "eventReplay": True,
                     "contextDiagnostics": True,
                     "approvals": True,
@@ -113,7 +127,9 @@ class JsonlAppServer:
         if not self.initialized:
             raise RuntimeError("initialize must be called before other requests")
         if method in {"thread/start", "session/start"}:
-            session_id = self.app.create_new_session(str(params.get("title")) if params.get("title") else None)
+            session_id = self.app.create_new_session(
+                str(params.get("title")) if params.get("title") else None
+            )
             return {"thread": self._thread(session_id)}
         if method in {"thread/resume", "session/resume"}:
             session_id = str(params.get("threadId") or params.get("sessionId") or "")
@@ -121,9 +137,18 @@ class JsonlAppServer:
                 raise ValueError(f"thread not found: {session_id}")
             return {"thread": self._thread(session_id)}
         if method in {"thread/list", "session/list"}:
-            return {"threads": [self._thread(item["session_id"]) for item in self.app.list_sessions()]}
+            return {
+                "threads": [
+                    self._thread(item["session_id"])
+                    for item in self.app.list_sessions()
+                ]
+            }
         if method in {"thread/read", "session/read"}:
-            session_id = str(params.get("threadId") or params.get("sessionId") or self.app.active_session_id)
+            session_id = str(
+                params.get("threadId")
+                or params.get("sessionId")
+                or self.app.active_session_id
+            )
             thread = self._thread(session_id)
             if thread.get("status") == "PENDING":
                 thread["messages"] = []
@@ -153,7 +178,11 @@ class JsonlAppServer:
             )
             return {
                 "events": [event.to_dict() for event in events],
-                "nextSequence": events[-1].sequence if events else int(params.get("afterSequence", 0)),
+                "nextSequence": (
+                    events[-1].sequence
+                    if events
+                    else int(params.get("afterSequence", 0))
+                ),
             }
         if method == "status/read":
             return {
@@ -171,8 +200,14 @@ class JsonlAppServer:
         if method == "context/read":
             return {"context": self.app.get_conversation_context_status()}
         if method == "turn/start":
-            thread_id = str(params.get("threadId") or params.get("sessionId") or self.app.active_session_id)
-            if thread_id != self.app.active_session_id and not self.app.resume_session(thread_id):
+            thread_id = str(
+                params.get("threadId")
+                or params.get("sessionId")
+                or self.app.active_session_id
+            )
+            if thread_id != self.app.active_session_id and not self.app.resume_session(
+                thread_id
+            ):
                 raise ValueError(f"thread not found: {thread_id}")
             user_input = params.get("input", params.get("message"))
             if not isinstance(user_input, str) or not user_input.strip():
@@ -191,8 +226,14 @@ class JsonlAppServer:
                 "lastEventSequence": events[-1].sequence if events else before,
             }
         if method == "turn/resume":
-            thread_id = str(params.get("threadId") or params.get("sessionId") or self.app.active_session_id)
-            if thread_id != self.app.active_session_id and not self.app.resume_session(thread_id):
+            thread_id = str(
+                params.get("threadId")
+                or params.get("sessionId")
+                or self.app.active_session_id
+            )
+            if thread_id != self.app.active_session_id and not self.app.resume_session(
+                thread_id
+            ):
                 raise ValueError(f"thread not found: {thread_id}")
             turn_id = str(params.get("turnId") or "")
             if not turn_id:
@@ -202,7 +243,9 @@ class JsonlAppServer:
                 lambda: self.app.resume_interrupted_turn(turn_id),
                 show_progress=False,
             )
-            events = self.app.list_events(after_sequence=before, session_id=thread_id, turn_id=turn_id)
+            events = self.app.list_events(
+                after_sequence=before, session_id=thread_id, turn_id=turn_id
+            )
             self._notify_events(events)
             return {
                 "threadId": thread_id,
@@ -210,8 +253,100 @@ class JsonlAppServer:
                 "result": _serialize_result(result),
                 "lastEventSequence": events[-1].sequence if events else before,
             }
+        if method.startswith("experience/"):
+            thread_id = str(params.get("threadId") or self.app.active_session_id)
+            if thread_id != self.app.active_session_id and not self.app.resume_session(
+                thread_id
+            ):
+                raise ValueError("thread not found")
+            if method == "experience/list":
+                return {"experiences": self.app.list_experiences()}
+
+            def required(name):
+                value = params.get(name)
+                if not isinstance(value, str) or not value.strip():
+                    raise ValueError("experience operation requires " + name)
+                return value
+
+            if method == "experience/learn":
+                revision = params.get("revisionOf")
+                if revision is not None and (
+                    not isinstance(revision, str) or not revision
+                ):
+                    raise ValueError("invalid revisionOf")
+                return {
+                    "experience": self.app.learn_experience(
+                        required("runId"), revision_of=revision
+                    )
+                }
+            if method == "experience/review":
+                return {
+                    "experience": self.app.review_experience(
+                        required("experienceId"), required("confirmation")
+                    )
+                }
+            if method == "experience/revoke":
+                return {
+                    "experience": self.app.revoke_experience(
+                        required("experienceId"), required("eventId")
+                    )
+                }
+            if method == "experience/feedback":
+                return {
+                    "experience": self.app.feedback_experience(
+                        required("experienceId"), required("runId"), required("eventId")
+                    )
+                }
+            raise ValueError("unknown experience operation")
+        if method in {
+            "repair/list",
+            "repair/graphs",
+            "repair/run",
+            "repair/revoke",
+            "repair/drain",
+        }:
+            thread_id = str(params.get("threadId") or self.app.active_session_id)
+            if thread_id != self.app.active_session_id and not self.app.resume_session(
+                thread_id
+            ):
+                raise ValueError("thread not found")
+            if self.app.collaboration is None:
+                raise ValueError("collaboration mode is not enabled")
+            if method == "repair/list":
+                return {
+                    "repairs": self.app.coordination_repository.list_repairs(thread_id)
+                }
+            if method == "repair/graphs":
+                return {
+                    "graphs": self.app.coordination_repository.list_session_graphs(
+                        thread_id
+                    )
+                }
+            if method == "repair/drain":
+                return {"repairs": self.app.process_pending_collaboration_repairs()}
+            run_id = params.get("runId")
+            event_id = params.get("eventId")
+            if (
+                not isinstance(run_id, str)
+                or not run_id
+                or not isinstance(event_id, str)
+                or not event_id
+            ):
+                raise ValueError("repair requires runId and eventId")
+            if method == "repair/revoke":
+                artifact_id = params.get("artifactId")
+                if not isinstance(artifact_id, str) or not artifact_id:
+                    raise ValueError("repair/revoke requires artifactId")
+                result = self.app.revoke_and_repair_collaboration(
+                    run_id, artifact_id, event_id
+                )
+            else:
+                result = self.app.repair_collaboration(run_id, event_id)
+            return {"threadId": thread_id, "result": _serialize_result(result)}
         if method == "turn/interrupt":
-            raise RuntimeError("turn interruption is not yet supported by the synchronous host")
+            raise RuntimeError(
+                "turn interruption is not yet supported by the synchronous host"
+            )
         raise ValueError(f"method not found: {method}")
 
     def handle(self, request: Mapping[str, Any]) -> None:
@@ -227,8 +362,10 @@ class JsonlAppServer:
             self._error(request_id, -32602, str(exc))
         except RuntimeError as exc:
             self._error(request_id, -32000, str(exc))
-        except Exception as exc:
-            metadata = log_boundary_failure(logger, "app_server_request_failed", exc, method=method)
+        except Exception as exc:  # noqa: BLE001
+            metadata = log_boundary_failure(
+                logger, "app_server_request_failed", exc, method=method
+            )
             self._error(
                 request_id,
                 -32603,
@@ -256,8 +393,14 @@ class JsonlAppServer:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="MAPAS JSONL host protocol")
-    parser.add_argument("--data-dir", default=None, help="Agent home or explicit isolated data directory")
-    parser.add_argument("--execution-mode", choices=("single", "multi_fixed"), default="single")
+    parser.add_argument(
+        "--data-dir",
+        default=None,
+        help="Agent home or explicit isolated data directory",
+    )
+    parser.add_argument(
+        "--execution-mode", choices=("single", "multi_fixed"), default="single"
+    )
     args = parser.parse_args()
     app = PersonalAgentApp(data_dir=args.data_dir, execution_mode=args.execution_mode)
     JsonlAppServer(app, sys.stdout).serve(sys.stdin)

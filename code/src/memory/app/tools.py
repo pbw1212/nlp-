@@ -4,25 +4,32 @@ from __future__ import annotations
 
 import ast
 import datetime
+import hashlib
 import html
 import http.client
 import ipaddress
 import json
 import os
-import subprocess
-import socket
 import shutil
+import socket
+import subprocess
 import sys
 import tempfile
 import zlib
+from collections.abc import Callable
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, ClassVar
 from urllib.parse import parse_qs, quote_plus, urljoin, urlparse, urlunparse
-from urllib.request import HTTPHandler, HTTPRedirectHandler, HTTPSHandler, ProxyHandler, Request, build_opener
+from urllib.request import (
+    HTTPHandler,
+    HTTPRedirectHandler,
+    HTTPSHandler,
+    ProxyHandler,
+    Request,
+    build_opener,
+)
 
-from src.memory.runtime.models import ToolCallResult, ToolCallStatus
-from src.memory.app.workspace import WorkspaceManager, WorkspaceScopeError
 from src.memory.agent.tooling import (
     IdempotencySupport,
     ToolEffect,
@@ -31,13 +38,15 @@ from src.memory.agent.tooling import (
     ToolRegistry,
     ToolSpec,
 )
+from src.memory.app.workspace import WorkspaceManager, WorkspaceScopeError
+from src.memory.runtime.models import ToolCallResult, ToolCallStatus
 
 
 class TimeLookupExecutor(ToolExecutor):
     """Safe read-only tool executor to return local system date and time."""
 
     def execute(self, request: ToolExecutionRequest) -> ToolCallResult:
-        now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
+        now_str = datetime.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %A")
         return ToolCallResult(
             tool_call_id=request.tool_call_id,
             tool_name=request.tool_name,
@@ -56,7 +65,9 @@ class LongTermMemoryUpdateExecutor(ToolExecutor):
     Provider-owned lifecycle proposer.
     """
 
-    def __init__(self, callback: Callable[[ToolExecutionRequest], ToolCallResult]) -> None:
+    def __init__(
+        self, callback: Callable[[ToolExecutionRequest], ToolCallResult]
+    ) -> None:
         self._callback = callback
 
     def execute(self, request: ToolExecutionRequest) -> ToolCallResult:
@@ -76,7 +87,9 @@ def _safe_eval_ast(node: ast.AST) -> float | int:
         elif isinstance(node.op, ast.USub):
             return -operand
         else:
-            raise ValueError(f"不支持的一元运算符: {type(node.op).__name__}")
+            raise ValueError(  # noqa: TRY004
+                f"不支持的一元运算符: {type(node.op).__name__}"
+            )
     elif isinstance(node, ast.BinOp):
         left = _safe_eval_ast(node.left)
         right = _safe_eval_ast(node.right)
@@ -99,11 +112,15 @@ def _safe_eval_ast(node: ast.AST) -> float | int:
         elif isinstance(node.op, ast.Pow):
             if abs(right) > 50 or abs(left) > 10000:
                 raise ValueError("幂指数或基数超出安全范围上限 (exponent <= 50)")
-            return left ** right
+            return left**right
         else:
-            raise ValueError(f"不支持的二元运算符: {type(node.op).__name__}")
+            raise ValueError(  # noqa: TRY004
+                f"不支持的二元运算符: {type(node.op).__name__}"
+            )
     else:
-        raise ValueError(f"算术表达式包含非白名单语法节点: {type(node).__name__}")
+        raise ValueError(  # noqa: TRY004
+            f"算术表达式包含非白名单语法节点: {type(node).__name__}"
+        )
 
 
 class SafeCalculatorExecutor(ToolExecutor):
@@ -130,7 +147,7 @@ class SafeCalculatorExecutor(ToolExecutor):
                 status=ToolCallStatus.SUCCESS,
                 result_content=f"计算结果: {res}",
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             return ToolCallResult(
                 tool_call_id=request.tool_call_id,
                 tool_name=request.tool_name,
@@ -151,7 +168,11 @@ class FileWriteExecutor(ToolExecutor):
     """Writes a confirmed text file inside the user-managed workspace scope."""
 
     def __init__(self, workspace: WorkspaceManager | str) -> None:
-        self.workspace = workspace if isinstance(workspace, WorkspaceManager) else WorkspaceManager(workspace, default_root=workspace)
+        self.workspace = (
+            workspace
+            if isinstance(workspace, WorkspaceManager)
+            else WorkspaceManager(workspace, default_root=workspace)
+        )
 
     def execute(self, request: ToolExecutionRequest) -> ToolCallResult:
         filename = request.arguments.get("filename")
@@ -194,7 +215,7 @@ class FileWriteExecutor(ToolExecutor):
                     ensure_ascii=False,
                 ),
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             if temporary_path:
                 try:
                     os.unlink(temporary_path)
@@ -209,15 +230,45 @@ class FileReadExecutor(ToolExecutor):
     def __init__(self, workspace: WorkspaceManager) -> None:
         self.workspace = workspace
 
+    MAX_BYTES = 8 * 1024 * 1024
+
+    def _read(self, locator: str) -> tuple[Path, bytes]:
+        target = self.workspace.resolve_path(locator, must_exist=True)
+        if not target.is_file():
+            raise ValueError("目标路径不是文件")
+        with target.open("rb") as stream:
+            data = stream.read(self.MAX_BYTES + 1)
+        if len(data) > self.MAX_BYTES:
+            raise ValueError("文件超过读取上限")
+        return target, data
+
+    def validate_observation(self, observation: dict[str, Any]) -> str:
+        try:
+            if observation.get("kind") != "local_file_v1":
+                return "UNKNOWN"
+            target, data = self._read(observation["locator"])
+            return (
+                "CURRENT"
+                if (
+                    str(target) == observation["path"]
+                    and len(data) == observation["byte_length"]
+                    and hashlib.sha256(data).hexdigest() == observation["sha256"]
+                )
+                else "CHANGED"
+            )
+        except (KeyError, TypeError, ValueError, OSError):
+            return "UNAVAILABLE"
+
     def execute(self, request: ToolExecutionRequest) -> ToolCallResult:
         filename = request.arguments.get("filename")
         if not isinstance(filename, str) or not filename.strip():
             return _safe_failure(request, "文件路径不能为空")
         try:
-            target = self.workspace.resolve_path(filename, must_exist=True)
-            if not target.is_file():
-                return _safe_failure(request, "目标路径不是文件")
-            content = target.read_text(encoding="utf-8")
+            locator = os.path.abspath(
+                os.path.join(self.workspace.current_root or "", filename)
+            )
+            target, data = self._read(locator)
+            content = data.decode("utf-8")
             truncated = len(content) > _LOCAL_FILE_RESULT_CHARS
             if truncated:
                 content = content[:_LOCAL_FILE_RESULT_CHARS]
@@ -228,8 +279,18 @@ class FileReadExecutor(ToolExecutor):
                 arguments=request.arguments,
                 status=ToolCallStatus.SUCCESS,
                 result_content=f"文件: {target}\n{content}{suffix}",
+                source_observations=(
+                    {
+                        "kind": "local_file_v1",
+                        "locator": locator,
+                        "path": str(target),
+                        "sha256": hashlib.sha256(data).hexdigest(),
+                        "byte_length": len(data),
+                        "truncated": truncated,
+                    },
+                ),
             )
-        except (WorkspaceScopeError, OSError, UnicodeError) as exc:
+        except (ValueError, OSError, UnicodeError) as exc:
             return _safe_failure(request, f"文件读取失败: {exc}")
 
 
@@ -246,8 +307,16 @@ class DirectoryListExecutor(ToolExecutor):
         try:
             target = self.workspace.resolve_path(path, must_exist=True, directory=True)
             entries = []
-            for item in sorted(target.iterdir(), key=lambda value: (not value.is_dir(), value.name.casefold())):
-                entries.append({"name": item.name, "type": "directory" if item.is_dir() else "file"})
+            for item in sorted(
+                target.iterdir(),
+                key=lambda value: (not value.is_dir(), value.name.casefold()),
+            ):
+                entries.append(
+                    {
+                        "name": item.name,
+                        "type": "directory" if item.is_dir() else "file",
+                    }
+                )
                 if len(entries) >= 500:
                     break
             return ToolCallResult(
@@ -255,7 +324,9 @@ class DirectoryListExecutor(ToolExecutor):
                 tool_name=request.tool_name,
                 arguments=request.arguments,
                 status=ToolCallStatus.SUCCESS,
-                result_content=json.dumps({"path": str(target), "entries": entries}, ensure_ascii=False),
+                result_content=json.dumps(
+                    {"path": str(target), "entries": entries}, ensure_ascii=False
+                ),
             )
         except (WorkspaceScopeError, OSError) as exc:
             return _safe_failure(request, f"目录读取失败: {exc}")
@@ -278,21 +349,32 @@ class FileSearchExecutor(ToolExecutor):
             return _safe_failure(request, "搜索内容过长")
         if not isinstance(path, str) or not isinstance(case_sensitive, bool):
             return _safe_failure(request, "搜索路径和大小写选项格式无效")
-        if isinstance(max_results, bool) or not isinstance(max_results, int) or not 1 <= max_results <= _FILE_SEARCH_MAX_RESULTS:
-            return _safe_failure(request, f"max_results 必须是 1 到 {_FILE_SEARCH_MAX_RESULTS} 之间的整数")
+        if (
+            isinstance(max_results, bool)
+            or not isinstance(max_results, int)
+            or not 1 <= max_results <= _FILE_SEARCH_MAX_RESULTS
+        ):
+            return _safe_failure(
+                request,
+                f"max_results 必须是 1 到 {_FILE_SEARCH_MAX_RESULTS} 之间的整数",
+            )
         try:
             root = self.workspace.resolve_path(path, must_exist=True, directory=True)
         except WorkspaceScopeError as exc:
             return _safe_failure(request, str(exc))
 
         needle = query if case_sensitive else query.casefold()
-        matches: List[Dict[str, Any]] = []
+        matches: list[dict[str, Any]] = []
         files_scanned = 0
         files_skipped = 0
         try:
-            for directory, dir_names, file_names in os.walk(root, topdown=True, followlinks=False):
+            for directory, dir_names, file_names in os.walk(
+                root, topdown=True, followlinks=False
+            ):
                 dir_path = Path(directory)
-                dir_names[:] = [name for name in dir_names if not (dir_path / name).is_symlink()]
+                dir_names[:] = [
+                    name for name in dir_names if not (dir_path / name).is_symlink()
+                ]
                 for filename in sorted(file_names, key=str.casefold):
                     target = dir_path / filename
                     if target.is_symlink():
@@ -317,12 +399,14 @@ class FileSearchExecutor(ToolExecutor):
                         column = haystack.find(needle)
                         if column < 0:
                             continue
-                        matches.append({
-                            "path": str(target),
-                            "line": line_number,
-                            "column": column + 1,
-                            "text": line[:1000],
-                        })
+                        matches.append(
+                            {
+                                "path": str(target),
+                                "line": line_number,
+                                "column": column + 1,
+                                "text": line[:1000],
+                            }
+                        )
                         if len(matches) >= max_results:
                             break
                     if len(matches) >= max_results:
@@ -349,24 +433,43 @@ class FileSearchExecutor(ToolExecutor):
         )
 
 
-def _parse_apply_patch(patch: str) -> List[tuple[str, str, List[str]]]:
+def _parse_apply_patch(patch: str) -> list[tuple[str, str, list[str]]]:
     """Parse the bounded Codex-style patch envelope without executing a shell."""
     lines = patch.splitlines()
-    if not lines or lines[0].strip() != "*** Begin Patch" or lines[-1].strip() != "*** End Patch":
+    if (
+        not lines
+        or lines[0].strip() != "*** Begin Patch"
+        or lines[-1].strip() != "*** End Patch"
+    ):
         raise ValueError("patch 必须使用 *** Begin Patch / *** End Patch 包裹")
-    operations: List[tuple[str, str, List[str]]] = []
+    operations: list[tuple[str, str, list[str]]] = []
     index = 1
     while index < len(lines) - 1:
         header = lines[index]
         index += 1
-        matched = next((prefix for prefix in ("*** Add File: ", "*** Update File: ", "*** Delete File: ") if header.startswith(prefix)), None)
+        matched = next(
+            (
+                prefix
+                for prefix in (
+                    "*** Add File: ",
+                    "*** Update File: ",
+                    "*** Delete File: ",
+                )
+                if header.startswith(prefix)
+            ),
+            None,
+        )
         if matched is None:
             raise ValueError(f"不支持的 patch 文件头: {header}")
-        path = header[len(matched):].strip()
+        path = header[len(matched) :].strip()
         if not path:
             raise ValueError("patch 文件路径不能为空")
-        action = "add" if matched.startswith("*** Add") else "update" if matched.startswith("*** Update") else "delete"
-        body: List[str] = []
+        action = (
+            "add"
+            if matched.startswith("*** Add")
+            else "update" if matched.startswith("*** Update") else "delete"
+        )
+        body: list[str] = []
         while index < len(lines) - 1 and not lines[index].startswith("*** "):
             body.append(lines[index])
             index += 1
@@ -374,12 +477,12 @@ def _parse_apply_patch(patch: str) -> List[tuple[str, str, List[str]]]:
     return operations
 
 
-def _apply_update_hunks(original: str, body: List[str]) -> str:
+def _apply_update_hunks(original: str, body: list[str]) -> str:
     """Apply exact context hunks from the patch format to one text file."""
     current = original.splitlines()
     had_trailing_newline = original.endswith("\n")
-    hunks: List[List[str]] = []
-    active: Optional[List[str]] = None
+    hunks: list[list[str]] = []
+    active: list[str] | None = None
     for line in body:
         if line.startswith("@@"):
             active = []
@@ -396,10 +499,17 @@ def _apply_update_hunks(original: str, body: List[str]) -> str:
     for hunk in hunks:
         old_lines = [line[1:] for line in hunk if line[0] in " -"]
         new_lines = [line[1:] for line in hunk if line[0] in " +"]
-        start = next((position for position in range(offset, len(current) - len(old_lines) + 1) if current[position:position + len(old_lines)] == old_lines), None)
+        start = next(
+            (
+                position
+                for position in range(offset, len(current) - len(old_lines) + 1)
+                if current[position : position + len(old_lines)] == old_lines
+            ),
+            None,
+        )
         if start is None:
             raise ValueError("patch 上下文与目标文件不匹配")
-        current[start:start + len(old_lines)] = new_lines
+        current[start : start + len(old_lines)] = new_lines
         offset = start + len(new_lines)
     return "\n".join(current) + ("\n" if had_trailing_newline else "")
 
@@ -418,7 +528,7 @@ class ApplyPatchExecutor(ToolExecutor):
             return _safe_failure(request, "patch 过大")
         try:
             operations = _parse_apply_patch(patch)
-            prepared: List[tuple[str, Path, Optional[str]]] = []
+            prepared: list[tuple[str, Path, str | None]] = []
             seen: set[Path] = set()
             for action, filename, body in operations:
                 target = self.workspace.resolve_path(filename)
@@ -433,11 +543,25 @@ class ApplyPatchExecutor(ToolExecutor):
                         if not line.startswith("+"):
                             raise ValueError("Add File 的每一行都必须以 + 开头")
                         content_lines.append(line[1:])
-                    prepared.append((action, target, "\n".join(content_lines) + ("\n" if content_lines else "")))
+                    prepared.append(
+                        (
+                            action,
+                            target,
+                            "\n".join(content_lines) + ("\n" if content_lines else ""),
+                        )
+                    )
                 elif action == "update":
                     if not target.is_file():
                         raise ValueError(f"待更新文件不存在: {filename}")
-                    prepared.append((action, target, _apply_update_hunks(target.read_text(encoding="utf-8"), body)))
+                    prepared.append(
+                        (
+                            action,
+                            target,
+                            _apply_update_hunks(
+                                target.read_text(encoding="utf-8"), body
+                            ),
+                        )
+                    )
                 else:
                     if not target.is_file():
                         raise ValueError(f"待删除文件不存在: {filename}")
@@ -452,7 +576,14 @@ class ApplyPatchExecutor(ToolExecutor):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 temporary_path = None
                 try:
-                    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=target.parent, prefix=".agent-patch-", suffix=".tmp", delete=False) as temporary:
+                    with tempfile.NamedTemporaryFile(
+                        mode="w",
+                        encoding="utf-8",
+                        dir=target.parent,
+                        prefix=".agent-patch-",
+                        suffix=".tmp",
+                        delete=False,
+                    ) as temporary:
                         temporary.write(content or "")
                         temporary.flush()
                         os.fsync(temporary.fileno())
@@ -469,7 +600,10 @@ class ApplyPatchExecutor(ToolExecutor):
                 tool_name=request.tool_name,
                 arguments=request.arguments,
                 status=ToolCallStatus.SUCCESS,
-                result_content=json.dumps({"files": [str(target) for _, target, _ in prepared]}, ensure_ascii=False),
+                result_content=json.dumps(
+                    {"files": [str(target) for _, target, _ in prepared]},
+                    ensure_ascii=False,
+                ),
             )
         except (WorkspaceScopeError, OSError, UnicodeError, ValueError) as exc:
             return _safe_failure(request, f"patch 应用失败: {exc}")
@@ -487,7 +621,7 @@ class TerminalCommandExecutor(ToolExecutor):
         self.workspace = workspace
 
     @staticmethod
-    def _sandbox_command(command: str, cwd: Path, roots: List[Path]) -> List[str]:
+    def _sandbox_command(command: str, cwd: Path, roots: list[Path]) -> list[str]:
         """Build a Linux sandbox command with only authorized roots writable."""
         if not sys.platform.startswith("linux"):
             raise WorkspaceScopeError(
@@ -500,20 +634,45 @@ class TerminalCommandExecutor(ToolExecutor):
                 "请安装 bubblewrap 后重试"
             )
         runtime_bin = str(Path(sys.executable).resolve().parent)
-        runtime_prefix = Path(runtime_bin).parents[2] if len(Path(runtime_bin).parents) > 2 else None
+        runtime_prefix = (
+            Path(runtime_bin).parents[2] if len(Path(runtime_bin).parents) > 2 else None
+        )
         path_value = f"{runtime_bin}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
         args = [
-            bwrap, "--die-with-parent", "--new-session", "--unshare-pid", "--unshare-net",
-            "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp", "--tmpfs", "/run",
-            "--clearenv", "--setenv", "PATH", path_value,
-            "--setenv", "HOME", "/tmp", "--setenv", "LANG", "C.UTF-8",
+            bwrap,
+            "--die-with-parent",
+            "--new-session",
+            "--unshare-pid",
+            "--unshare-net",
+            "--proc",
+            "/proc",
+            "--dev",
+            "/dev",
+            "--tmpfs",
+            "/tmp",
+            "--tmpfs",
+            "/run",
+            "--clearenv",
+            "--setenv",
+            "PATH",
+            path_value,
+            "--setenv",
+            "HOME",
+            "/tmp",
+            "--setenv",
+            "LANG",
+            "C.UTF-8",
         ]
         # Keep normal system executables and libraries available read-only.
         for system_path in ("/usr", "/bin", "/sbin", "/lib", "/lib64", "/etc", "/sys"):
             if os.path.exists(system_path):
                 args.extend(["--ro-bind", system_path, system_path])
         created: set[str] = set()
-        if runtime_prefix is not None and runtime_prefix.is_dir() and str(runtime_prefix) not in {"/usr", "/bin", "/lib"}:
+        if (
+            runtime_prefix is not None
+            and runtime_prefix.is_dir()
+            and str(runtime_prefix) not in {"/usr", "/bin", "/lib"}
+        ):
             current = Path(runtime_prefix.anchor or "/")
             for part in runtime_prefix.parts[1:]:
                 current = current / part
@@ -525,7 +684,9 @@ class TerminalCommandExecutor(ToolExecutor):
 
         # The namespace starts empty. Create parents before binding each
         # authorized folder back at its original absolute path.
-        for root in sorted((item for item in roots if item.is_dir()), key=lambda item: len(item.parts)):
+        for root in sorted(
+            (item for item in roots if item.is_dir()), key=lambda item: len(item.parts)
+        ):
             current = Path(root.anchor or "/")
             for part in root.parts[1:]:
                 current = current / part
@@ -545,7 +706,11 @@ class TerminalCommandExecutor(ToolExecutor):
             return _safe_failure(request, "终端命令不能为空")
         try:
             cwd = self.workspace.resolve_path(cwd_arg, must_exist=True, directory=True)
-            roots = [Path(item["path"]) for item in self.workspace.list_roots() if item["exists"]]
+            roots = [
+                Path(item["path"])
+                for item in self.workspace.list_roots()
+                if item["exists"]
+            ]
             completed = subprocess.run(
                 self._sandbox_command(command, cwd, roots),
                 capture_output=True,
@@ -562,16 +727,25 @@ class TerminalCommandExecutor(ToolExecutor):
                 "exit_code": completed.returncode,
                 "stdout": stdout,
                 "stderr": stderr,
-                "output_truncated": len(completed.stdout) > _TERMINAL_OUTPUT_CHARS or len(completed.stderr) > _TERMINAL_OUTPUT_CHARS,
+                "output_truncated": len(completed.stdout) > _TERMINAL_OUTPUT_CHARS
+                or len(completed.stderr) > _TERMINAL_OUTPUT_CHARS,
             }
-            status = ToolCallStatus.SUCCESS if completed.returncode == 0 else ToolCallStatus.FAILED
+            status = (
+                ToolCallStatus.SUCCESS
+                if completed.returncode == 0
+                else ToolCallStatus.FAILED
+            )
             return ToolCallResult(
                 tool_call_id=request.tool_call_id,
                 tool_name=request.tool_name,
                 arguments=request.arguments,
                 status=status,
                 result_content=json.dumps(payload, ensure_ascii=False),
-                error_message="" if status is ToolCallStatus.SUCCESS else f"命令退出码: {completed.returncode}",
+                error_message=(
+                    ""
+                    if status is ToolCallStatus.SUCCESS
+                    else f"命令退出码: {completed.returncode}"
+                ),
             )
         except WorkspaceScopeError as exc:
             return _safe_failure(request, str(exc))
@@ -598,19 +772,26 @@ class _DuckDuckGoParser(HTMLParser):
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.results: List[Dict[str, str]] = []
-        self._current: Optional[Dict[str, str]] = None
-        self._capture: Optional[str] = None
-        self._buffer: List[str] = []
+        self.results: list[dict[str, str]] = []
+        self._current: dict[str, str] | None = None
+        self._capture: str | None = None
+        self._buffer: list[str] = []
 
-    def handle_starttag(self, tag: str, attrs: List[tuple[str, Optional[str]]]) -> None:
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attrs_map = dict(attrs)
         classes = set((attrs_map.get("class") or "").split())
         if tag == "a" and {"result__a", "result-link"}.intersection(classes):
-            self._current = {"title": "", "url": html.unescape(attrs_map.get("href") or "")}
+            self._current = {
+                "title": "",
+                "url": html.unescape(attrs_map.get("href") or ""),
+            }
             self._capture = "title"
             self._buffer = []
-        elif self._current is not None and tag in {"a", "div", "td"} and {"result__snippet", "result-snippet"}.intersection(classes):
+        elif (
+            self._current is not None
+            and tag in {"a", "div", "td"}
+            and {"result__snippet", "result-snippet"}.intersection(classes)
+        ):
             self._capture = "snippet"
             self._buffer = []
 
@@ -623,7 +804,11 @@ class _DuckDuckGoParser(HTMLParser):
             self._current["title"] = " ".join("".join(self._buffer).split())
             self._capture = None
             self._buffer = []
-        elif self._capture == "snippet" and tag in {"a", "div", "td"} and self._current is not None:
+        elif (
+            self._capture == "snippet"
+            and tag in {"a", "div", "td"}
+            and self._current is not None
+        ):
             self._current["snippet"] = " ".join("".join(self._buffer).split())
             self.results.append(self._current)
             self._current = None
@@ -634,16 +819,16 @@ class _DuckDuckGoParser(HTMLParser):
 class _ReadableHTMLParser(HTMLParser):
     """Extracts bounded readable text while skipping executable/page chrome."""
 
-    _SKIP_TAGS = {"script", "style", "noscript", "svg", "template"}
+    _SKIP_TAGS: ClassVar[set[str]] = {"script", "style", "noscript", "svg", "template"}
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.title = ""
         self._in_title = False
         self._skip_depth = 0
-        self._parts: List[str] = []
+        self._parts: list[str] = []
 
-    def handle_starttag(self, tag: str, attrs: List[tuple[str, Optional[str]]]) -> None:
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag in self._SKIP_TAGS:
             self._skip_depth += 1
         if tag == "title":
@@ -687,7 +872,9 @@ def _unwrap_search_url(url: str) -> str:
     return urljoin("https://html.duckduckgo.com", url)
 
 
-def _resolved_public_addresses(hostname: str, port: int, *, allow_network_translation: bool) -> List[tuple[Any, ...]]:
+def _resolved_public_addresses(
+    hostname: str, port: int, *, allow_network_translation: bool
+) -> list[tuple[Any, ...]]:
     """Resolve a host and retain only addresses safe for direct public egress.
 
     Some DNS environments return an unusable transition IPv6 record alongside
@@ -701,7 +888,7 @@ def _resolved_public_addresses(hostname: str, port: int, *, allow_network_transl
     except OSError as exc:
         raise ValueError("无法解析目标主机") from exc
 
-    permitted: List[tuple[Any, ...]] = []
+    permitted: list[tuple[Any, ...]] = []
     seen = set()
     for family, socktype, proto, canonname, sockaddr in resolved:
         address = sockaddr[0]
@@ -709,7 +896,9 @@ def _resolved_public_addresses(hostname: str, port: int, *, allow_network_transl
             ip = ipaddress.ip_address(address)
         except ValueError:
             continue
-        translated_public = allow_network_translation and ip in _NETWORK_TRANSLATION_RANGE
+        translated_public = (
+            allow_network_translation and ip in _NETWORK_TRANSLATION_RANGE
+        )
         if not (ip.is_global or translated_public):
             continue
         identity = (family, socktype, proto, sockaddr)
@@ -722,14 +911,16 @@ def _resolved_public_addresses(hostname: str, port: int, *, allow_network_transl
     return permitted
 
 
-def _validated_web_target(url: str) -> tuple[str, int, List[tuple[Any, ...]]]:
+def _validated_web_target(url: str) -> tuple[str, int, list[tuple[Any, ...]]]:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"} or not parsed.hostname:
         raise ValueError("仅支持 http/https URL")
     if parsed.username or parsed.password:
         raise ValueError("URL 不得包含账号或密码")
     hostname = parsed.hostname.rstrip(".").lower()
-    if hostname in {"localhost", "localhost.localdomain"} or hostname.endswith(".local"):
+    if hostname in {"localhost", "localhost.localdomain"} or hostname.endswith(
+        ".local"
+    ):
         raise ValueError("出于安全原因不访问本地主机名")
     try:
         literal_ip = ipaddress.ip_address(hostname)
@@ -754,7 +945,7 @@ def _connect_public_host(
     hostname: str,
     port: int,
     timeout: Any,
-    source_address: Optional[tuple[str, int]] = None,
+    source_address: tuple[str, int] | None = None,
 ) -> socket.socket:
     """Connect only to an address validated by the public-egress policy."""
     try:
@@ -766,7 +957,7 @@ def _connect_public_host(
         port,
         allow_network_translation=literal_ip is None,
     )
-    last_error: Optional[OSError] = None
+    last_error: OSError | None = None
     for family, socktype, proto, _canonname, sockaddr in addresses:
         connection = socket.socket(family, socktype, proto)
         try:
@@ -786,7 +977,9 @@ class _PinnedHTTPConnection(http.client.HTTPConnection):
     """HTTP connection whose socket cannot drift to an unvalidated DNS result."""
 
     def connect(self) -> None:
-        self.sock = _connect_public_host(self.host, self.port, self.timeout, self.source_address)
+        self.sock = _connect_public_host(
+            self.host, self.port, self.timeout, self.source_address
+        )
         if self._tunnel_host:
             self._tunnel()
 
@@ -795,20 +988,24 @@ class _PinnedHTTPSConnection(http.client.HTTPSConnection):
     """HTTPS variant retaining hostname verification and SNI after IP pinning."""
 
     def connect(self) -> None:
-        self.sock = _connect_public_host(self.host, self.port, self.timeout, self.source_address)
+        self.sock = _connect_public_host(
+            self.host, self.port, self.timeout, self.source_address
+        )
         if self._tunnel_host:
             self._tunnel()
             server_hostname = self._tunnel_host
         else:
             server_hostname = self.host
-        self.sock = self._context.wrap_socket(self.sock, server_hostname=server_hostname)
+        self.sock = self._context.wrap_socket(
+            self.sock, server_hostname=server_hostname
+        )
 
 
 def _connect_configured_proxy(
     hostname: str,
     port: int,
     timeout: Any,
-    source_address: Optional[tuple[str, int]] = None,
+    source_address: tuple[str, int] | None = None,
 ) -> socket.socket:
     """Connect to the user-configured proxy, which may intentionally be local."""
     return socket.create_connection(
@@ -820,7 +1017,9 @@ def _connect_configured_proxy(
 
 class _ProxyHTTPConnection(http.client.HTTPConnection):
     def connect(self) -> None:
-        self.sock = _connect_configured_proxy(self.host, self.port, self.timeout, self.source_address)
+        self.sock = _connect_configured_proxy(
+            self.host, self.port, self.timeout, self.source_address
+        )
 
 
 class _PinnedProxyHTTPSConnection(http.client.HTTPSConnection):
@@ -840,25 +1039,33 @@ class _PinnedProxyHTTPSConnection(http.client.HTTPSConnection):
         self._target_port = target_port
         self._target_address = target_address
 
-    def set_tunnel(self, _host: str, port: Optional[int] = None, headers: Optional[Dict[str, str]] = None) -> None:
+    def set_tunnel(
+        self, _host: str, port: int | None = None, headers: dict[str, str] | None = None
+    ) -> None:
         # ``urllib`` supplies the original hostname here.  Send CONNECT with
         # the already validated numeric address instead, while retaining the
         # original hostname below for TLS SNI and certificate verification.
         super().set_tunnel(self._target_address, self._target_port, headers)
 
     def connect(self) -> None:
-        self.sock = _connect_configured_proxy(self.host, self.port, self.timeout, self.source_address)
+        self.sock = _connect_configured_proxy(
+            self.host, self.port, self.timeout, self.source_address
+        )
         self._tunnel()
-        self.sock = self._context.wrap_socket(self.sock, server_hostname=self._target_hostname)
+        self.sock = self._context.wrap_socket(
+            self.sock, server_hostname=self._target_hostname
+        )
 
 
 class _PinnedHTTPHandler(HTTPHandler):
     def http_open(self, req: Request) -> Any:
         if req.has_proxy():
             parsed = urlparse(req.full_url)
-            hostname, port, addresses = _validated_web_target(req.full_url)
+            _hostname, port, addresses = _validated_web_target(req.full_url)
             target_address = addresses[0][4][0]
-            authority = f"[{target_address}]" if ":" in target_address else target_address
+            authority = (
+                f"[{target_address}]" if ":" in target_address else target_address
+            )
             authority = f"{authority}:{port}"
             req.selector = urlunparse(parsed._replace(netloc=authority))
             req.add_unredirected_header("Host", parsed.netloc)
@@ -873,7 +1080,9 @@ class _PinnedHTTPSHandler(HTTPSHandler):
             hostname, port, addresses = _validated_web_target(original_url)
             target_address = addresses[0][4][0]
 
-            def connection_factory(proxy_host: str, **kwargs: Any) -> _PinnedProxyHTTPSConnection:
+            def connection_factory(
+                proxy_host: str, **kwargs: Any
+            ) -> _PinnedProxyHTTPSConnection:
                 return _PinnedProxyHTTPSConnection(
                     proxy_host,
                     target_hostname=hostname,
@@ -887,13 +1096,17 @@ class _PinnedHTTPSHandler(HTTPSHandler):
 
 
 class _SafeRedirectHandler(HTTPRedirectHandler):
-    def redirect_request(self, req: Request, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> Optional[Request]:
+    def redirect_request(
+        self, req: Request, fp: Any, code: int, msg: str, headers: Any, newurl: str
+    ) -> Request | None:
         absolute = urljoin(req.full_url, newurl)
         _reject_private_host(absolute)
         return super().redirect_request(req, fp, code, msg, headers, absolute)
 
 
-def _decode_http_payload(payload: bytes, content_encoding: str, *, max_bytes: int) -> tuple[bytes, bool]:
+def _decode_http_payload(
+    payload: bytes, content_encoding: str, *, max_bytes: int
+) -> tuple[bytes, bool]:
     """Decode bounded HTTP content without allowing compression bombs.
 
     ``urllib`` exposes the response body as received and does not transparently
@@ -902,7 +1115,9 @@ def _decode_http_payload(payload: bytes, content_encoding: str, *, max_bytes: in
     uncompressed responses. Unknown encodings fail closed instead of leaking
     binary data into the user-facing fetch result.
     """
-    encodings = [item.strip().lower() for item in content_encoding.split(",") if item.strip()]
+    encodings = [
+        item.strip().lower() for item in content_encoding.split(",") if item.strip()
+    ]
     decoded = payload
     truncated = False
     for encoding in reversed(encodings):
@@ -910,7 +1125,9 @@ def _decode_http_payload(payload: bytes, content_encoding: str, *, max_bytes: in
             continue
         if encoding not in {"gzip", "x-gzip", "deflate"}:
             raise ValueError(f"不支持的 HTTP 内容编码: {encoding}")
-        window_bits = zlib.MAX_WBITS | 16 if encoding in {"gzip", "x-gzip"} else zlib.MAX_WBITS
+        window_bits = (
+            zlib.MAX_WBITS | 16 if encoding in {"gzip", "x-gzip"} else zlib.MAX_WBITS
+        )
         decompressor = zlib.decompressobj(window_bits)
         decoded = decompressor.decompress(decoded, max_bytes + 1)
         if len(decoded) > max_bytes or decompressor.unconsumed_tail:
@@ -925,7 +1142,9 @@ def _decode_http_payload(payload: bytes, content_encoding: str, *, max_bytes: in
     return decoded, truncated
 
 
-def _bounded_json_text(payload: Dict[str, Any], text_field: str, *, max_chars: int) -> str:
+def _bounded_json_text(
+    payload: dict[str, Any], text_field: str, *, max_chars: int
+) -> str:
     """Serialize valid JSON while fitting a potentially large text field."""
     text = str(payload.get(text_field, ""))
     candidate = dict(payload)
@@ -984,7 +1203,12 @@ def _open_web_url(url: str, *, accept: str) -> tuple[str, str, bool, str]:
         )
         truncated = encoding_truncated or len(payload) > _WEB_MAX_RESPONSE_BYTES
         charset = response.headers.get_content_charset() or "utf-8"
-        return final_url, content_type, truncated, decoded_payload.decode(charset, errors="replace")
+        return (
+            final_url,
+            content_type,
+            truncated,
+            decoded_payload.decode(charset, errors="replace"),
+        )
 
 
 class WebSearchExecutor(ToolExecutor):
@@ -1016,12 +1240,14 @@ class WebSearchExecutor(ToolExecutor):
                 url = _unwrap_search_url(item.get("url", ""))
                 if not url.startswith(("http://", "https://")):
                     continue
-                results.append({
-                    "title": title[:300],
-                    "url": url[:1000],
-                    "snippet": item.get("snippet", "")[:600],
-                    "citation": {"url": url[:1000], "title": title[:300]},
-                })
+                results.append(
+                    {
+                        "title": title[:300],
+                        "url": url[:1000],
+                        "snippet": item.get("snippet", "")[:600],
+                        "citation": {"url": url[:1000], "title": title[:300]},
+                    }
+                )
                 if len(results) >= 5:
                     break
             fetched_at = _utc_now_iso()
@@ -1047,7 +1273,7 @@ class WebSearchExecutor(ToolExecutor):
                 status=ToolCallStatus.SUCCESS,
                 result_content=content,
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             return _safe_failure(request, f"联网搜索失败 ({type(exc).__name__})")
 
 
@@ -1082,7 +1308,9 @@ class WebFetchExecutor(ToolExecutor):
                 "content": text[:_WEB_MAX_RESULT_CHARS],
                 "truncated": truncated or len(text) > _WEB_MAX_RESULT_CHARS,
             }
-            content = _bounded_json_text(result, "content", max_chars=_WEB_MAX_RESULT_CHARS)
+            content = _bounded_json_text(
+                result, "content", max_chars=_WEB_MAX_RESULT_CHARS
+            )
             return ToolCallResult(
                 tool_call_id=request.tool_call_id,
                 tool_name=request.tool_name,
@@ -1090,17 +1318,39 @@ class WebFetchExecutor(ToolExecutor):
                 status=ToolCallStatus.SUCCESS,
                 result_content=content,
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             return _safe_failure(request, f"网页抓取失败 ({type(exc).__name__})")
 
 
 _WEATHER_CODE_DESCRIPTIONS = {
-    0: "晴", 1: "大致晴", 2: "局部多云", 3: "阴", 45: "雾", 48: "雾凇",
-    51: "小毛毛雨", 53: "毛毛雨", 55: "大毛毛雨", 56: "冻毛毛雨", 57: "强冻毛毛雨",
-    61: "小雨", 63: "中雨", 65: "大雨", 66: "冻雨", 67: "强冻雨",
-    71: "小雪", 73: "中雪", 75: "大雪", 77: "雪粒", 80: "小阵雨",
-    81: "中阵雨", 82: "强阵雨", 85: "小阵雪", 86: "强阵雪", 95: "雷暴",
-    96: "雷暴伴小冰雹", 99: "雷暴伴大冰雹",
+    0: "晴",
+    1: "大致晴",
+    2: "局部多云",
+    3: "阴",
+    45: "雾",
+    48: "雾凇",
+    51: "小毛毛雨",
+    53: "毛毛雨",
+    55: "大毛毛雨",
+    56: "冻毛毛雨",
+    57: "强冻毛毛雨",
+    61: "小雨",
+    63: "中雨",
+    65: "大雨",
+    66: "冻雨",
+    67: "强冻雨",
+    71: "小雪",
+    73: "中雪",
+    75: "大雪",
+    77: "雪粒",
+    80: "小阵雨",
+    81: "中阵雨",
+    82: "强阵雨",
+    85: "小阵雪",
+    86: "强阵雪",
+    95: "雷暴",
+    96: "雷暴伴小冰雹",
+    99: "雷暴伴大冰雹",
 }
 
 
@@ -1114,17 +1364,27 @@ class WeatherExecutor(ToolExecutor):
             return _safe_failure(request, "天气查询地点不能为空")
         if len(location) > _WEATHER_MAX_LOCATION_CHARS:
             return _safe_failure(request, "天气查询地点过长")
-        if not isinstance(forecast_days, int) or isinstance(forecast_days, bool) or not 1 <= forecast_days <= 7:
+        if (
+            not isinstance(forecast_days, int)
+            or isinstance(forecast_days, bool)
+            or not 1 <= forecast_days <= 7
+        ):
             return _safe_failure(request, "forecast_days 必须是 1 到 7 之间的整数")
         try:
             geocode_url = (
                 "https://geocoding-api.open-meteo.com/v1/search?"
                 f"name={quote_plus(location)}&count=1&language=zh&format=json"
             )
-            _, _, _, geocode_body = _open_web_url(geocode_url, accept="application/json")
+            _, _, _, geocode_body = _open_web_url(
+                geocode_url, accept="application/json"
+            )
             geocode = json.loads(geocode_body)
             matches = geocode.get("results") if isinstance(geocode, dict) else None
-            if not isinstance(matches, list) or not matches or not isinstance(matches[0], dict):
+            if (
+                not isinstance(matches, list)
+                or not matches
+                or not isinstance(matches[0], dict)
+            ):
                 return _safe_failure(request, f"找不到天气地点: {location}")
             place = matches[0]
             latitude = float(place["latitude"])
@@ -1139,13 +1399,17 @@ class WeatherExecutor(ToolExecutor):
                 "precipitation_probability_max&timezone=auto"
                 f"&forecast_days={effective_forecast_days}"
             )
-            _, _, _, forecast_body = _open_web_url(forecast_url, accept="application/json")
+            _, _, _, forecast_body = _open_web_url(
+                forecast_url, accept="application/json"
+            )
             forecast = json.loads(forecast_body)
             current = forecast.get("current", {}) if isinstance(forecast, dict) else {}
             daily = forecast.get("daily", {}) if isinstance(forecast, dict) else {}
             current_view = dict(current)
             current_code = current.get("weather_code")
-            current_view["weather_description"] = _WEATHER_CODE_DESCRIPTIONS.get(current_code, "未知")
+            current_view["weather_description"] = _WEATHER_CODE_DESCRIPTIONS.get(
+                current_code, "未知"
+            )
             daily_view = []
             dates = daily.get("time", [])
             codes = daily.get("weather_code", [])
@@ -1154,14 +1418,20 @@ class WeatherExecutor(ToolExecutor):
             rain = daily.get("precipitation_probability_max", [])
             for index, date in enumerate(dates):
                 code = codes[index] if index < len(codes) else None
-                daily_view.append({
-                    "date": date,
-                    "weather_code": code,
-                    "weather_description": _WEATHER_CODE_DESCRIPTIONS.get(code, "未知"),
-                    "temperature_max": highs[index] if index < len(highs) else None,
-                    "temperature_min": lows[index] if index < len(lows) else None,
-                    "precipitation_probability_max": rain[index] if index < len(rain) else None,
-                })
+                daily_view.append(
+                    {
+                        "date": date,
+                        "weather_code": code,
+                        "weather_description": _WEATHER_CODE_DESCRIPTIONS.get(
+                            code, "未知"
+                        ),
+                        "temperature_max": highs[index] if index < len(highs) else None,
+                        "temperature_min": lows[index] if index < len(lows) else None,
+                        "precipitation_probability_max": (
+                            rain[index] if index < len(rain) else None
+                        ),
+                    }
+                )
             fetched_at = _utc_now_iso()
             result = {
                 "schema_version": "external_observation.v1",
@@ -1183,17 +1453,21 @@ class WeatherExecutor(ToolExecutor):
                 tool_name=request.tool_name,
                 arguments=request.arguments,
                 status=ToolCallStatus.SUCCESS,
-                result_content=json.dumps(result, ensure_ascii=False)[:_WEB_MAX_RESULT_CHARS],
+                result_content=json.dumps(result, ensure_ascii=False)[
+                    :_WEB_MAX_RESULT_CHARS
+                ],
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             return _safe_failure(request, f"天气查询失败 ({type(exc).__name__})")
 
 
 def build_product_tool_registry(
     *,
-    file_root: Optional[str] = None,
-    workspace: Optional[WorkspaceManager] = None,
-    memory_update_callback: Optional[Callable[[ToolExecutionRequest], ToolCallResult]] = None,
+    file_root: str | None = None,
+    workspace: WorkspaceManager | None = None,
+    memory_update_callback: (
+        Callable[[ToolExecutionRequest], ToolCallResult] | None
+    ) = None,
 ) -> ToolRegistry:
     """Builds clean product tool registry separate from evaluation fixtures."""
     registry = ToolRegistry()
@@ -1253,7 +1527,9 @@ def build_product_tool_registry(
             description="联网搜索公开网页并返回少量标题、链接和摘要；用于新闻、资料、实时信息等需要外部证据的问题。",
             parameters_schema={
                 "type": "object",
-                "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 300}},
+                "properties": {
+                    "query": {"type": "string", "minLength": 1, "maxLength": 300}
+                },
                 "required": ["query"],
                 "additionalProperties": False,
             },
@@ -1267,7 +1543,9 @@ def build_product_tool_registry(
             description="抓取一个公开 http/https 网页并提取有界可读文本；应在搜索结果需要核验或用户给出 URL 时使用。",
             parameters_schema={
                 "type": "object",
-                "properties": {"url": {"type": "string", "format": "uri", "maxLength": 2000}},
+                "properties": {
+                    "url": {"type": "string", "format": "uri", "maxLength": 2000}
+                },
                 "required": ["url"],
                 "additionalProperties": False,
             },
@@ -1285,7 +1563,11 @@ def build_product_tool_registry(
             parameters_schema={
                 "type": "object",
                 "properties": {
-                    "location": {"type": "string", "minLength": 1, "maxLength": _WEATHER_MAX_LOCATION_CHARS},
+                    "location": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": _WEATHER_MAX_LOCATION_CHARS,
+                    },
                     "forecast_days": {"type": "integer", "minimum": 1, "maximum": 7},
                 },
                 "required": ["location"],
@@ -1326,7 +1608,9 @@ def build_product_tool_registry(
             description="读取用户配置的 Agent 工作区范围内的 UTF-8 文本文件；filename 可为相对路径或范围内绝对路径。",
             parameters_schema={
                 "type": "object",
-                "properties": {"filename": {"type": "string", "minLength": 1, "maxLength": 4096}},
+                "properties": {
+                    "filename": {"type": "string", "minLength": 1, "maxLength": 4096}
+                },
                 "required": ["filename"],
                 "additionalProperties": False,
             },
@@ -1362,7 +1646,11 @@ def build_product_tool_registry(
                     "query": {"type": "string", "minLength": 1, "maxLength": 300},
                     "path": {"type": "string", "maxLength": 4096},
                     "case_sensitive": {"type": "boolean"},
-                    "max_results": {"type": "integer", "minimum": 1, "maximum": _FILE_SEARCH_MAX_RESULTS},
+                    "max_results": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": _FILE_SEARCH_MAX_RESULTS,
+                    },
                 },
                 "required": ["query"],
                 "additionalProperties": False,
@@ -1380,7 +1668,13 @@ def build_product_tool_registry(
             ),
             parameters_schema={
                 "type": "object",
-                "properties": {"patch": {"type": "string", "minLength": 1, "maxLength": _PATCH_MAX_CHARS}},
+                "properties": {
+                    "patch": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": _PATCH_MAX_CHARS,
+                    }
+                },
                 "required": ["patch"],
                 "additionalProperties": False,
             },

@@ -49,6 +49,13 @@ class CollaborationProvider(TestProviderClient):
         schema_name="structured_output",
     ):
         self.names.append(schema_name)
+        if schema_name == "collaboration_evidencesearch_v1":
+            return {
+                "schema_version": 1,
+                "queries": [],
+                "source_windows": [],
+                "reason": "No additional grounded source in this fixture",
+            }
         if schema_name == "collaboration_planner_v1":
             tool = "create_file" if self.fault == "unauthorized" else "calculator"
             return {
@@ -63,7 +70,7 @@ class CollaborationProvider(TestProviderClient):
                     }
                 ],
             }
-        if schema_name == "collaboration_memory_v1":
+        if schema_name == "collaboration_memory_v2":
             if self.fault == "provider":
                 raise ProviderRequestError(
                     "not-for-public-output",
@@ -72,9 +79,11 @@ class CollaborationProvider(TestProviderClient):
                     status_code=503,
                 )
             return {
-                "schema_version": 1,
+                "schema_version": 2,
                 "selected_memory_ids": ["invented"] if self.fault == "memory" else [],
                 "missing_information": [],
+                "evidence_needs": [],
+                "source_requests": [],
             }
         if schema_name == "collaboration_verifier_v1":
             data = json.loads(user_prompt)
@@ -148,13 +157,21 @@ def test_four_roles_execute_real_calculator_and_replay_without_duplicate_ingesti
         )
         assert result.status is AgentResultStatus.SUCCESS
         assert result.final_response == "391"
+        graphs = app.coordination_repository.list_task_graphs(result.task_id)
+        assert len(graphs) == 1
+        node = graphs[0]["nodes"][0]
+        assert node["status"] == "VERIFIED"
+        assert node["attempts"][0]["status"] == "VERIFIED"
+        assert node["attempts"][0]["artifact_id"]
+        reopened = CoordinationRepository(app.coordination_repository.db_path)
+        assert reopened.list_task_graphs(result.task_id) == graphs
         assert len(result.executed_tool_call_ids) == 1
         receipt = app.journal.get_receipt(result.executed_tool_call_ids[0])
         assert receipt["status"] == "SUCCEEDED"
         assert "391" in receipt["result_json"]
         assert {
             "collaboration_planner_v1",
-            "collaboration_memory_v1",
+            "collaboration_memory_v2",
             "agent_action",
             "collaboration_verifier_v1",
         } <= set(provider.names)
@@ -258,6 +275,264 @@ def test_reservations_and_handoffs_survive_restart_and_reject_changed_identity(
         restarted.get_stage(run, "plan", "Memory", {"goal": "input"})
     with pytest.raises(CoordinationConflict):
         restarted.accept(run, "other", "Memory", "Coordinator", {}, {}, 0)
+
+
+def test_graph_and_attempt_reject_changed_inputs(tmp_path):
+    repo = CoordinationRepository(str(tmp_path / "graph.db"))
+    run = repo.begin("session", "turn", "goal", asdict(CollaborationLimits()))
+    repo.bind_task(run, "task")
+    plan = {
+        "schema_version": 1,
+        "subtasks": [
+            {
+                "key": "a",
+                "objective": "A",
+                "dependencies": [],
+                "tool_names": [],
+                "completion_criteria": "done",
+            }
+        ],
+    }
+    graph = repo.record_graph(run, "task", plan, {"context_hash": "v1"})
+    repo.record_attempt(run, graph, "a", {"memory_revision": "v1"})
+    reopened = CoordinationRepository(repo.db_path)
+    assert (
+        reopened.list_task_graphs("task")[0]["nodes"][0]["attempts"][0]["status"]
+        == "RUNNING"
+    )
+    with pytest.raises(CoordinationConflict, match="frontier changed"):
+        reopened.record_attempt(run, graph, "a", {"memory_revision": "v2"})
+    with pytest.raises(CoordinationConflict, match="frontier changed"):
+        reopened.record_graph(run, "task", plan, {"context_hash": "v2"})
+
+
+def test_invalidation_cannot_be_undone_by_inflight_attempt(tmp_path):
+    repo = CoordinationRepository(str(tmp_path / "graph.db"))
+    run = repo.begin("session", "turn", "goal", asdict(CollaborationLimits()))
+    repo.bind_task(run, "task")
+    plan = {
+        "schema_version": 1,
+        "subtasks": [
+            {
+                "key": "a",
+                "objective": "A",
+                "dependencies": [],
+                "tool_names": [],
+                "completion_criteria": "done",
+            }
+        ],
+    }
+    graph = repo.record_graph(run, "task", plan, {})
+    attempt = repo.record_attempt(run, graph, "a", {"revision": "v1"})
+    repo.invalidate_run(run, "TASK_FRONTIER")
+    with pytest.raises(CoordinationConflict, match="invalidated"):
+        repo.record_attempt(run, graph, "a", {"revision": "v1"})
+    with pytest.raises(CoordinationConflict, match="invalidated"):
+        repo.accept(
+            run, "execute:a", "Executor", "Coordinator", {}, {"status": "SUCCESS"}, 0
+        )
+    from src.memory.collaboration.repository import ObservationFrontierConflict
+
+    with pytest.raises(CoordinationConflict) as error:
+        repo.record_attempt_observations(run, attempt, [])
+    assert not isinstance(error.value, ObservationFrontierConflict)
+    node = repo.list_task_graphs("task")[0]["nodes"][0]
+    assert node["status"] == "STALE" and node["attempts"][0]["artifact_id"] is None
+
+
+def test_task_constraint_change_before_executor_blocks_stale_plan(
+    tmp_path, monkeypatch
+):
+    from src.memory.task_state.models import EntryKind
+
+    class ChangingProvider(CollaborationProvider):
+        app = None
+
+        def generate_json(self, system_prompt, user_prompt, **kwargs):
+            result = super().generate_json(system_prompt, user_prompt, **kwargs)
+            if kwargs.get("schema_name") == "collaboration_planner_v1":
+                task_id = json.loads(user_prompt)["task_id"]
+                self.app.runtime.task_service.repository.add_entry(
+                    task_id, EntryKind.CONSTRAINT, "new constraint"
+                )
+            return result
+
+    provider = ChangingProvider()
+    app = make_app(tmp_path, monkeypatch, provider)
+    provider.app = app
+    try:
+        result = app.process_chat_turn("Compute 17*23")
+        assert result.status is AgentResultStatus.FAILED
+        assert result.error_info.code == "COLLABORATION_TASK_STALE"
+        assert provider.executor_calls == 0
+        graphs = app.coordination_repository.list_task_graphs(result.task_id)
+        assert graphs[0]["nodes"][0]["status"] == "BLOCKED"
+    finally:
+        app.close()
+
+
+def test_terminal_replay_rejects_changed_task_constraint(tmp_path, monkeypatch):
+    from src.memory.task_state.models import EntryKind
+
+    app = make_app(tmp_path, monkeypatch)
+    try:
+        result = app._process_chat_turn_with_id(
+            "Compute 17*23", "task-turn", resume=False
+        )
+        assert result.status is AgentResultStatus.SUCCESS
+        app.runtime.task_service.repository.add_entry(
+            result.task_id, EntryKind.CONSTRAINT, "new constraint"
+        )
+        replay = app._process_chat_turn_with_id(
+            "Compute 17*23", "task-turn", resume=True
+        )
+        assert replay.status is AgentResultStatus.FAILED
+        assert replay.error_info.code == "COLLABORATION_STALE_REPLAY"
+        assert replay.final_response is None
+        graphs = app.coordination_repository.list_task_graphs(result.task_id)
+        assert graphs[0]["nodes"][0]["status"] == "STALE"
+        assert graphs[0]["nodes"][0]["attempts"][0]["status"] == "VERIFIED"
+        with pytest.raises(CoordinationConflict, match="stale"):
+            app.coordination_repository.verify_artifact(
+                graphs[0]["run_id"], "execute:calc", "verify:calc"
+            )
+        replay_again = app._process_chat_turn_with_id(
+            "Compute 17*23", "task-turn", resume=True
+        )
+        assert replay_again.error_info.code == "COLLABORATION_STALE_REPLAY"
+        with sqlite3.connect(app.coordination_repository.db_path) as db:
+            assert (
+                db.execute("SELECT COUNT(*) FROM task_invalidations").fetchone()[0] == 1
+            )
+    finally:
+        app.close()
+
+
+def test_task_graph_lineage_links_prior_turn_without_reusing_nodes(
+    tmp_path, monkeypatch
+):
+    provider = CollaborationProvider()
+    app = make_app(tmp_path, monkeypatch, provider)
+    try:
+        first = app.process_chat_turn("Compute 17*23")
+        assert first.status is AgentResultStatus.SUCCESS
+        provider.executor_calls = 0
+        second = app.process_chat_turn("Compute 17*23 again")
+        assert (
+            second.status is AgentResultStatus.SUCCESS
+            and second.task_id == first.task_id
+        )
+        graphs = app.coordination_repository.list_task_graphs(first.task_id)
+        assert len(graphs) == 2
+        assert json.loads(graphs[1]["planning_frontier_json"])["prior_graph_ids"] == [
+            graphs[0]["graph_id"]
+        ]
+        assert graphs[0]["nodes"][0]["node_id"] != graphs[1]["nodes"][0]["node_id"]
+    finally:
+        app.close()
+
+
+def test_artifact_revocation_replay_preserves_independent_branch_until_global_change(
+    tmp_path, monkeypatch
+):
+    from src.memory.task_state.models import EntryKind
+
+    class BranchProvider(CollaborationProvider):
+        def generate_json(self, system_prompt, user_prompt, **kwargs):
+            result = super().generate_json(system_prompt, user_prompt, **kwargs)
+            if kwargs.get("schema_name") == "collaboration_planner_v1":
+                result["subtasks"].extend(
+                    [
+                        {
+                            "key": "dependent",
+                            "objective": "Report calculation",
+                            "dependencies": ["calc"],
+                            "tool_names": [],
+                            "completion_criteria": "Use verified result",
+                        },
+                        {
+                            "key": "independent",
+                            "objective": "Independent summary",
+                            "dependencies": [],
+                            "tool_names": [],
+                            "completion_criteria": "Summarize",
+                        },
+                    ]
+                )
+            if kwargs.get("schema_name") == "collaboration_verifier_v1":
+                data = json.loads(user_prompt)
+                if "receipts" in data and not data["receipts"]:
+                    result["evidence_ids"] = [
+                        row["artifact_id"]
+                        for row in data["verified_dependencies"].values()
+                    ]
+            return result
+
+    app = make_app(tmp_path, monkeypatch, BranchProvider())
+    try:
+        result = app._process_chat_turn_with_id(
+            "Compute 17*23", "branch-turn", resume=False
+        )
+        assert result.status is AgentResultStatus.SUCCESS
+        graph = app.coordination_repository.list_task_graphs(result.task_id)[0]
+        root = next(row for row in graph["nodes"] if row["node_key"] == "calc")
+        app.coordination_repository.invalidate_artifact(
+            graph["run_id"], root["attempts"][0]["artifact_id"], "artifact-event"
+        )
+        candidate = app.collaboration.prepare_repair(graph["run_id"], "artifact-event")
+        assert {row["spec"]["key"] for row in candidate["rerun"]} == {
+            "calc",
+            "dependent",
+        }
+        assert {row["node_key"] for row in candidate["reuse_candidates"]} == {
+            "independent"
+        }
+        assert all(not row["reuse_authorized"] for row in candidate["reuse_candidates"])
+        assert (
+            candidate["reuse_candidates"][0]["conversation_validation"]
+            == "SOURCE_MESSAGES_VERIFIED"
+        )
+        assert candidate["reuse_candidates"][0]["tool_validation"] == "NO_TOOL_CALLS"
+        repair_plan = app.collaboration.plan_repair(graph["run_id"], "artifact-event")
+        assert repair_plan == app.collaboration.plan_repair(
+            graph["run_id"], "artifact-event"
+        )
+        assert repair_plan == app.coordination_repository.get_repair_plan(
+            repair_plan["repair_id"]
+        )
+        actions = {row["spec"]["key"]: row for row in repair_plan["nodes"]}
+        assert actions["calc"]["reason"] == "INVALIDATED"
+        assert actions["dependent"]["reason"] == "INVALIDATED"
+        assert actions["independent"]["reason"] == "REUSE_NOT_AUTHORIZED"
+        assert all(row["action"] == "RERUN" for row in actions.values())
+        assert repair_plan["execution_status"] == "NOT_STARTED"
+        stale = app._process_chat_turn_with_id(
+            "Compute 17*23", "branch-turn", resume=True
+        )
+        assert stale.status is AgentResultStatus.FAILED and stale.final_response is None
+        rows = app.coordination_repository.list_task_graphs(result.task_id)[0]["nodes"]
+        assert {row["node_key"]: row["status"] for row in rows} == {
+            "calc": "STALE",
+            "dependent": "STALE",
+            "independent": "VERIFIED",
+        }
+        app.runtime.task_service.repository.add_entry(
+            result.task_id, EntryKind.CONSTRAINT, "new task-wide constraint"
+        )
+        with pytest.raises(
+            CoordinationConflict, match="task goal or constraint changed"
+        ):
+            app.collaboration.prepare_repair(graph["run_id"], "artifact-event")
+        with pytest.raises(CoordinationConflict, match="global invalidation"):
+            app.coordination_repository.get_repair_plan(repair_plan["repair_id"])
+        stale = app._process_chat_turn_with_id(
+            "Compute 17*23", "branch-turn", resume=True
+        )
+        assert stale.status is AgentResultStatus.FAILED
+        rows = app.coordination_repository.list_task_graphs(result.task_id)[0]["nodes"]
+        assert all(row["status"] == "STALE" for row in rows)
+    finally:
+        app.close()
 
 
 def test_corrupted_handoff_fails_closed(tmp_path):

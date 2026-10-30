@@ -1,0 +1,94 @@
+{
+  "kind": "functional_closeout",
+  "date": "2026-10-31",
+  "repository_base_commit": "a8d2fc6362bd3750dc66d9f8f5683af0ffaf26dc",
+  "offline_regression": {
+    "command": "python -m pytest -q --junitxml=docs/evaluations/functional-closeout-20261031.xml",
+    "tests": 521,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 1,
+    "passed": 520,
+    "elapsed_seconds": 138.482,
+    "provider": "explicit_test_providers",
+    "junit_path": "docs/evaluations/functional-closeout-20261031.xml"
+  },
+  "checks": {
+    "ruff_changed_python_files": "passed",
+    "black_changed_python_files": "passed",
+    "git_diff_check": "passed"
+  },
+  "live_integrations": [
+    {
+      "path": "docs/evaluations/live-source-repair-experience-20261031.json",
+      "engineering_assertions_passed": true,
+      "requested_model": "deepseek-v4-flash",
+      "server_model_identity_retained": false
+    },
+    {
+      "path": "docs/evaluations/live-evidence-expansion-20261031.json",
+      "engineering_assertions_passed": true,
+      "requested_model": "deepseek-v4-flash",
+      "server_model_identity_retained": false
+    }
+  ],
+  "preserved_failed_attempts": [
+    "docs/evaluations/live-source-repair-experience-attempt1-20261031.json",
+    "docs/evaluations/live-source-repair-experience-attempt2-20261031.json",
+    "docs/evaluations/live-evidence-expansion-attempt1-20261031.json"
+  ],
+  "acceptance": [
+    "bound task with independent file branches and merge",
+    "restart after external file change",
+    "validated unchanged root reuse",
+    "second update repairs a repaired run",
+    "coalesced invalidation events share one repair",
+    "replay does not repeat accepted model/tool stages",
+    "worker input isolation after Task 3 reconciliation",
+    "bounded query expansion and original text windows",
+    "experience candidate/review/applicability/feedback/revocation/revision",
+    "interrupted experience review resumes from accepted proposal"
+  ],
+  "limits": [
+    "file freshness adapter only; other external tool observations do not authorize reuse",
+    "only independent roots are eligible for artifact reuse",
+    "untracked ambient task summaries prevent root reuse",
+    "session resume or explicit drain, no resident background scheduler",
+    "no distributed atomicity",
+    "no formal performance benchmark or parallel worker claim"
+  ],
+  "python_source_sha256": {
+    "code/scripts/collaboration_smoke.py": "dae8f6727ea87178d3ffb7fa75ed343e008de9fcac5685451ee1c05c19cbb1ff",
+    "code/scripts/evidence_expansion_smoke.py": "bc66234e5eb4ebc5730389a1a09cf2a0a071771ac38909a874881d42cac3d987",
+    "code/scripts/personal_agent_app_server.py": "b577be2ad477b70c598a6e1849be05097599ae577716852dee99b101ba5aa580",
+    "code/scripts/source_repair_experience_smoke.py": "05ed27e8bcc52a58574820af70f8373a07a2e449a1599556067cd37171e5a025",
+    "code/src/memory/agent/freshness.py": "7af26afc44093cc386889189046d0a0da45322b5673ff42d1e38d3012cbccbdc",
+    "code/src/memory/agent/journal.py": "c62b19e8ae1b3f99f2694bea060f96d28f4b12a73bb967fa50ab0b71828407d2",
+    "code/src/memory/agent/loop.py": "b7df6e868815b5b58ff9b588a60cbc79f2097cbfbd010e864ac37f81072b36fa",
+    "code/src/memory/api/memory_manager.py": "297c83fa67888570d084b5dfeae31d21c26ed09abee22d72e1dc5bfb55d86635",
+    "code/src/memory/app/console.py": "df26a5d1b10d969935310a865fe672d8a4d4a068edc8b2dccebba5fdc4379639",
+    "code/src/memory/app/tools.py": "cd1fcfa7d7bf29b68ff95ca0a4874fdaf15421153c471da17380d293ff7bbce5",
+    "code/src/memory/collaboration/coordinator.py": "82fb10fce8acdb9af6f24408c9f4bc395a11cc9a48f909fd76afb4f65e35b9b4",
+    "code/src/memory/collaboration/evidence_search.py": "33518812c32040ee3321db83e7c09353e3288805dbc275c8e880e7681b6308ec",
+    "code/src/memory/collaboration/experience.py": "30378524b1789779e006985b80ea97e64e56610cd1bbcd138a1a5da0a166ff1b",
+    "code/src/memory/collaboration/models.py": "11e2667ff8d6664be64d845e320bb7f3e07972440f5a76eb477c294380f40915",
+    "code/src/memory/collaboration/repair.py": "0a34a3a3a42179dc8c756969289920191c681c948eda659026139cec0ee7cfee",
+    "code/src/memory/collaboration/repository.py": "25adf4d74feecc6aebfc7de740e46d2b5419645b010866e854d8d0d08c965f31",
+    "code/src/memory/collaboration/roles.py": "834a1e6ffecf8aa10ca4fd7aa91c8ebda55d930eafbad6cbbb55a116df2027e0",
+    "code/src/memory/collaboration/snapshot.py": "fd27be7644ca4b8edc2b5425134d4d1fd95ea6c09180123272cf214067e94172",
+    "code/src/memory/collaboration/worker_runtime.py": "ee6f501e41a8c520db25c0f36374ba683282fdec66e5cb83dcc5d1ea38c8bbef",
+    "code/src/memory/conversation/models.py": "69e6f2432fecdf2da1c85f6e59ac9f6bee9fa5a64a971f4f2a49f2e5ec5a2ac0",
+    "code/src/memory/conversation/repository.py": "1f577d499345150842bd3f56ba71cbcd6fe9203b43664a271b7f91d3084d785d",
+    "code/src/memory/retrieval/sources.py": "f69aec01571ed8a334f002355a9730e10f208e25e748002234e1e77ae666360d",
+    "code/src/memory/runtime/models.py": "f59c282d7d582c34c6f5db1d3bd246aeeaafbcc303858a7d96d4be7c34e48e86",
+    "code/tests/test_collaboration.py": "1ce3f8658a5207a3885aaa73fad7303b01722e001479d51a7dca382b50897609",
+    "code/tests/test_collaboration_evidence.py": "b0550fc63161a5594e8db436beea259fc997909d1d6035b239028b5ed8202f6a",
+    "code/tests/test_collaboration_repair.py": "e31860d975e795c993618820284ea8120af6393e0dbc88c69f3d8c988c766461",
+    "code/tests/test_evidence_expansion.py": "48e506ed40b58e11c52b85edd739ec2e0f4fdc942304e74d2681ccb2af3c0dc9",
+    "code/tests/test_experience_lifecycle.py": "f8c3b358c6ed696aa8fa5c37d11ecf583b4618fcf847f89f29bdf6bc8a1d5228",
+    "code/tests/test_file_source_repair.py": "0e635a6f68b0f091970343ea62fe923f1d937baa44167cf83e662ea70f63fa57",
+    "code/tests/test_repair_execution.py": "03cec022a8f77b5a4db493c0eb471886fa7b9b80efc79fa520fc68ef49e4befe",
+    "code/tests/test_repair_provenance.py": "5b157356d639e0bdef3252e6cd4467594180032b8f9472dc9d67e8d76c0f70bb",
+    "code/tests/test_source_resolver.py": "b6931fc89b751450d0abe4bf12076da2dd4e2e3962cbd220dc8f3101e90fdffc"
+  }
+}

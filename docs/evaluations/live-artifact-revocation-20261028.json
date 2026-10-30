@@ -1,0 +1,241 @@
+{
+  "kind": "engineering_smoke",
+  "official_benchmark_score": null,
+  "requested_model": "deepseek-v4-flash",
+  "limits": {
+    "max_model_calls": 12,
+    "max_token_units": 120000,
+    "deadline_seconds": 150,
+    "max_completion_tokens": 2048
+  },
+  "gpu_used": false,
+  "fake_model_used": false,
+  "input": "Use the calculator to compute 17*23. Use one subtask. Report the exact result.",
+  "expected": [
+    "391"
+  ],
+  "artifact_revocation_check": {
+    "artifact_found": true,
+    "stale_replay_blocked": true,
+    "node_statuses": [
+      "STALE"
+    ]
+  },
+  "result": {
+    "root_turn_id": "live-p1-smoke",
+    "task_id": "task_362f062ba0c5",
+    "agent_run_id": "ma_395785b078b2fb0c5841ad31",
+    "status": "SUCCESS",
+    "request_turn_id": "live-p1-smoke",
+    "final_response": "17*23 = 391",
+    "executed_tool_call_ids": [
+      "call_067aeea4c90f"
+    ],
+    "pending_action": null,
+    "step_count": 1,
+    "warnings": [],
+    "error_info": null,
+    "trace_metadata": {
+      "execution_mode": "multi_fixed",
+      "verified_subtasks": [
+        "calc_17x23"
+      ],
+      "tool_stage_traces": [
+        {
+          "stage": "TASK_RESOLUTION",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.00125885009765625
+        },
+        {
+          "stage": "TASK_UPDATE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 1.4865589141845703
+        },
+        {
+          "stage": "MAINTENANCE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 1.9073486328125e-06
+        },
+        {
+          "stage": "CONTEXT_BUILD",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.004696846008300781
+        }
+      ],
+      "memory_inputs": [],
+      "source_reads": [],
+      "task_frontier": {
+        "task_id": "task_362f062ba0c5",
+        "status": "ACTIVE",
+        "entries": [
+          {
+            "entry_id": "entry_4e9801af9b2c402b8c4f897e3c8d5106",
+            "kind": "GOAL",
+            "updated_at": 1793170909.9181168,
+            "content_hash": "acce21ee85ef829ab84d922b2dafe5683eade0cfd332ef10b5cb25768ed566d7",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          },
+          {
+            "entry_id": "entry_turn:live-p1-smoke:user_p1",
+            "kind": "CONSTRAINT",
+            "updated_at": 1793170911.245644,
+            "content_hash": "1f84f532509f20b8a2e45a5fbee42aba05542605b170f29f6c1f626e649842ad",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          }
+        ]
+      },
+      "collaboration_run_id": "ma_395785b078b2fb0c5841ad31",
+      "collaboration_usage": {
+        "model_calls": 8,
+        "charged_token_units": 12694,
+        "calls": [
+          {
+            "role": "Runtime",
+            "operation": "task_binding_decision_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 457,
+            "usage_json": "{\"input_tokens\":433,\"output_tokens\":24,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":177}",
+            "elapsed": 0.8900918000144884,
+            "usage": {
+              "input_tokens": 433,
+              "output_tokens": 24,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 177
+            }
+          },
+          {
+            "role": "Runtime",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2487,
+            "usage_json": "{\"input_tokens\":2241,\"output_tokens\":246,\"prompt_cache_hit_tokens\":1792,\"prompt_cache_miss_tokens\":449}",
+            "elapsed": 1.2995447000139393,
+            "usage": {
+              "input_tokens": 2241,
+              "output_tokens": 246,
+              "prompt_cache_hit_tokens": 1792,
+              "prompt_cache_miss_tokens": 449
+            }
+          },
+          {
+            "role": "Planner",
+            "operation": "collaboration_planner_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2029,
+            "usage_json": "{\"input_tokens\":1946,\"output_tokens\":83,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":1690}",
+            "elapsed": 0.6767066000029445,
+            "usage": {
+              "input_tokens": 1946,
+              "output_tokens": 83,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 1690
+            }
+          },
+          {
+            "role": "Memory",
+            "operation": "collaboration_memory_v2",
+            "status": "SUCCEEDED",
+            "charged_units": 835,
+            "usage_json": "{\"input_tokens\":802,\"output_tokens\":33,\"prompt_cache_hit_tokens\":512,\"prompt_cache_miss_tokens\":290}",
+            "elapsed": 0.6741660999832675,
+            "usage": {
+              "input_tokens": 802,
+              "output_tokens": 33,
+              "prompt_cache_hit_tokens": 512,
+              "prompt_cache_miss_tokens": 290
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "agent_action",
+            "status": "SUCCEEDED",
+            "charged_units": 2251,
+            "usage_json": "{\"input_tokens\":2216,\"output_tokens\":35,\"prompt_cache_hit_tokens\":1408,\"prompt_cache_miss_tokens\":808,\"reasoning_tokens\":0}",
+            "elapsed": 0.8621744000120088,
+            "usage": {
+              "input_tokens": 2216,
+              "output_tokens": 35,
+              "prompt_cache_hit_tokens": 1408,
+              "prompt_cache_miss_tokens": 808,
+              "reasoning_tokens": 0
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2857,
+            "usage_json": "{\"input_tokens\":2624,\"output_tokens\":233,\"prompt_cache_hit_tokens\":1664,\"prompt_cache_miss_tokens\":960}",
+            "elapsed": 1.4442811000044458,
+            "usage": {
+              "input_tokens": 2624,
+              "output_tokens": 233,
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 960
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 981,
+            "usage_json": "{\"input_tokens\":849,\"output_tokens\":132,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":593}",
+            "elapsed": 1.4739039999549277,
+            "usage": {
+              "input_tokens": 849,
+              "output_tokens": 132,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 593
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 797,
+            "usage_json": "{\"input_tokens\":655,\"output_tokens\":142,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":399}",
+            "elapsed": 1.2534715000074357,
+            "usage": {
+              "input_tokens": 655,
+              "output_tokens": 142,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 399
+            }
+          }
+        ]
+      },
+      "long_term_memory_update": {
+        "attempted": false,
+        "tool_call_ids": [],
+        "route": "agent_tool_decision"
+      },
+      "event_sequence": 17
+    }
+  },
+  "receipts": [
+    {
+      "tool_call_id": "call_067aeea4c90f",
+      "agent_run_id": "run_85cd1d7a0f34",
+      "agent_step_id": "step_5e1f0d6254bd",
+      "tool_name": "calculator",
+      "arguments_json": "{\"expression\": \"17*23\"}",
+      "arguments_hash": "7ef6586e32d4",
+      "idempotency_key": "idemp_f276c97491c4cdef",
+      "tool_effect": "READ_ONLY",
+      "idempotency_support": "NONE",
+      "status": "SUCCEEDED",
+      "runtime_reconciled": 1,
+      "result_json": "{\"error_message\": \"\", \"result_content\": \"计算结果: 391\", \"status\": \"SUCCEEDED\", \"tool_call_id\": \"call_067aeea4c90f\", \"updated_at\": 1793170913.5996718}",
+      "created_at": 1793170913.5944395,
+      "updated_at": 1793170915.1029124
+    }
+  ],
+  "engineering_assertions_passed": true,
+  "user_messages": 1
+}

@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-import time
-from typing import Optional, Tuple
 
 
 class ConversationRole(str, Enum):
@@ -33,15 +32,15 @@ class ConversationSession:
 
     session_id: str
     title: str
-    active_task_id: Optional[str] = None
+    active_task_id: str | None = None
     created_at: float = field(default_factory=time.time)
     updated_at: float = field(default_factory=time.time)
     status: str = "ACTIVE"
     # The authorized local folders belong to the conversation session.  Keep
     # this separate from Task 3 so resuming a session restores its file scope
     # without leaking another session's workspace into the active prompt.
-    workspace_roots: Tuple[str, ...] = ()
-    current_workspace_root: Optional[str] = None
+    workspace_roots: tuple[str, ...] = ()
+    current_workspace_root: str | None = None
 
 
 @dataclass(frozen=True)
@@ -50,6 +49,8 @@ class ConversationMessageView:
 
     role: ConversationRole
     content: str
+    message_id: str | None = None
+    source_content_hash: str | None = None
 
 
 @dataclass(frozen=True)
@@ -62,8 +63,8 @@ class ConversationContext:
     """
 
     session_id: str
-    summary: Optional[str] = None
-    recent_messages: Tuple[ConversationMessageView, ...] = ()
+    summary: str | None = None
+    recent_messages: tuple[ConversationMessageView, ...] = ()
     omitted_message_count: int = 0
     summarized_message_count: int = 0
     compaction_source: str = "NONE"
@@ -80,5 +81,5 @@ class ConversationCompaction:
     summary: str
     summarized_message_count: int
     source: str = "MODEL"
-    degraded_reason: Optional[str] = None
+    degraded_reason: str | None = None
     created_at: float = field(default_factory=time.time)

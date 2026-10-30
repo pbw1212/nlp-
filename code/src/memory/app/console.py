@@ -12,11 +12,12 @@ import sys
 import threading
 import time
 import uuid
-from contextvars import ContextVar
+from collections.abc import Callable
 from contextlib import redirect_stdout
+from contextvars import ContextVar
 from dataclasses import asdict, dataclass, field, is_dataclass, replace
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 from src.memory.agent.journal import AgentExecutionJournal
 from src.memory.agent.main_agent import MainAgent
@@ -28,14 +29,19 @@ from src.memory.agent.models import (
     ConfirmationDecision,
     TurnRequest,
 )
-from src.memory.agent.reasoner import OpenAICompatibleAgentReasoner
 from src.memory.agent.prompt_composer import PromptComposer
+from src.memory.agent.reasoner import OpenAICompatibleAgentReasoner
 from src.memory.agent.tooling import ToolEffect, ToolExecutionRequest
 from src.memory.api.memory_manager import LongTermMemoryManager
-from src.memory.app.tools import build_product_tool_registry
 from src.memory.app.mcp import McpManager
-from src.memory.app.workspace import WorkspaceManager, WorkspaceScopeError
 from src.memory.app.storage import AgentStorageLayout, default_agent_data_dir
+from src.memory.app.tools import build_product_tool_registry
+from src.memory.app.workspace import WorkspaceManager, WorkspaceScopeError
+from src.memory.conversation import (
+    ConversationRepository,
+    ConversationRole,
+)
+from src.memory.conversation.context_manager import ConversationContextManager
 from src.memory.core.config import MemoryConfig, ProviderMode
 from src.memory.core.diagnostics import log_boundary_failure
 from src.memory.core.errors import MemoryNotFoundError
@@ -49,12 +55,6 @@ from src.memory.runtime.events import AgentEvent, AgentEventStore, AgentEventStr
 from src.memory.runtime.models import ToolCallResult, ToolCallStatus
 from src.memory.runtime.task_router import UNBOUND_TASK_ID
 from src.memory.task_state.models import EntryKind
-from src.memory.conversation import (
-    ConversationRepository,
-    ConversationRole,
-)
-from src.memory.conversation.context_manager import ConversationContextManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ class _MemoryUpdateTurnContext:
     turn_id: str
     session_id: str
     message_id: str
-    tool_call_ids: List[str] = field(default_factory=list)
+    tool_call_ids: list[str] = field(default_factory=list)
 
 
 class OutputMode(str, Enum):
@@ -113,7 +113,7 @@ class OutputMode(str, Enum):
     DEVELOPER = "DEVELOPER"
 
     @classmethod
-    def parse(cls, value: str | "OutputMode") -> "OutputMode":
+    def parse(cls, value: str | OutputMode) -> OutputMode:
         if isinstance(value, cls):
             return value
         normalized = str(value).strip().upper()
@@ -130,11 +130,16 @@ class OutputMode(str, Enum):
             raise ValueError("输出模式必须是 user 或 developer") from exc
 
 
-def _setup_readline(data_dir: str, history_path: Optional[str] = None) -> Tuple[Optional[str], bool]:
+def _setup_readline(
+    data_dir: str, history_path: str | None = None
+) -> tuple[str | None, bool]:
     """Safely enables readline terminal line editing & persistent CLI history."""
-    hist_file = os.path.abspath(history_path or os.path.join(os.path.abspath(data_dir), "cli_history"))
+    hist_file = os.path.abspath(
+        history_path or os.path.join(os.path.abspath(data_dir), "cli_history")
+    )
     try:
         import readline
+
         try:
             # Without this setting, a multiline paste can feed each embedded
             # newline to input() as a separate submitted line/command. This
@@ -142,7 +147,7 @@ def _setup_readline(data_dir: str, history_path: Optional[str] = None) -> Tuple[
             readline.parse_and_bind("set enable-bracketed-paste on")  # type: ignore[attr-defined]
             for binding in _READLINE_KEY_BINDINGS:
                 readline.parse_and_bind(binding)  # type: ignore[attr-defined]
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             # Some libedit/readline variants do not expose one of these
             # settings. Keep line editing and history available; marker
             # cleanup below remains useful as a defensive compatibility path.
@@ -152,25 +157,27 @@ def _setup_readline(data_dir: str, history_path: Optional[str] = None) -> Tuple[
             )
         try:
             readline.set_history_length(1000)  # type: ignore[attr-defined]
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             log_boundary_failure(logger, "readline_history_limit_failed", exc)
         if os.path.exists(hist_file):
             try:
                 readline.read_history_file(hist_file)  # type: ignore[attr-defined]
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 log_boundary_failure(logger, "readline_history_read_failed", exc)
         return hist_file, True
     except ImportError as exc:
         logger.info("readline_unavailable error_type=%s", type(exc).__name__)
         return hist_file, False
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         log_boundary_failure(logger, "readline_initialization_unavailable", exc)
         return hist_file, False
 
 
 def _normalize_cli_input(raw_input: str) -> str:
     """Removes terminal-only bracketed-paste markers while preserving content."""
-    return raw_input.replace(_BRACKETED_PASTE_START, "").replace(_BRACKETED_PASTE_END, "")
+    return raw_input.replace(_BRACKETED_PASTE_START, "").replace(
+        _BRACKETED_PASTE_END, ""
+    )
 
 
 def _read_cli_submission(prompt: str) -> str:
@@ -199,13 +206,14 @@ def _read_cli_submission(prompt: str) -> str:
     return "\n".join(lines)
 
 
-def _save_readline_history(hist_file: Optional[str]) -> None:
+def _save_readline_history(hist_file: str | None) -> None:
     if not hist_file:
         return
     try:
         import readline
+
         readline.write_history_file(hist_file)  # type: ignore[attr-defined]
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         log_boundary_failure(logger, "readline_history_write_failed", exc)
         os.makedirs(os.path.dirname(os.path.abspath(hist_file)), exist_ok=True)
         with open(hist_file, "a", encoding="utf-8"):
@@ -244,7 +252,9 @@ def _read_picker_key() -> str:
             sequence = ""
             while select.select([sys.stdin], [], [], 0.05)[0] and len(sequence) < 2:
                 sequence += sys.stdin.read(1)
-            return {"[A": "UP", "[B": "DOWN", "[C": "RIGHT", "[D": "LEFT"}.get(sequence, "ESC")
+            return {"[A": "UP", "[B": "DOWN", "[C": "RIGHT", "[D": "LEFT"}.get(
+                sequence, "ESC"
+            )
         if key in ("\r", "\n"):
             return "ENTER"
         if key == "\x03":
@@ -259,12 +269,12 @@ class PersonalAgentApp:
 
     def __init__(
         self,
-        data_dir: Optional[str] = None,
-        config: Optional[MemoryConfig] = None,
-        llm_client: Optional[LLMClientBase] = None,
-        output_mode: Optional[str | OutputMode] = None,
+        data_dir: str | None = None,
+        config: MemoryConfig | None = None,
+        llm_client: LLMClientBase | None = None,
+        output_mode: str | OutputMode | None = None,
         execution_mode: str = "single",
-        collaboration_limits: Optional[Any] = None,
+        collaboration_limits: Any | None = None,
     ) -> None:
         if execution_mode not in {"single", "multi_fixed"}:
             raise ValueError("execution_mode must be single or multi_fixed")
@@ -293,7 +303,9 @@ class PersonalAgentApp:
 
         # 1. Memory & Provider Config
         if config is None:
-            self.config = MemoryConfig.from_env(config_path=self.storage_layout.config_env_path)
+            self.config = MemoryConfig.from_env(
+                config_path=self.storage_layout.config_env_path
+            )
             self.config.sqlite_db_path = self.memory_db_path
             self.config.provider_mode = ProviderMode.REQUIRED
         else:
@@ -304,13 +316,17 @@ class PersonalAgentApp:
         # including runtime interpretation, share one durable turn budget.
         if execution_mode == "multi_fixed":
             from src.memory.collaboration.budget import CollaborationLimits
+
             limits = collaboration_limits or CollaborationLimits()
             self.config = replace(
                 self.config,
                 llm_max_retries=1,
-                llm_request_timeout_seconds=min(self.config.llm_request_timeout_seconds, 30.0),
+                llm_request_timeout_seconds=min(
+                    self.config.llm_request_timeout_seconds, 30.0
+                ),
                 llm_max_completion_tokens=min(
-                    self.config.llm_max_completion_tokens or limits.max_completion_tokens,
+                    self.config.llm_max_completion_tokens
+                    or limits.max_completion_tokens,
                     limits.max_completion_tokens,
                 ),
             )
@@ -325,7 +341,9 @@ class PersonalAgentApp:
                     f"未配置 API 凭据，请在 .env.local 中配置 {self.config.llm_api_key_env} 后重试。"
                 )
             except Exception as exc:
-                metadata = log_boundary_failure(logger, "provider_client_initialization_failed", exc)
+                metadata = log_boundary_failure(
+                    logger, "provider_client_initialization_failed", exc
+                )
                 raise RuntimeError(
                     f"初始化 Provider 客户端失败 ({metadata['error_type']})"
                 ) from exc
@@ -333,10 +351,13 @@ class PersonalAgentApp:
         if execution_mode == "multi_fixed":
             from src.memory.collaboration.budget import BudgetedLLMClient
             from src.memory.collaboration.repository import CoordinationRepository
+
             self.coordination_repository = CoordinationRepository(
                 str(self.storage_layout.execution_dir / "coordination.db")
             )
-            self.llm_client = BudgetedLLMClient(self.llm_client, self.coordination_repository, limits)
+            self.llm_client = BudgetedLLMClient(
+                self.llm_client, self.coordination_repository, limits
+            )
 
         # 3. Task 1 Long-term Memory Manager.  The Agent may invoke the
         # registered internal memory tool once per user turn.  The callback
@@ -347,9 +368,11 @@ class PersonalAgentApp:
             config=self.config,
         )
         self._memory_lock = threading.RLock()
-        self._memory_turn_context: ContextVar[Optional[_MemoryUpdateTurnContext]] = ContextVar(
-            "personal_agent_memory_turn_context",
-            default=None,
+        self._memory_turn_context: ContextVar[_MemoryUpdateTurnContext | None] = (
+            ContextVar(
+                "personal_agent_memory_turn_context",
+                default=None,
+            )
         )
 
         # 4. AgentRuntime
@@ -364,7 +387,9 @@ class PersonalAgentApp:
         self.journal = AgentExecutionJournal(db_path=self.journal_db_path)
         self.event_store = AgentEventStore(db_path=self.events_db_path)
         self.event_stream = AgentEventStream(self.event_store)
-        self.conversation_repo = ConversationRepository(db_path=self.conversation_db_path)
+        self.conversation_repo = ConversationRepository(
+            db_path=self.conversation_db_path
+        )
         self.conversation_context_manager = ConversationContextManager(
             self.conversation_repo,
             self.llm_client,
@@ -399,11 +424,16 @@ class PersonalAgentApp:
         )
         if execution_mode == "multi_fixed":
             from src.memory.collaboration.coordinator import CollaborationCoordinator
+
             self.collaboration = CollaborationCoordinator(
-                runtime=self.runtime, journal=self.journal, registry=self.registry,
-                client=self.llm_client, repository=self.coordination_repository,
+                runtime=self.runtime,
+                journal=self.journal,
+                registry=self.registry,
+                client=self.llm_client,
+                repository=self.coordination_repository,
                 memory_repository=self.long_term_memory_mgr.sqlite_mgr,
                 prompt_composer=PromptComposer(workspace_manager=self.workspace),
+                conversation_repository=self.conversation_repo,
             )
             self.agent.prepared_runner = self.collaboration
 
@@ -416,13 +446,13 @@ class PersonalAgentApp:
         # session ID exists in memory for the current process, but its row and
         # transcript are created only when the first real conversation turn
         # arrives.  No prior Session or Task is implicitly restored here.
-        self.active_task_id: Optional[str] = None
+        self.active_task_id: str | None = None
         self.active_session_id = f"session_{uuid.uuid4().hex[:12]}"
         self._session_persisted = False
-        self._pending_session_title: Optional[str] = None
-        self.pending_confirmation_id: Optional[str] = None
-        self.pending_turn_id: Optional[str] = None
-        self._last_result: Optional[AgentResult] = None
+        self._pending_session_title: str | None = None
+        self.pending_confirmation_id: str | None = None
+        self.pending_turn_id: str | None = None
+        self._last_result: AgentResult | None = None
         self._restore_pending_confirmation()
 
     def close(self) -> None:
@@ -444,13 +474,15 @@ class PersonalAgentApp:
     def _require_active_task(self) -> str:
         """Require an explicit/current Task binding for Task commands."""
         if not self.active_task_id:
-            raise ValueError("当前会话尚未绑定 Task；请让 Agent 在对话中判断，或使用 /new 创建任务。")
+            raise ValueError(
+                "当前会话尚未绑定 Task；请让 Agent 在对话中判断，或使用 /new 创建任务。"
+            )
         return self.active_task_id
 
     def run_direct_utility_tool(
         self,
         tool_name: str,
-        arguments: Dict[str, Any],
+        arguments: dict[str, Any],
     ) -> ToolCallResult:
         """Run an explicitly requested local utility without an LLM round trip."""
         spec = self.registry.get_spec(tool_name)
@@ -480,7 +512,7 @@ class PersonalAgentApp:
     def run_direct_external_tool(
         self,
         tool_name: str,
-        arguments: Dict[str, Any],
+        arguments: dict[str, Any],
     ) -> ToolCallResult:
         """Run a registered read-only external tool for an explicit CLI command."""
         if tool_name not in {"web_search", "web_fetch", "weather"}:
@@ -528,7 +560,7 @@ class PersonalAgentApp:
         )
         return session.session_id
 
-    def _workspace_snapshot(self) -> Dict[str, Any]:
+    def _workspace_snapshot(self) -> dict[str, Any]:
         """Return the current folder scope in ConversationRepository format."""
         snapshot = self.workspace.snapshot()
         roots = tuple(snapshot.get("roots") or ())
@@ -556,7 +588,9 @@ class PersonalAgentApp:
         self.workspace.replace_scope(list(roots), current_root)
 
     def _persist_active_session_workspace(self) -> None:
-        if not getattr(self, "active_session_id", None) or not getattr(self, "_session_persisted", False):
+        if not getattr(self, "active_session_id", None) or not getattr(
+            self, "_session_persisted", False
+        ):
             return
         snapshot = self._workspace_snapshot()
         self.conversation_repo.update_session_workspace(
@@ -565,7 +599,7 @@ class PersonalAgentApp:
             snapshot["current_workspace_root"],
         )
 
-    def list_tasks(self) -> List[Dict[str, Any]]:
+    def list_tasks(self) -> list[dict[str, Any]]:
         """Returns list of tasks with metadata."""
         tasks = self.runtime.task_service.repository.list_tasks()
         res = []
@@ -577,16 +611,18 @@ class PersonalAgentApp:
             summary_text = "通用对话任务"
             if working_ctx and working_ctx.structured and working_ctx.structured.goal:
                 summary_text = working_ctx.structured.goal[0].content
-            res.append({
-                "task_id": t.task_id,
-                "status": t.status.value,
-                "created_at": t.created_at,
-                "is_active": (t.task_id == self.active_task_id),
-                "summary": summary_text,
-            })
+            res.append(
+                {
+                    "task_id": t.task_id,
+                    "status": t.status.value,
+                    "created_at": t.created_at,
+                    "is_active": (t.task_id == self.active_task_id),
+                    "summary": summary_text,
+                }
+            )
         return res
 
-    def create_new_task(self, title: Optional[str] = None) -> str:
+    def create_new_task(self, title: str | None = None) -> str:
         """Creates a new Task 3 task and switches to it."""
         self._require_no_pending_confirmation()
         task_num = len(self.runtime.task_service.repository.list_tasks()) + 1
@@ -612,11 +648,13 @@ class PersonalAgentApp:
         if any(t.task_id == task_id for t in tasks):
             self.active_task_id = task_id
             if self.active_session_id and self._session_persisted:
-                self.conversation_repo.update_session_task(self.active_session_id, task_id)
+                self.conversation_repo.update_session_task(
+                    self.active_session_id, task_id
+                )
             return True
         return False
 
-    def create_new_session(self, title: Optional[str] = None) -> str:
+    def create_new_session(self, title: str | None = None) -> str:
         """Starts a fresh lazy conversation session without inheriting a Task."""
         self._require_no_pending_confirmation()
         self.active_session_id = f"session_{uuid.uuid4().hex[:12]}"
@@ -629,7 +667,7 @@ class PersonalAgentApp:
         self.agent.last_turn_context = None
         return self.active_session_id
 
-    def list_sessions(self) -> List[Dict[str, Any]]:
+    def list_sessions(self) -> list[dict[str, Any]]:
         """Lists conversation sessions with active marker."""
         sessions = self.conversation_repo.list_sessions()
         return [
@@ -640,7 +678,11 @@ class PersonalAgentApp:
                 "topic": self._session_topic(s.session_id, s.title),
                 "workspace_roots": list(s.workspace_roots),
                 "current_workspace_root": s.current_workspace_root,
-                "updated_at": datetime.datetime.fromtimestamp(s.updated_at).strftime("%Y-%m-%d %H:%M:%S"),
+                "updated_at": datetime.datetime.fromtimestamp(
+                    s.updated_at, tz=datetime.timezone.utc
+                )
+                .astimezone()
+                .strftime("%Y-%m-%d %H:%M:%S"),
                 "is_active": (s.session_id == self.active_session_id),
             }
             for s in sessions
@@ -658,7 +700,9 @@ class PersonalAgentApp:
         )
         if not first_user:
             return fallback_title
-        first_sentence = re.split(r"(?<=[。！？!?；;])|[\r\n]", first_user, maxsplit=1)[0].strip()
+        first_sentence = re.split(r"(?<=[。！？!?；;])|[\r\n]", first_user, maxsplit=1)[
+            0
+        ].strip()
         topic = first_sentence or first_user
         return topic if len(topic) <= 72 else topic[:69].rstrip() + "..."
 
@@ -681,7 +725,9 @@ class PersonalAgentApp:
         }
         print("--- 完整历史对话 ---")
         for message in messages:
-            print(f"\n{labels.get(message.role, message.role.value)} > {message.content}")
+            print(
+                f"\n{labels.get(message.role, message.role.value)} > {message.content}"
+            )
         print("--- 历史对话结束；现在继续输入 ---")
 
     def resume_session(self, session_id: str) -> bool:
@@ -712,25 +758,49 @@ class PersonalAgentApp:
             session_id=sess.session_id,
             payload={"task_id": self.active_task_id},
         )
+        if self.collaboration is not None and not self.pending_confirmation_id:
+            self.process_pending_collaboration_repairs(limit=3)
         return True
 
-    def remember_explicit(self, content: str) -> Dict[str, Any]:
+    def remember_explicit(self, content: str) -> dict[str, Any]:
         """Explicitly ingests content into Task 1 long-term memory."""
         with self._memory_lock:
-            res = self.long_term_memory_mgr.process_user_interaction(content, is_explicit=True)
+            res = self.long_term_memory_mgr.process_user_interaction(
+                content, is_explicit=True
+            )
         return res
 
-    def _write_natural_memory(self, content: str, turn_id: str) -> Dict[str, Any]:
+    def _write_natural_memory(self, content: str, turn_id: str) -> dict[str, Any]:
         """Persist a Provider-routed natural-language memory request."""
+        context = self._memory_turn_context.get()
+        if context is None or context.turn_id != turn_id:
+            raise RuntimeError("显式记忆写入缺少匹配的原始用户消息")
         with self._memory_lock:
+            event_id = f"natural-memory:{turn_id}"
+            existing = self.long_term_memory_mgr.sqlite_mgr.get_ingestion_event(
+                event_id
+            )
+            if existing is not None and existing.message_id is None:
+                # Preserve old event identity on replay; do not backfill a
+                # historical provenance link from a newly extracted instruction.
+                return self.long_term_memory_mgr.process_user_interaction(
+                    content,
+                    is_explicit=True,
+                    source_event_id=event_id,
+                    session_id=context.session_id,
+                )
             return self.long_term_memory_mgr.process_user_interaction(
                 content,
                 is_explicit=True,
-                source_event_id=f"natural-memory:{turn_id}",
-                session_id=self.active_session_id,
+                source_event_id=event_id,
+                session_id=context.session_id,
+                message_id=context.message_id,
+                source_text=context.user_input,
             )
 
-    def _execute_memory_update_tool(self, request: ToolExecutionRequest) -> ToolCallResult:
+    def _execute_memory_update_tool(
+        self, request: ToolExecutionRequest
+    ) -> ToolCallResult:
         """Execute the Agent-selected current-turn memory update.
 
         The model can select the tool, but cannot supply the source text or
@@ -782,7 +852,7 @@ class PersonalAgentApp:
                 status=ToolCallStatus.FAILED,
                 error_message="长期记忆 Provider 更新失败；本轮原始事件已保留，可在后续更新中重试。",
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             metadata = log_boundary_failure(
                 logger,
                 "agent_memory_update_tool_failed",
@@ -801,35 +871,42 @@ class PersonalAgentApp:
                 ),
             )
 
-    def get_memory_update_status(self) -> Dict[str, Any]:
+    def get_memory_update_status(self) -> dict[str, Any]:
         """Return diagnostics for Agent-selected synchronous memory updates."""
         return {
             "mode": "agent_tool",
             "tool_name": "update_long_term_memory",
-            "pending_events": len(self.long_term_memory_mgr.sqlite_mgr.list_pending_events()),
+            "pending_events": len(
+                self.long_term_memory_mgr.sqlite_mgr.list_pending_events()
+            ),
             "update_is_agent_selected": True,
             "threshold_trigger_enabled": False,
             "time_trigger_enabled": False,
         }
 
-    def list_memories(self) -> List[Dict[str, Any]]:
+    def list_memories(self) -> list[dict[str, Any]]:
         """Lists active long-term memories from Task 1 store."""
         snapshots = self.long_term_memory_mgr.sqlite_mgr.list_current()
         res = []
         for s in snapshots:
-            res.append({
-                "memory_id": s.memory_id,
-                "type": s.memory_type.value,
-                "content": s.revision.content,
-                "granularity": s.granularity.value,
-            })
+            res.append(
+                {
+                    "memory_id": s.memory_id,
+                    "type": s.memory_type.value,
+                    "content": s.revision.content,
+                    "granularity": s.granularity.value,
+                }
+            )
         return res
 
     @staticmethod
     def _is_profile_memory(item: MemoryItem) -> bool:
-        return item.memory_type in {MemoryType.CORE_PROFILE, MemoryType.PREFERENCE_RULES}
+        return item.memory_type in {
+            MemoryType.CORE_PROFILE,
+            MemoryType.PREFERENCE_RULES,
+        }
 
-    def _profile_memory_payload(self, item: MemoryItem) -> Dict[str, Any]:
+    def _profile_memory_payload(self, item: MemoryItem) -> dict[str, Any]:
         revision = item.current_revision
         if revision is None:
             raise MemoryNotFoundError(item.memory_id)
@@ -852,7 +929,7 @@ class PersonalAgentApp:
             "updated_at": item.updated_at,
         }
 
-    def get_profile_repository(self) -> Dict[str, Any]:
+    def get_profile_repository(self) -> dict[str, Any]:
         """Return the user-facing profile projection over canonical memory."""
         active = [
             self._profile_memory_payload(item)
@@ -878,7 +955,7 @@ class PersonalAgentApp:
             "memory_update": self.get_memory_update_status(),
         }
 
-    def create_profile_preference(self, content: str) -> Dict[str, Any]:
+    def create_profile_preference(self, content: str) -> dict[str, Any]:
         """Create or reconcile a manually confirmed profile preference."""
         result = self.remember_explicit(content)
         memory_id = str(result.get("memory_id") or "")
@@ -891,7 +968,7 @@ class PersonalAgentApp:
             raise MemoryNotFoundError(memory_id)
         return self._profile_memory_payload(item)
 
-    def update_profile_preference(self, memory_id: str, content: str) -> Dict[str, Any]:
+    def update_profile_preference(self, memory_id: str, content: str) -> dict[str, Any]:
         """Apply a target-explicit manual correction and protect the result."""
         with self._memory_lock:
             existing = self.long_term_memory_mgr.sqlite_mgr.get_memory(memory_id)
@@ -905,7 +982,9 @@ class PersonalAgentApp:
             self.long_term_memory_mgr.pin_memory(memory_id, True)
         return self._profile_memory_payload(updated)
 
-    def set_profile_preference_pinned(self, memory_id: str, pinned: bool) -> Dict[str, Any]:
+    def set_profile_preference_pinned(
+        self, memory_id: str, pinned: bool
+    ) -> dict[str, Any]:
         with self._memory_lock:
             item = self.long_term_memory_mgr.sqlite_mgr.get_memory(memory_id)
             if item is None or not self._is_profile_memory(item):
@@ -928,7 +1007,7 @@ class PersonalAgentApp:
             return False
         return self.restore_memory(memory_id)
 
-    def get_memory_detail(self, memory_id: str) -> Optional[Dict[str, Any]]:
+    def get_memory_detail(self, memory_id: str) -> dict[str, Any] | None:
         """Gets snapshot detail for a specific memory_id."""
         item = self.long_term_memory_mgr.sqlite_mgr.get_memory(memory_id)
         if not item or not item.current_revision:
@@ -947,7 +1026,7 @@ class PersonalAgentApp:
             "provenance_count": len(snapshot.provenance) if snapshot else 0,
         }
 
-    def get_memory_history(self, memory_id: str) -> List[Dict[str, Any]]:
+    def get_memory_history(self, memory_id: str) -> list[dict[str, Any]]:
         """Gets revision history for a specific memory_id."""
         revisions = self.long_term_memory_mgr.sqlite_mgr.get_history(memory_id)
         return [
@@ -959,46 +1038,55 @@ class PersonalAgentApp:
             for r in revisions
         ]
 
-    def get_memory_provenance(self, memory_id: str) -> List[Dict[str, Any]]:
+    def get_memory_provenance(self, memory_id: str) -> list[dict[str, Any]]:
         """Returns revision-scoped, controlled provenance without raw credentials."""
         revisions = self.long_term_memory_mgr.get_history(memory_id)
         if not revisions:
             return []
-        result: List[Dict[str, Any]] = []
+        result: list[dict[str, Any]] = []
         for revision in revisions:
-            refs = self.long_term_memory_mgr.get_revision_provenance(revision.revision_id)
-            result.append({
-                "revision_id": revision.revision_id,
-                "revision_no": revision.revision_no,
-                "change_kind": revision.change_kind.value,
-                "refs": [
-                    {
-                        "provenance_id": ref.provenance_id,
-                        "source_event_id": ref.source_event_id,
-                        "session_id": ref.session_id,
-                        "message_id": ref.message_id,
-                        "source_type": ref.source_type,
-                        "observed_at": ref.observed_at,
-                        "authority": ref.authority.value,
-                        "content_hash": ref.content_hash,
-                        "controlled_excerpt": ref.controlled_excerpt,
-                    }
-                    for ref in refs
-                ],
-            })
+            refs = self.long_term_memory_mgr.get_revision_provenance(
+                revision.revision_id
+            )
+            result.append(
+                {
+                    "revision_id": revision.revision_id,
+                    "revision_no": revision.revision_no,
+                    "change_kind": revision.change_kind.value,
+                    "refs": [
+                        {
+                            "provenance_id": ref.provenance_id,
+                            "source_event_id": ref.source_event_id,
+                            "session_id": ref.session_id,
+                            "message_id": ref.message_id,
+                            "source_type": ref.source_type,
+                            "observed_at": ref.observed_at,
+                            "authority": ref.authority.value,
+                            "content_hash": ref.content_hash,
+                            "controlled_excerpt": ref.controlled_excerpt,
+                        }
+                        for ref in refs
+                    ],
+                }
+            )
         return result
 
     def forget_memory(self, memory_id: str) -> bool:
         """Moves a memory to the recoverable recycle bin."""
         with self._memory_lock:
-            return self.long_term_memory_mgr.soft_delete_memory(memory_id, reason="USER_DELETE")
+            return self.long_term_memory_mgr.soft_delete_memory(
+                memory_id, reason="USER_DELETE"
+            )
 
     def restore_memory(self, memory_id: str) -> bool:
         """Restores a memory from the recoverable recycle bin."""
         with self._memory_lock:
-            return self.long_term_memory_mgr.restore_memory_from_recycle_bin(memory_id) is not None
+            return (
+                self.long_term_memory_mgr.restore_memory_from_recycle_bin(memory_id)
+                is not None
+            )
 
-    def list_recycled_memories(self) -> List[Dict[str, Any]]:
+    def list_recycled_memories(self) -> list[dict[str, Any]]:
         return [
             {
                 "memory_id": item.memory_id,
@@ -1009,7 +1097,7 @@ class PersonalAgentApp:
             for item in self.long_term_memory_mgr.get_recycle_bin_memories()
         ]
 
-    def get_task_status_summary(self) -> Dict[str, Any]:
+    def get_task_status_summary(self) -> dict[str, Any]:
         """Gets detailed structured status summary for current active task."""
         if not self.active_task_id:
             return {
@@ -1024,7 +1112,9 @@ class PersonalAgentApp:
                 "checkpoint": None,
                 "workspace": self.get_workspace_status(),
             }
-        task_status = self.runtime.task_service.repository.get_task_status(self.active_task_id)
+        task_status = self.runtime.task_service.repository.get_task_status(
+            self.active_task_id
+        )
         working_ctx = self.runtime.task_service.context_builder.build(
             self.active_task_id,
             include_inactive=True,
@@ -1066,7 +1156,7 @@ class PersonalAgentApp:
             "workspace": self.get_workspace_status(),
         }
 
-    def pause_current_task(self, note: Optional[str] = None) -> None:
+    def pause_current_task(self, note: str | None = None) -> None:
         self._require_no_pending_confirmation()
         task_id = self._require_active_task()
         self.runtime.task_service.pause_task(
@@ -1087,7 +1177,7 @@ class PersonalAgentApp:
         self._require_no_pending_confirmation()
         self.runtime.task_service.cancel_task(self._require_active_task())
 
-    def get_conversation_context_status(self) -> Dict[str, Any]:
+    def get_conversation_context_status(self) -> dict[str, Any]:
         """Returns model-aware conversation window diagnostics without transcript content."""
         if not self._session_persisted:
             return {
@@ -1115,23 +1205,23 @@ class PersonalAgentApp:
         self.output_mode = OutputMode.parse(mode)
         return self.output_mode
 
-    def get_workspace_status(self) -> Dict[str, Any]:
+    def get_workspace_status(self) -> dict[str, Any]:
         """Return the persistent user-managed local tool scope."""
         return self.workspace.describe()
 
-    def get_storage_status(self) -> Dict[str, str]:
+    def get_storage_status(self) -> dict[str, str]:
         """Return the fixed product-owned runtime storage layout."""
         return self.storage_layout.describe()
 
-    def get_tool_catalog(self) -> List[Dict[str, Any]]:
+    def get_tool_catalog(self) -> list[dict[str, Any]]:
         """Return the executable tool contract without exposing executors."""
         return [dict(item) for item in self.registry.describe()]
 
-    def get_mcp_status(self) -> Dict[str, Any]:
+    def get_mcp_status(self) -> dict[str, Any]:
         """Return MCP discovery status without exposing environment values."""
         return self.mcp_manager.describe()
 
-    def list_pending_approvals(self) -> List[Dict[str, Any]]:
+    def list_pending_approvals(self) -> list[dict[str, Any]]:
         """Return durable pending approvals for reconnecting frontends."""
         if not self.active_task_id:
             return []
@@ -1143,14 +1233,18 @@ class PersonalAgentApp:
                 "agent_step_id": action.agent_step_id,
                 "tool_call_id": action.tool_call_id,
                 "tool_name": action.tool_name,
-                "validated_arguments": self._json_safe_event_value(action.validated_arguments),
+                "validated_arguments": self._json_safe_event_value(
+                    action.validated_arguments
+                ),
                 "effect": action.effect,
                 "created_at": action.created_at,
             }
             for action in self.journal.list_pending_actions(task_id=self.active_task_id)
         ]
 
-    def subscribe_events(self, subscriber: Callable[[AgentEvent], None]) -> Callable[[], None]:
+    def subscribe_events(
+        self, subscriber: Callable[[AgentEvent], None]
+    ) -> Callable[[], None]:
         """Subscribe to committed lifecycle events without changing turn behavior."""
         return self.event_stream.subscribe(subscriber)
 
@@ -1158,10 +1252,10 @@ class PersonalAgentApp:
         self,
         *,
         after_sequence: int = 0,
-        session_id: Optional[str] = None,
-        turn_id: Optional[str] = None,
+        session_id: str | None = None,
+        turn_id: str | None = None,
         limit: int = 100,
-    ) -> Tuple[AgentEvent, ...]:
+    ) -> tuple[AgentEvent, ...]:
         """Replay durable lifecycle events for a reconnecting client."""
         return self.event_store.list_events(
             after_sequence=after_sequence,
@@ -1174,11 +1268,11 @@ class PersonalAgentApp:
         self,
         event_type: str,
         *,
-        session_id: Optional[str] = None,
-        turn_id: Optional[str] = None,
-        payload: Optional[Dict[str, Any]] = None,
-        event_id: Optional[str] = None,
-    ) -> Optional[AgentEvent]:
+        session_id: str | None = None,
+        turn_id: str | None = None,
+        payload: dict[str, Any] | None = None,
+        event_id: str | None = None,
+    ) -> AgentEvent | None:
         """Persist telemetry without allowing a diagnostics failure to break a turn."""
         try:
             return self.event_stream.emit(
@@ -1188,8 +1282,10 @@ class PersonalAgentApp:
                 payload=payload or {},
                 event_id=event_id,
             )
-        except Exception as exc:
-            log_boundary_failure(logger, "agent_event_persistence_failed", exc, event_type=event_type)
+        except Exception as exc:  # noqa: BLE001
+            log_boundary_failure(
+                logger, "agent_event_persistence_failed", exc, event_type=event_type
+            )
             return None
 
     @staticmethod
@@ -1226,14 +1322,16 @@ class PersonalAgentApp:
                 bounded["[additional keys]"] = len(items) - 50
             return bounded
         if isinstance(value, (list, tuple)):
-            bounded_items = [cls._bounded_event_value(item, depth=depth + 1) for item in value[:50]]
+            bounded_items = [
+                cls._bounded_event_value(item, depth=depth + 1) for item in value[:50]
+            ]
             if len(value) > 50:
                 bounded_items.append(f"[additional items: {len(value) - 50}]")
             return bounded_items
         return cls._json_safe_event_value(value)
 
     @classmethod
-    def _approval_event_payload(cls, action: Any) -> Dict[str, Any]:
+    def _approval_event_payload(cls, action: Any) -> dict[str, Any]:
         original = cls._json_safe_event_value(action.validated_arguments)
         bounded = cls._bounded_event_value(original)
         return {
@@ -1286,7 +1384,9 @@ class PersonalAgentApp:
             created_at = receipt.get("created_at")
             updated_at = receipt.get("updated_at")
             duration = None
-            if isinstance(created_at, (int, float)) and isinstance(updated_at, (int, float)):
+            if isinstance(created_at, (int, float)) and isinstance(
+                updated_at, (int, float)
+            ):
                 duration = round(max(0.0, updated_at - created_at), 6)
             self._emit_event(
                 "tool.completed",
@@ -1303,9 +1403,11 @@ class PersonalAgentApp:
             )
 
     @classmethod
-    def _result_event_payload(cls, result: AgentResult, duration_seconds: float) -> Dict[str, Any]:
+    def _result_event_payload(
+        cls, result: AgentResult, duration_seconds: float
+    ) -> dict[str, Any]:
 
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "status": result.status.value,
             "agent_run_id": result.agent_run_id,
             "task_id": result.task_id,
@@ -1327,10 +1429,12 @@ class PersonalAgentApp:
                 "details": result.error_info.details,
             }
         if result.pending_action is not None:
-            payload["pending_action"] = cls._approval_event_payload(result.pending_action)
+            payload["pending_action"] = cls._approval_event_payload(
+                result.pending_action
+            )
         return payload
 
-    def add_workspace_root(self, path: str) -> Dict[str, Any]:
+    def add_workspace_root(self, path: str) -> dict[str, Any]:
         """Add an existing folder to the Agent's visible workspace scope."""
         self._require_no_pending_confirmation()
         item = self.workspace.add_root(path)
@@ -1357,7 +1461,9 @@ class PersonalAgentApp:
         self._persist_active_session_workspace()
         return selected
 
-    def _render_session_picker(self, sessions: List[Dict[str, Any]], selected: int) -> None:
+    def _render_session_picker(
+        self, sessions: list[dict[str, Any]], selected: int
+    ) -> None:
         """Render the current page of the terminal session picker."""
         print("\x1b[2J\x1b[H", end="")
         print("=== 恢复历史会话 ===")
@@ -1370,7 +1476,7 @@ class PersonalAgentApp:
                 f" | 更新: {session['updated_at']}"
             )
 
-    def pick_session(self) -> Optional[str]:
+    def pick_session(self) -> str | None:
         """Select a session with arrow keys, falling back to numbered input."""
         sessions = self.list_sessions()
         if not sessions:
@@ -1379,7 +1485,10 @@ class PersonalAgentApp:
 
         # Piped/non-TTY runs cannot receive single key events.  Keep a simple
         # deterministic fallback for smoke tests and redirected terminals.
-        if not (getattr(sys.stdin, "isatty", lambda: False)() and getattr(sys.stdout, "isatty", lambda: False)()):
+        if not (
+            getattr(sys.stdin, "isatty", lambda: False)()
+            and getattr(sys.stdout, "isatty", lambda: False)()
+        ):
             print("\n=== 恢复历史会话 ===")
             for index, session in enumerate(sessions, start=1):
                 print(
@@ -1434,7 +1543,7 @@ class PersonalAgentApp:
         except ValueError as exc:
             print(f"[提示] {exc}")
 
-    def compact_current_session(self) -> Dict[str, Any]:
+    def compact_current_session(self) -> dict[str, Any]:
         """Explicitly compact this session without hidden memory mutation."""
         if not self._session_persisted:
             # A freshly started process (or /new-session) has no durable
@@ -1468,7 +1577,7 @@ class PersonalAgentApp:
     def _build_conversation_context(
         self,
         *,
-        exclude_turn_id: Optional[str] = None,
+        exclude_turn_id: str | None = None,
         force_compact: bool = False,
     ) -> Any:
         """Build context and expose automatic compaction as a lifecycle."""
@@ -1512,7 +1621,8 @@ class PersonalAgentApp:
                     "source": after.get("compaction_source"),
                     "degraded": after.get("compaction_degraded", False),
                     "duration_seconds": round(time.monotonic() - started_at, 6),
-                    "changed": before.get("compaction_id") != after.get("compaction_id"),
+                    "changed": before.get("compaction_id")
+                    != after.get("compaction_id"),
                 },
             )
         return context
@@ -1536,7 +1646,7 @@ class PersonalAgentApp:
             resume=False,
         )
 
-    def _pending_confirmation_result(self) -> Optional[AgentResult]:
+    def _pending_confirmation_result(self) -> AgentResult | None:
         """Project the durable pending action into a stable public result."""
         if not self.pending_confirmation_id:
             return None
@@ -1557,17 +1667,22 @@ class PersonalAgentApp:
             trace_metadata={"existing_pending_confirmation": True},
         )
 
-    def list_unfinished_turns(self, session_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_unfinished_turns(
+        self, session_id: str | None = None
+    ) -> list[dict[str, Any]]:
         """Return started turns that have no durable terminal event yet."""
         target_session_id = session_id or self.active_session_id
         messages = self.conversation_repo.list_messages(target_session_id)
-        result: List[Dict[str, Any]] = []
-        for event in self.event_store.list_unfinished_turns(session_id=target_session_id):
+        result: list[dict[str, Any]] = []
+        for event in self.event_store.list_unfinished_turns(
+            session_id=target_session_id
+        ):
             user_message = next(
                 (
                     message
                     for message in messages
-                    if message.turn_id == event.turn_id and message.role is ConversationRole.USER
+                    if message.turn_id == event.turn_id
+                    and message.role is ConversationRole.USER
                 ),
                 None,
             )
@@ -1608,6 +1723,164 @@ class PersonalAgentApp:
             raise ValueError("未完成 turn 没有可恢复的用户输入")
         return self._process_chat_turn_with_id(message.content, turn_id, resume=True)
 
+    def list_experiences(self) -> list[dict[str, Any]]:
+        if self.collaboration is None:
+            raise ValueError("collaboration mode is not enabled")
+        for row in self.collaboration.experiences.list():
+            if row["state"] == "ACTIVE":
+                try:
+                    self.collaboration.experiences.validate(row)
+                except ValueError:
+                    continue
+        return self.collaboration.experiences.list()
+
+    def learn_experience(
+        self, source_run_id: str, *, revision_of: str | None = None
+    ) -> dict[str, Any]:
+        if self.collaboration is None:
+            raise ValueError("collaboration mode is not enabled")
+        self._require_no_pending_confirmation()
+        source = self.coordination_repository.get_run(source_run_id)
+        if source["session_id"] != self.active_session_id:
+            raise ValueError("experience source does not belong to active session")
+        return self.collaboration.experiences.learn(
+            source_run_id, revision_of=revision_of
+        )
+
+    def review_experience(
+        self, experience_id: str, confirmation: str
+    ) -> dict[str, Any]:
+        if self.collaboration is None:
+            raise ValueError("collaboration mode is not enabled")
+        self._require_no_pending_confirmation()
+        return self.collaboration.experiences.review(experience_id, confirmation)
+
+    def revoke_experience(self, experience_id: str, event_id: str) -> dict[str, Any]:
+        if self.collaboration is None:
+            raise ValueError("collaboration mode is not enabled")
+        return self.collaboration.experiences.revoke(experience_id, event_id)
+
+    def feedback_experience(
+        self, experience_id: str, run_id: str, event_id: str
+    ) -> dict[str, Any]:
+        if self.collaboration is None:
+            raise ValueError("collaboration mode is not enabled")
+        if (
+            self.coordination_repository.get_run(run_id)["session_id"]
+            != self.active_session_id
+        ):
+            raise ValueError("feedback run does not belong to active session")
+        return self.collaboration.experiences.feedback(experience_id, run_id, event_id)
+
+    def repair_collaboration(self, source_run_id: str, event_id: str) -> AgentResult:
+        """Repair a host-revoked artifact in the currently active session."""
+        if self.collaboration is None:
+            raise ValueError("collaboration mode is not enabled")
+        source = self.coordination_repository.get_run(source_run_id)
+        if source["session_id"] != self.active_session_id:
+            raise ValueError("repair source does not belong to active session")
+        self.coordination_repository.ensure_repair_queue(source_run_id, event_id)
+        resolution = self.coordination_repository.repair_resolution(
+            source_run_id, event_id
+        )
+        if resolution:
+            plan = self.collaboration.get_validated_repair_plan(resolution["repair_id"])
+        else:
+            pending = [
+                row
+                for row in self.coordination_repository.list_repairs(
+                    self.active_session_id, pending_only=True, limit=100
+                )
+                if row["run_id"] == source_run_id
+            ]
+            canonical_event = pending[0]["event_id"] if pending else event_id
+            plan = self.collaboration.plan_repair(source_run_id, canonical_event)
+        result = self.collaboration.execute_saved_repair(plan["repair_id"])
+        if result.status is AgentResultStatus.SUCCESS and result.final_response:
+            self._persist_tool_transcript(plan["repair_id"], result)
+            self.conversation_repo.append_message(
+                self.active_session_id,
+                plan["repair_id"],
+                ConversationRole.ASSISTANT,
+                result.final_response,
+            )
+            self.coordination_repository.resolve_pending_repairs(
+                source_run_id, plan["repair_id"], result.agent_run_id
+            )
+        self.coordination_repository.finish_repair_queue(
+            event_id,
+            source_run_id,
+            "SUCCEEDED" if result.status is AgentResultStatus.SUCCESS else "FAILED",
+            result.error_info.code if result.error_info else None,
+        )
+        self._emit_event(
+            "repair.completed",
+            session_id=self.active_session_id,
+            turn_id=plan["repair_id"],
+            event_id=f"repair:{plan['repair_id']}:completed",
+            payload={
+                "source_run_id": source_run_id,
+                "event_id": event_id,
+                "status": result.status.value,
+            },
+        )
+        return result
+
+    def process_pending_collaboration_repairs(
+        self, *, limit: int = 3
+    ) -> list[dict[str, Any]]:
+        """Drain a bounded set of persisted host invalidations for this session."""
+        if self.collaboration is None:
+            return []
+        from src.memory.collaboration.repair import RepairBusy
+
+        self._require_no_pending_confirmation()
+        outcomes = []
+        self.collaboration.refresh_session_sources(self.active_session_id)
+        for item in self.coordination_repository.list_repairs(
+            self.active_session_id, pending_only=True, limit=limit
+        ):
+            if self.coordination_repository.repair_resolution(
+                item["run_id"], item["event_id"]
+            ):
+                continue
+            try:
+                result = self.repair_collaboration(item["run_id"], item["event_id"])
+                outcomes.append(
+                    {"event_id": item["event_id"], "status": result.status.value}
+                )
+            except RepairBusy:
+                continue
+            except Exception as exc:  # noqa: BLE001
+                self.coordination_repository.finish_repair_queue(
+                    item["event_id"], item["run_id"], "FAILED", type(exc).__name__
+                )
+                self._emit_event(
+                    "repair.failed",
+                    session_id=self.active_session_id,
+                    payload={
+                        "source_run_id": item["run_id"],
+                        "event_id": item["event_id"],
+                        "error_type": type(exc).__name__,
+                    },
+                )
+                outcomes.append({"event_id": item["event_id"], "status": "FAILED"})
+        return outcomes
+
+    def revoke_and_repair_collaboration(
+        self, source_run_id: str, artifact_id: str, event_id: str
+    ) -> AgentResult:
+        """Revoke a host-selected artifact and immediately attempt repair."""
+        if self.collaboration is None:
+            raise ValueError("collaboration mode is not enabled")
+        source = self.coordination_repository.get_run(source_run_id)
+        if source["session_id"] != self.active_session_id:
+            raise ValueError("repair source does not belong to active session")
+        self.coordination_repository.invalidate_artifact(
+            source_run_id, artifact_id, event_id
+        )
+        return self.repair_collaboration(source_run_id, event_id)
+
     def _process_chat_turn_with_id(
         self,
         user_input: str,
@@ -1617,7 +1890,9 @@ class PersonalAgentApp:
     ) -> AgentResult:
         if self.collaboration is None:
             return self._execute_chat_turn_with_id(user_input, turn_id, resume=resume)
-        with self.llm_client.turn(self.active_session_id, turn_id, user_input) as run_id:
+        with self.llm_client.turn(
+            self.active_session_id, turn_id, user_input
+        ) as run_id:
             result = self._execute_chat_turn_with_id(user_input, turn_id, resume=resume)
             if not self.coordination_repository.get_run(run_id)["result_json"]:
                 # Explicit memory routes and runtime failures still have one
@@ -1651,10 +1926,17 @@ class PersonalAgentApp:
         # 1. Build Bounded Conversation Context for PAST dialogue only
         cached_collaboration = (
             self.collaboration is not None
-            and self.coordination_repository.get_run(self.llm_client.active_run_id)["result_json"] is not None
+            and self.coordination_repository.get_run(self.llm_client.active_run_id)[
+                "result_json"
+            ]
+            is not None
         )
-        conv_ctx = None if cached_collaboration else self._build_conversation_context(
-            exclude_turn_id=turn_id if resume else None,
+        conv_ctx = (
+            None
+            if cached_collaboration
+            else self._build_conversation_context(
+                exclude_turn_id=turn_id if resume else None,
+            )
         )
 
         # 2. Persist current USER message into active conversation session
@@ -1662,7 +1944,9 @@ class PersonalAgentApp:
             user_message = next(
                 (
                     item
-                    for item in self.conversation_repo.list_messages(self.active_session_id)
+                    for item in self.conversation_repo.list_messages(
+                        self.active_session_id
+                    )
                     if item.turn_id == turn_id and item.role is ConversationRole.USER
                 ),
                 None,
@@ -1730,7 +2014,9 @@ class PersonalAgentApp:
         # session's Task association. Keep the Conversation row synchronized
         # after every turn, including an explicit release to UNBOUND.
         if res.task_id:
-            self.active_task_id = None if res.task_id == UNBOUND_TASK_ID else res.task_id
+            self.active_task_id = (
+                None if res.task_id == UNBOUND_TASK_ID else res.task_id
+            )
             self.conversation_repo.update_session_task(
                 self.active_session_id,
                 self.active_task_id,
@@ -1771,8 +2057,12 @@ class PersonalAgentApp:
         # The journal remains authoritative for execution; this transcript
         # projection keeps the paired exchange available to future turns and
         # to compaction without duplicating execution side effects.
-        self._persist_tool_transcript(turn_id, res)
-        self._emit_tool_lifecycle_events(turn_id, res)
+        stale_replay = bool(
+            res.error_info and res.error_info.code == "COLLABORATION_STALE_REPLAY"
+        )
+        if not stale_replay:
+            self._persist_tool_transcript(turn_id, res)
+            self._emit_tool_lifecycle_events(turn_id, res)
 
         # 4. Handle Agent response & persist ASSISTANT message on SUCCESS
         if res.status == AgentResultStatus.SUCCESS and res.final_response:
@@ -1802,8 +2092,14 @@ class PersonalAgentApp:
 
         runtime_context = getattr(self.agent, "last_turn_context", None)
         trace_groups = (
-            ("runtime_stage_traces", getattr(runtime_context, "stage_traces", ()) or ()),
-            ("tool_stage_traces", res.trace_metadata.get("tool_stage_traces", ()) or ()),
+            (
+                "runtime_stage_traces",
+                getattr(runtime_context, "stage_traces", ()) or (),
+            ),
+            (
+                "tool_stage_traces",
+                res.trace_metadata.get("tool_stage_traces", ()) or (),
+            ),
         )
         for trace_key, traces in trace_groups:
             for trace in traces:
@@ -1849,9 +2145,13 @@ class PersonalAgentApp:
         }
         try:
             with open(self.retrieval_trace_path, "a", encoding="utf-8") as handle:
-                handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+                handle.write(
+                    json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n"
+                )
         except OSError as exc:
-            log_boundary_failure(logger, "retrieval_trace_write_failed", exc, turn_id=turn_id)
+            log_boundary_failure(
+                logger, "retrieval_trace_write_failed", exc, turn_id=turn_id
+            )
 
     def _persist_tool_transcript(self, turn_id: str, result: AgentResult) -> None:
         if not result.executed_tool_call_ids:
@@ -2043,7 +2343,8 @@ class PersonalAgentApp:
                     **self._approval_event_payload(pending_for_event),
                     "decision": decision.value,
                     "result_status": res.status.value,
-                    "executed": pending_for_event.tool_call_id in res.executed_tool_call_ids,
+                    "executed": pending_for_event.tool_call_id
+                    in res.executed_tool_call_ids,
                 },
             )
 
@@ -2062,7 +2363,9 @@ class PersonalAgentApp:
         print("Personal Agent MVP (CLI Terminal Product)")
         print(f"Provider : {self.config.llm_provider_name}")
         print(f"Model    : {self.config.llm_model_name}")
-        print(f"输出模式 : {'开发模式' if self.output_mode is OutputMode.DEVELOPER else '用户模式'}")
+        print(
+            f"输出模式 : {'开发模式' if self.output_mode is OutputMode.DEVELOPER else '用户模式'}"
+        )
         print(f"数据路径 : {self.data_dir}")
         print(f"当前会话 : {self.active_session_id}")
         print(f"当前任务 : {self.active_task_id or '未绑定（每轮由 Agent 判断）'}")
@@ -2110,6 +2413,15 @@ class PersonalAgentApp:
   /resume            打开上下箭头会话选择器并恢复
   /resume <sess_id>  恢复并继续指定 ID 的历史会话
   /resume-turn <turn_id> 恢复当前会话中断且尚未完成的 turn
+  /repairs 列出当前会话修复事件
+  /repair-graphs 列出当前会话协作运行和成果身份
+  /repair <run_id> <event_id> 执行或重放修复
+  /revoke-repair <run_id> <artifact_id> <event_id> 撤销成果并修复
+  /experience list 列出程序性经验及准入状态
+  /experience learn <run_id> [revision_of] 从已验证成果提炼或修订经验
+  /experience review <experience_id> <确认说明> 重新审核待澄清经验
+  /experience revoke <experience_id> <event_id> 撤销经验
+  /experience feedback <experience_id> <run_id> <event_id> 记录后续使用结果
   /context           显示模型上下文窗口、压缩与完整 Transcript 状态
   /compact           手动压缩当前会话，不隐式修改长期记忆
   /events [序号]      从序号之后重放 Agent 结构化生命周期事件
@@ -2179,7 +2491,9 @@ class PersonalAgentApp:
         try:
             while True:
                 try:
-                    user_raw = _normalize_cli_input(_read_cli_submission("\n你 > ")).strip()
+                    user_raw = _normalize_cli_input(
+                        _read_cli_submission("\n你 > ")
+                    ).strip()
                 except (KeyboardInterrupt, EOFError):
                     print("\n[系统] 正在关闭连接并保存状态... 再见！")
                     break
@@ -2190,7 +2504,9 @@ class PersonalAgentApp:
                 try:
                     user_raw.encode("utf-8")
                 except UnicodeEncodeError:
-                    print("[输入错误] 终端传入了无效字符。请确认终端使用 UTF-8，并在“你 >”提示符后重新输入。")
+                    print(
+                        "[输入错误] 终端传入了无效字符。请确认终端使用 UTF-8，并在“你 >”提示符后重新输入。"
+                    )
                     continue
 
                 # Command Routing
@@ -2215,7 +2531,9 @@ class PersonalAgentApp:
                         print(f"Provider : {self.config.llm_provider_name}")
                         print(f"Model    : {self.config.llm_model_name}")
                         print(f"Endpoint : {self.config.llm_api_base}")
-                        print(f"凭据变量 : {self.config.llm_api_key_env} ({key_status})")
+                        print(
+                            f"凭据变量 : {self.config.llm_api_key_env} ({key_status})"
+                        )
                         print(f"模式     : {self.config.provider_mode.value}")
 
                     elif cmd == "/storage":
@@ -2225,12 +2543,22 @@ class PersonalAgentApp:
 
                     elif cmd == "/mode":
                         if not arg:
-                            current = "developer" if self.output_mode is OutputMode.DEVELOPER else "user"
-                            print(f"[系统] 当前输出模式: {current}（可用 /mode user 或 /mode developer 切换）")
+                            current = (
+                                "developer"
+                                if self.output_mode is OutputMode.DEVELOPER
+                                else "user"
+                            )
+                            print(
+                                f"[系统] 当前输出模式: {current}（可用 /mode user 或 /mode developer 切换）"
+                            )
                         else:
                             try:
                                 selected = self.set_output_mode(arg)
-                                label = "开发模式" if selected is OutputMode.DEVELOPER else "用户模式"
+                                label = (
+                                    "开发模式"
+                                    if selected is OutputMode.DEVELOPER
+                                    else "用户模式"
+                                )
                                 print(f"[系统] 已切换至{label}。")
                             except ValueError as exc:
                                 print(f"[错误] {exc}")
@@ -2250,7 +2578,11 @@ class PersonalAgentApp:
                             state = "可用" if item["exists"] else "不存在"
                             print(f" {marker} {item['path']} ({state})")
 
-                    elif cmd in {"/workspace-add", "/workspace-remove", "/workspace-use"}:
+                    elif cmd in {
+                        "/workspace-add",
+                        "/workspace-remove",
+                        "/workspace-use",
+                    }:
                         if not arg:
                             print(f"[错误] 用法: {cmd} <文件夹路径>")
                         else:
@@ -2286,12 +2618,14 @@ class PersonalAgentApp:
                                     print(f"[工具] {result.result_content}")
                                 else:
                                     print(f"[工具错误] {result.error_message}")
-                            except Exception as exc:
+                            except Exception as exc:  # noqa: BLE001
                                 self._print_unexpected_error("CALCULATOR_FAILED", exc)
 
                     elif cmd == "/time":
                         try:
-                            result = self.run_direct_utility_tool("get_current_time", {})
+                            result = self.run_direct_utility_tool(
+                                "get_current_time", {}
+                            )
                             self._persist_direct_tool_transcript(
                                 f"turn_cli_{uuid.uuid4().hex[:12]}",
                                 user_raw,
@@ -2301,15 +2635,19 @@ class PersonalAgentApp:
                                 print(f"[工具] {result.result_content}")
                             else:
                                 print(f"[工具错误] {result.error_message}")
-                        except Exception as exc:
+                        except Exception as exc:  # noqa: BLE001
                             self._print_unexpected_error("TIME_LOOKUP_FAILED", exc)
 
                     elif cmd == "/search":
                         if not arg:
-                            print("[错误] 请提供搜索关键词，例如: /search Python 3.13 新特性")
+                            print(
+                                "[错误] 请提供搜索关键词，例如: /search Python 3.13 新特性"
+                            )
                         else:
                             try:
-                                result = self.run_direct_external_tool("web_search", {"query": arg})
+                                result = self.run_direct_external_tool(
+                                    "web_search", {"query": arg}
+                                )
                                 self._persist_direct_tool_transcript(
                                     f"turn_cli_{uuid.uuid4().hex[:12]}",
                                     user_raw,
@@ -2319,7 +2657,7 @@ class PersonalAgentApp:
                                     print(f"[联网搜索] {result.result_content}")
                                 else:
                                     print(f"[工具错误] {result.error_message}")
-                            except Exception as exc:
+                            except Exception as exc:  # noqa: BLE001
                                 self._print_unexpected_error("WEB_SEARCH_FAILED", exc)
 
                     elif cmd == "/fetch":
@@ -2327,7 +2665,9 @@ class PersonalAgentApp:
                             print("[错误] 请提供 URL，例如: /fetch https://example.com")
                         else:
                             try:
-                                result = self.run_direct_external_tool("web_fetch", {"url": arg})
+                                result = self.run_direct_external_tool(
+                                    "web_fetch", {"url": arg}
+                                )
                                 self._persist_direct_tool_transcript(
                                     f"turn_cli_{uuid.uuid4().hex[:12]}",
                                     user_raw,
@@ -2337,7 +2677,7 @@ class PersonalAgentApp:
                                     print(f"[网页抓取] {result.result_content}")
                                 else:
                                     print(f"[工具错误] {result.error_message}")
-                            except Exception as exc:
+                            except Exception as exc:  # noqa: BLE001
                                 self._print_unexpected_error("WEB_FETCH_FAILED", exc)
 
                     elif cmd == "/weather":
@@ -2345,7 +2685,9 @@ class PersonalAgentApp:
                             print("[错误] 请提供地点，例如: /weather 上海")
                         else:
                             try:
-                                result = self.run_direct_external_tool("weather", {"location": arg})
+                                result = self.run_direct_external_tool(
+                                    "weather", {"location": arg}
+                                )
                                 self._persist_direct_tool_transcript(
                                     f"turn_cli_{uuid.uuid4().hex[:12]}",
                                     user_raw,
@@ -2355,27 +2697,43 @@ class PersonalAgentApp:
                                     print(f"[天气] {result.result_content}")
                                 else:
                                     print(f"[工具错误] {result.error_message}")
-                            except Exception as exc:
-                                self._print_unexpected_error("WEATHER_LOOKUP_FAILED", exc)
+                            except Exception as exc:  # noqa: BLE001
+                                self._print_unexpected_error(
+                                    "WEATHER_LOOKUP_FAILED", exc
+                                )
 
                     elif cmd == "/tools":
                         print("\n--- 当前 Agent 工具 ---")
                         for spec in self.registry.list_specs():
-                            print(f" {spec.name} [{spec.effect.value}] - {spec.description}")
+                            print(
+                                f" {spec.name} [{spec.effect.value}] - {spec.description}"
+                            )
 
                     elif cmd == "/session":
-                        sess = self.conversation_repo.get_session(self.active_session_id)
+                        sess = self.conversation_repo.get_session(
+                            self.active_session_id
+                        )
                         print(f"\n=== 当前会话信息 [{self.active_session_id}] ===")
                         if sess:
                             print(f"会话标题 : {sess.title}")
                             print(f"关联任务 : {sess.active_task_id}")
-                            print(f"创建时间 : {datetime.datetime.fromtimestamp(sess.created_at).strftime('%Y-%m-%d %H:%M:%S')}")
-                            print(f"更新时间 : {datetime.datetime.fromtimestamp(sess.updated_at).strftime('%Y-%m-%d %H:%M:%S')}")
+                            print(
+                                f"创建时间 : {datetime.datetime.fromtimestamp(sess.created_at, tz=datetime.timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M:%S')}"
+                            )
+                            print(
+                                f"更新时间 : {datetime.datetime.fromtimestamp(sess.updated_at, tz=datetime.timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M:%S')}"
+                            )
                             print(f"当前工作区: {self.workspace.current_root}")
-                            print(f"可见文件夹: {', '.join(self.workspace.snapshot()['roots'])}")
+                            print(
+                                f"可见文件夹: {', '.join(self.workspace.snapshot()['roots'])}"
+                            )
                         else:
-                            print(f"会话标题 : {self._pending_session_title or '新会话（尚未开始）'}")
-                            print("会话状态 : PENDING（尚未产生真实对话，不占用 Conversation 数据库记录）")
+                            print(
+                                f"会话标题 : {self._pending_session_title or '新会话（尚未开始）'}"
+                            )
+                            print(
+                                "会话状态 : PENDING（尚未产生真实对话，不占用 Conversation 数据库记录）"
+                            )
                             print("关联任务 : 未绑定（每轮由 Agent 判断）")
                             print(f"当前工作区: {self.workspace.current_root}")
 
@@ -2387,15 +2745,31 @@ class PersonalAgentApp:
                             f"上下文窗口 : {context_status['context_window_tokens']} tokens "
                             f"({context_status['context_window_source']})"
                         )
-                        print(f"本轮可用预算 : {context_status['usable_tokens']} tokens")
-                        print(f"完整 Transcript : {context_status['transcript_message_count']} 条消息（永久保留）")
-                        print(f"当前投影尾部 : {context_status['projected_tail_message_count']} 条消息")
-                        print(f"估算投影用量 : {context_status['estimated_projected_tokens']} tokens")
-                        print(f"已摘要消息 : {context_status['summarized_message_count']} 条")
-                        print(f"压缩检查点 : {context_status['compaction_id'] or '尚未压缩'}")
+                        print(
+                            f"本轮可用预算 : {context_status['usable_tokens']} tokens"
+                        )
+                        print(
+                            f"完整 Transcript : {context_status['transcript_message_count']} 条消息（永久保留）"
+                        )
+                        print(
+                            f"当前投影尾部 : {context_status['projected_tail_message_count']} 条消息"
+                        )
+                        print(
+                            f"估算投影用量 : {context_status['estimated_projected_tokens']} tokens"
+                        )
+                        print(
+                            f"已摘要消息 : {context_status['summarized_message_count']} 条"
+                        )
+                        print(
+                            f"压缩检查点 : {context_status['compaction_id'] or '尚未压缩'}"
+                        )
                         print(
                             f"压缩来源 : {context_status['compaction_source']}"
-                            + ("（降级，摘要可能不完整）" if context_status["compaction_degraded"] else "")
+                            + (
+                                "（降级，摘要可能不完整）"
+                                if context_status["compaction_degraded"]
+                                else ""
+                            )
                         )
                         provider_usage = context_status.get("provider_last_usage") or {}
                         if provider_usage:
@@ -2409,7 +2783,9 @@ class PersonalAgentApp:
                                 session_id=self.active_session_id,
                                 limit=100,
                             )
-                            print(f"\n=== Agent 事件（sequence > {after_sequence}） ===")
+                            print(
+                                f"\n=== Agent 事件（sequence > {after_sequence}） ==="
+                            )
                             if not events:
                                 print("暂无事件。")
                             for event in events:
@@ -2419,14 +2795,23 @@ class PersonalAgentApp:
                                     f"turn={event.turn_id or '-'}"
                                 )
                                 if event.payload:
-                                    print("  " + json.dumps(event.payload, ensure_ascii=False, sort_keys=True))
+                                    print(
+                                        "  "
+                                        + json.dumps(
+                                            event.payload,
+                                            ensure_ascii=False,
+                                            sort_keys=True,
+                                        )
+                                    )
                         except (TypeError, ValueError) as exc:
                             print(f"[错误] /events 序号必须是非负整数: {exc}")
 
                     elif cmd == "/compact":
                         context_status = self.compact_current_session()
                         print("\n=== 当前会话已执行压缩 ===")
-                        print(f"压缩检查点 : {context_status['compaction_id'] or '本次没有可压缩的旧消息'}")
+                        print(
+                            f"压缩检查点 : {context_status['compaction_id'] or '本次没有可压缩的旧消息'}"
+                        )
                         print(f"压缩来源 : {context_status['compaction_source']}")
 
                     elif cmd == "/sessions":
@@ -2442,7 +2827,9 @@ class PersonalAgentApp:
 
                     elif cmd == "/new-session":
                         try:
-                            new_sid = self.create_new_session(title=arg if arg else None)
+                            new_sid = self.create_new_session(
+                                title=arg if arg else None
+                            )
                             print(f"[系统] 已成功创建新对话会话并切换至: {new_sid}")
                         except ValueError as exc:
                             print(f"[提示] {exc}")
@@ -2454,18 +2841,22 @@ class PersonalAgentApp:
 
                     elif cmd == "/resume-turn":
                         if not arg:
-                            print("[错误] 请提供要恢复的 turn_id，例如: /resume-turn turn_12345")
+                            print(
+                                "[错误] 请提供要恢复的 turn_id，例如: /resume-turn turn_12345"
+                            )
                         else:
                             try:
                                 resumed = self._run_with_wait_notice(
-                                    lambda: self.resume_interrupted_turn(arg)
+                                    lambda arg=arg: self.resume_interrupted_turn(arg)
                                 )
                                 self._render_agent_result(resumed)
                             except ProviderError as exc:
                                 safe = exc.to_safe_projection()
                                 self._print_provider_error(
                                     code=safe.get("code", "PROVIDER_ERROR"),
-                                    safe_message=safe.get("safe_message", "Provider request failed."),
+                                    safe_message=safe.get(
+                                        "safe_message", "Provider request failed."
+                                    ),
                                     retryable=bool(safe.get("retryable")),
                                     provider=safe.get("provider"),
                                     operation=safe.get("operation"),
@@ -2473,6 +2864,90 @@ class PersonalAgentApp:
                                 )
                             except ValueError as exc:
                                 print(f"[提示] 恢复 turn 失败: {exc}")
+
+                    elif cmd == "/experience":
+                        parts = arg.split(maxsplit=2)
+                        try:
+                            if parts == ["list"]:
+                                value = self.list_experiences()
+                            elif parts and parts[0] == "learn" and len(parts) in {2, 3}:
+                                value = self._run_with_wait_notice(
+                                    lambda parts=parts: self.learn_experience(
+                                        parts[1],
+                                        revision_of=(
+                                            parts[2] if len(parts) == 3 else None
+                                        ),
+                                    )
+                                )
+                            elif len(parts) == 3 and parts[0] == "review":
+                                value = self._run_with_wait_notice(
+                                    lambda parts=parts: self.review_experience(
+                                        parts[1], parts[2]
+                                    )
+                                )
+                            elif len(parts) == 3 and parts[0] == "revoke":
+                                value = self.revoke_experience(parts[1], parts[2])
+                            elif (
+                                len(parts) == 3
+                                and parts[0] == "feedback"
+                                and len(parts[2].split()) == 2
+                            ):
+                                value = self.feedback_experience(
+                                    parts[1], *parts[2].split()
+                                )
+                            else:
+                                raise ValueError("参数不正确，请查看 /help")
+                            print(json.dumps(value, ensure_ascii=False, indent=2))
+                        except ValueError as exc:
+                            print(f"[提示] 经验操作失败: {exc}")
+
+                    elif cmd == "/repair-graphs":
+                        if self.collaboration is None:
+                            print("[提示] 当前未启用多智能体协作。")
+                        else:
+                            print(
+                                json.dumps(
+                                    self.coordination_repository.list_session_graphs(
+                                        self.active_session_id
+                                    ),
+                                    ensure_ascii=False,
+                                    indent=2,
+                                )
+                            )
+
+                    elif cmd == "/repairs":
+                        if self.collaboration is None:
+                            print("[提示] 当前未启用多智能体协作。")
+                        else:
+                            print(
+                                json.dumps(
+                                    self.coordination_repository.list_repairs(
+                                        self.active_session_id
+                                    ),
+                                    ensure_ascii=False,
+                                    indent=2,
+                                )
+                            )
+
+                    elif cmd in {"/repair", "/revoke-repair"}:
+                        parts = arg.split()
+                        expected = 2 if cmd == "/repair" else 3
+                        if len(parts) != expected:
+                            print("[提示] 参数数量不正确，请查看 /help。")
+                        else:
+                            try:
+                                result = self._run_with_wait_notice(
+                                    lambda parts=parts, cmd=cmd: (
+                                        self.repair_collaboration(*parts)
+                                        if cmd == "/repair"
+                                        else self.revoke_and_repair_collaboration(
+                                            *parts
+                                        )
+                                    )
+                                )
+                                self._render_agent_result(result)
+                            except ValueError as exc:
+                                print(f"[提示] 修复失败: {exc}")
 
                     elif cmd == "/new":
                         try:
@@ -2486,11 +2961,15 @@ class PersonalAgentApp:
                         print("\n--- 任务列表 (Tasks) ---")
                         for t in tasks:
                             marker = "*" if t["is_active"] else " "
-                            print(f" {marker} [{t['task_id']}] 状态: {t['status']} | 描述: {t['summary']}")
+                            print(
+                                f" {marker} [{t['task_id']}] 状态: {t['status']} | 描述: {t['summary']}"
+                            )
 
                     elif cmd == "/switch":
                         if not arg:
-                            print("[错误] 请提供要切换的 task_id，例如: /switch task_general")
+                            print(
+                                "[错误] 请提供要切换的 task_id，例如: /switch task_general"
+                            )
                         else:
                             try:
                                 ok = self.switch_task(arg)
@@ -2520,8 +2999,12 @@ class PersonalAgentApp:
                         checkpoint = st.get("checkpoint") or {}
                         if checkpoint:
                             print(f"当前焦点   : {checkpoint.get('focus') or '-'}")
-                            print(f"下一动作   : {checkpoint.get('next_action') or '-'}")
-                            print(f"世界状态   : {checkpoint.get('world_state') or '-'}")
+                            print(
+                                f"下一动作   : {checkpoint.get('next_action') or '-'}"
+                            )
+                            print(
+                                f"世界状态   : {checkpoint.get('world_state') or '-'}"
+                            )
                         print(
                             "长期记忆更新: Agent 自主工具模式, "
                             f"待重试事件={memory_status['pending_events']}, "
@@ -2539,7 +3022,9 @@ class PersonalAgentApp:
                                 print("[系统] 当前任务已恢复。")
                             elif cmd == "/complete":
                                 self.complete_current_task()
-                                print("[系统] 当前任务已标记为完成；如需继续工作，请使用 /new 创建任务。")
+                                print(
+                                    "[系统] 当前任务已标记为完成；如需继续工作，请使用 /new 创建任务。"
+                                )
                             else:
                                 self.cancel_current_task()
                                 print("[系统] 当前任务已取消；历史仍保留。")
@@ -2548,26 +3033,38 @@ class PersonalAgentApp:
 
                     elif cmd == "/remember":
                         if not arg:
-                            print("[错误] 请提供要记忆的内容，例如: /remember 我喜欢用 Python 开发")
+                            print(
+                                "[错误] 请提供要记忆的内容，例如: /remember 我喜欢用 Python 开发"
+                            )
                         else:
                             try:
                                 res = self.remember_explicit(arg)
                                 mem_id = res.get("memory_id")
                                 if not isinstance(mem_id, str) or not mem_id.strip():
-                                    raise RuntimeError("memory write returned no durable memory identity")
+                                    raise RuntimeError(
+                                        "memory write returned no durable memory identity"
+                                    )
                                 print(f"[系统] 成功记下长期记忆！Memory ID: {mem_id}")
-                            except Exception as exc:
+                            except Exception as exc:  # noqa: BLE001
                                 self._print_unexpected_error("MEMORY_WRITE_FAILED", exc)
 
                     elif cmd == "/memories":
                         mems = self.list_memories()
                         if not mems:
-                            print("[系统] 当前长期记忆存储库为空。可使用 /remember <内容> 添加记忆。")
+                            print(
+                                "[系统] 当前长期记忆存储库为空。可使用 /remember <内容> 添加记忆。"
+                            )
                         else:
                             print("\n--- 长期记忆列表 (Long-term Memories) ---")
                             for m in mems:
-                                content_trunc = m['content'][:60] + "..." if len(m['content']) > 60 else m['content']
-                                print(f" [{m['memory_id']}] [{m['type']}] {content_trunc}")
+                                content_trunc = (
+                                    m["content"][:60] + "..."
+                                    if len(m["content"]) > 60
+                                    else m["content"]
+                                )
+                                print(
+                                    f" [{m['memory_id']}] [{m['type']}] {content_trunc}"
+                                )
 
                     elif cmd == "/memory":
                         if not arg:
@@ -2584,34 +3081,44 @@ class PersonalAgentApp:
 
                     elif cmd == "/memory-history":
                         if not arg:
-                            print("[错误] 请提供 memory_id，例如: /memory-history mem_123")
+                            print(
+                                "[错误] 请提供 memory_id，例如: /memory-history mem_123"
+                            )
                         else:
                             try:
                                 hist = self.get_memory_history(arg)
                             except MemoryNotFoundError:
                                 hist = []
-                            except Exception as exc:
+                            except Exception as exc:  # noqa: BLE001
                                 # A bad ID is normal interactive input, not a
                                 # process-fatal error. Keep the CLI alive and
                                 # avoid exposing a traceback to the user.
-                                log_boundary_failure(logger, "memory_history_lookup_failed", exc)
+                                log_boundary_failure(
+                                    logger, "memory_history_lookup_failed", exc
+                                )
                                 hist = []
                             if hist:
                                 print(f"\n=== 记忆修改历史 [{arg}] ===")
                                 for idx, rev in enumerate(hist, 1):
-                                    print(f" {idx}. Revision: {rev['revision_id']} | 时间: {rev['created_at']}")
+                                    print(
+                                        f" {idx}. Revision: {rev['revision_id']} | 时间: {rev['created_at']}"
+                                    )
                                     print(f"    内容: {rev['content']}")
                             else:
                                 print(f"[错误] 未找到记忆历史或 ID: {arg}")
 
                     elif cmd == "/memory-provenance":
                         if not arg:
-                            print("[错误] 请提供 memory_id，例如: /memory-provenance mem_123")
+                            print(
+                                "[错误] 请提供 memory_id，例如: /memory-provenance mem_123"
+                            )
                         else:
                             try:
                                 provenance = self.get_memory_provenance(arg)
-                            except Exception as exc:
-                                log_boundary_failure(logger, "memory_provenance_lookup_failed", exc)
+                            except Exception as exc:  # noqa: BLE001
+                                log_boundary_failure(
+                                    logger, "memory_provenance_lookup_failed", exc
+                                )
                                 provenance = []
                             if not provenance:
                                 print(f"[错误] 未找到记忆来源或 ID: {arg}")
@@ -2633,7 +3140,9 @@ class PersonalAgentApp:
                                             f"message={ref['message_id'] or '-'}"
                                         )
                                         if ref["controlled_excerpt"]:
-                                            print(f"      摘要: {ref['controlled_excerpt']}")
+                                            print(
+                                                f"      摘要: {ref['controlled_excerpt']}"
+                                            )
 
                     elif cmd == "/forget":
                         if not arg:
@@ -2641,23 +3150,31 @@ class PersonalAgentApp:
                         else:
                             try:
                                 if self.forget_memory(arg):
-                                    print("[系统] 记忆已移入回收站，可用 /restore-memory 恢复。")
+                                    print(
+                                        "[系统] 记忆已移入回收站，可用 /restore-memory 恢复。"
+                                    )
                                 else:
                                     print(f"[错误] 未找到可删除的活跃记忆: {arg}")
-                            except Exception as exc:
-                                self._print_unexpected_error("MEMORY_DELETE_FAILED", exc)
+                            except Exception as exc:  # noqa: BLE001
+                                self._print_unexpected_error(
+                                    "MEMORY_DELETE_FAILED", exc
+                                )
 
                     elif cmd == "/restore-memory":
                         if not arg:
-                            print("[错误] 请提供 memory_id，例如: /restore-memory mem_123")
+                            print(
+                                "[错误] 请提供 memory_id，例如: /restore-memory mem_123"
+                            )
                         else:
                             try:
                                 if self.restore_memory(arg):
                                     print("[系统] 记忆已从回收站恢复。")
                                 else:
                                     print(f"[错误] 未找到可恢复的回收站记忆: {arg}")
-                            except Exception as exc:
-                                self._print_unexpected_error("MEMORY_RESTORE_FAILED", exc)
+                            except Exception as exc:  # noqa: BLE001
+                                self._print_unexpected_error(
+                                    "MEMORY_RESTORE_FAILED", exc
+                                )
 
                     elif cmd == "/memory-recycle-bin":
                         recycled = self.list_recycled_memories()
@@ -2669,7 +3186,9 @@ class PersonalAgentApp:
                                 content = item["content"]
                                 if len(content) > 60:
                                     content = content[:60] + "..."
-                                print(f" [{item['memory_id']}] [{item['type']}] {content}")
+                                print(
+                                    f" [{item['memory_id']}] [{item['type']}] {content}"
+                                )
 
                     elif cmd == "/confirm":
                         if not self.pending_confirmation_id:
@@ -2678,12 +3197,14 @@ class PersonalAgentApp:
                             print("[系统] 正在确认并继续执行 Agent 操作...")
                             try:
                                 confirmation_result = self._run_with_wait_notice(
-                                    lambda: self.process_confirmation(ConfirmationDecision.CONFIRM)
+                                    lambda: self.process_confirmation(
+                                        ConfirmationDecision.CONFIRM
+                                    )
                                 )
                                 self._render_agent_result(confirmation_result)
                             except KeyboardInterrupt:
                                 print("\n[已取消] 本次确认执行已由用户中断。")
-                            except Exception as exc:
+                            except Exception as exc:  # noqa: BLE001
                                 self._print_unexpected_error("CONFIRMATION_FAILED", exc)
 
                     elif cmd == "/reject":
@@ -2693,12 +3214,14 @@ class PersonalAgentApp:
                             print("[系统] 正在拒绝并取消 Agent 操作...")
                             try:
                                 rejection_result = self._run_with_wait_notice(
-                                    lambda: self.process_confirmation(ConfirmationDecision.REJECT)
+                                    lambda: self.process_confirmation(
+                                        ConfirmationDecision.REJECT
+                                    )
                                 )
                                 self._render_agent_result(rejection_result)
                             except KeyboardInterrupt:
                                 print("\n[已取消] 本次拒绝操作已由用户中断。")
-                            except Exception as exc:
+                            except Exception as exc:  # noqa: BLE001
                                 self._print_unexpected_error("REJECTION_FAILED", exc)
 
                     else:
@@ -2707,11 +3230,13 @@ class PersonalAgentApp:
                 else:
                     # Normal Chat Input
                     if self.pending_confirmation_id:
-                        print("[提示] 当前有等待确认的操作，请先输入 /confirm 或 /reject。")
+                        print(
+                            "[提示] 当前有等待确认的操作，请先输入 /confirm 或 /reject。"
+                        )
                         continue
                     try:
                         chat_result = self._run_with_wait_notice(
-                            lambda: self.process_chat_turn(user_raw)
+                            lambda user_raw=user_raw: self.process_chat_turn(user_raw)
                         )
                         self._render_agent_result(chat_result)
                     except KeyboardInterrupt:
@@ -2720,13 +3245,15 @@ class PersonalAgentApp:
                         safe = exc.to_safe_projection()
                         self._print_provider_error(
                             code=safe.get("code", "PROVIDER_ERROR"),
-                            safe_message=safe.get("safe_message", "Provider request failed."),
+                            safe_message=safe.get(
+                                "safe_message", "Provider request failed."
+                            ),
                             retryable=bool(safe.get("retryable")),
                             provider=safe.get("provider"),
                             operation=safe.get("operation"),
                             status_code=safe.get("status_code"),
                         )
-                    except Exception as exc:
+                    except Exception as exc:  # noqa: BLE001
                         self._print_unexpected_error("TURN_EXECUTION_FAILED", exc)
         finally:
             if callable(set_progress):
@@ -2757,7 +3284,9 @@ class PersonalAgentApp:
             while not stopped.wait(notice_interval_seconds):
                 elapsed += notice_interval_seconds
                 if self.output_mode is OutputMode.DEVELOPER and show_progress:
-                    print(f"[处理中] 已等待 {elapsed:.0f} 秒，模型仍在响应...", flush=True)
+                    print(
+                        f"[处理中] 已等待 {elapsed:.0f} 秒，模型仍在响应...", flush=True
+                    )
 
         reporter = None
         if developer_mode and show_progress:
@@ -2780,14 +3309,20 @@ class PersonalAgentApp:
                 session_id=self.active_session_id,
                 turn_id=observed.request_turn_id,
                 payload={
-                    "elapsed_seconds": observed.trace_metadata.get("turn_elapsed_seconds"),
-                    "provider_usage_delta": observed.trace_metadata.get("provider_usage_delta", {}),
+                    "elapsed_seconds": observed.trace_metadata.get(
+                        "turn_elapsed_seconds"
+                    ),
+                    "provider_usage_delta": observed.trace_metadata.get(
+                        "provider_usage_delta", {}
+                    ),
                 },
             )
             return observed
         return result
 
-    def _print_model_progress(self, schema_name: str, attempt: int, max_attempts: int) -> None:
+    def _print_model_progress(
+        self, schema_name: str, attempt: int, max_attempts: int
+    ) -> None:
         if self.output_mode is not OutputMode.DEVELOPER:
             return
         if schema_name.startswith("task_state"):
@@ -2801,7 +3336,7 @@ class PersonalAgentApp:
         retry = f"，第 {attempt}/{max_attempts} 次尝试" if max_attempts > 1 else ""
         print(f"[处理中] {stage}{retry}...", flush=True)
 
-    def _provider_usage(self) -> Dict[str, int]:
+    def _provider_usage(self) -> dict[str, int]:
         raw = getattr(self.llm_client, "usage", {})
         return dict(raw) if isinstance(raw, dict) else {}
 
@@ -2810,7 +3345,7 @@ class PersonalAgentApp:
         result: AgentResult,
         *,
         elapsed_seconds: float,
-        usage_before: Dict[str, int],
+        usage_before: dict[str, int],
     ) -> AgentResult:
         """Attach bounded, non-secret request-local telemetry to an AgentResult."""
         usage_after = self._provider_usage()
@@ -2832,16 +3367,18 @@ class PersonalAgentApp:
             {
                 "attempted": bool(result.trace_metadata.get("explicit_memory_write")),
                 "tool_call_ids": [],
-                "route": "explicit_request"
-                if result.trace_metadata.get("explicit_memory_write")
-                else "agent_tool_decision",
+                "route": (
+                    "explicit_request"
+                    if result.trace_metadata.get("explicit_memory_write")
+                    else "agent_tool_decision"
+                ),
             },
         )
 
         context = getattr(self.agent, "last_turn_context", None)
         stage_traces = list(getattr(context, "stage_traces", ()) or ())
         tool_stage_traces = list(metadata.get("tool_stage_traces", ()) or ())
-        metadata["runtime_stage_traces"] = tuple((*stage_traces, *tool_stage_traces))
+        metadata["runtime_stage_traces"] = (*stage_traces, *tool_stage_traces)
 
         reasoning = getattr(self.llm_client, "last_reasoning_content", "")
         if isinstance(reasoning, str) and reasoning.strip():
@@ -2859,7 +3396,9 @@ class PersonalAgentApp:
             created_at = receipt.get("created_at")
             updated_at = receipt.get("updated_at")
             duration = None
-            if isinstance(created_at, (int, float)) and isinstance(updated_at, (int, float)):
+            if isinstance(created_at, (int, float)) and isinstance(
+                updated_at, (int, float)
+            ):
                 duration = round(max(0.0, updated_at - created_at), 3)
             tool_details.append(
                 {
@@ -2873,7 +3412,9 @@ class PersonalAgentApp:
         metadata["tool_details"] = tuple(tool_details)
         return replace(result, trace_metadata=metadata)
 
-    def _render_agent_result(self, res: AgentResult, *, include_developer_details: bool = False) -> None:
+    def _render_agent_result(
+        self, res: AgentResult, *, include_developer_details: bool = False
+    ) -> None:
         """Renders Agent execution result cleanly in Chinese."""
         self._last_result = res
         elapsed = res.trace_metadata.get("turn_elapsed_seconds")
@@ -2917,11 +3458,15 @@ class PersonalAgentApp:
 
         elif res.status == AgentResultStatus.TASK_SELECTION_REQUIRED:
             error = res.error_info
-            print(f"\n[需要选择任务] {error.safe_message if error else '请先选择一个活跃任务。'}")
+            print(
+                f"\n[需要选择任务] {error.safe_message if error else '请先选择一个活跃任务。'}"
+            )
 
         elif res.status == AgentResultStatus.EXECUTION_STATUS_UNKNOWN:
             error = res.error_info
-            print(f"\n[执行状态未知] {error.safe_message if error else '无法安全确认工具是否已执行。'}")
+            print(
+                f"\n[执行状态未知] {error.safe_message if error else '无法安全确认工具是否已执行。'}"
+            )
 
         elif res.status == AgentResultStatus.FAILED:
             error = res.error_info
@@ -3040,9 +3585,9 @@ class PersonalAgentApp:
         code: str,
         safe_message: str,
         retryable: bool,
-        provider: Optional[str],
-        operation: Optional[str],
-        status_code: Optional[int],
+        provider: str | None,
+        operation: str | None,
+        status_code: int | None,
     ) -> None:
         """Prints a sanitized provider failure with actionable guidance."""
         if status_code == 401:

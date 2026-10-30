@@ -1,32 +1,59 @@
 # MAPAS 项目进展
 
-## 当前实现
+更新日期：2026-10-31。当前默认模式为 `single`，`multi_fixed` 提供串行、有界的多角色协作。
+本页描述当前实现；带日期的阶段报告与早期联调记录只描述当时版本。
 
-MAPAS 已完成长期记忆生命周期（Task 1）、上下文感知证据检索（Task 2）、任务状态与工作上下文维护（Task 3），并通过 Conversation Session、AgentRuntime、MainAgent 和 Tool Journal 形成可运行的持续智能体系统。另提供可选的四角色串行协作模式 `multi_fixed`；默认模式为 `single`。
+## 当前功能
 
-| 技术方向 | 当前功能 | 下一阶段工作 |
-| --- | --- | --- |
-| 长期记忆 | 语义生命周期提案、不可变 Revision、Provenance、回收/恢复、原子写入 | 经验记忆分区与派生索引失效 |
-| 检索证据 | 默认 BM25 与可选图扩展；可配置 Dense/RRF；情境适用性和 EvidenceBundle | 任务证据需求驱动的原文核验、向量缓存 |
-| 长程任务状态 | 任务事件解释与校验、TaskLedger、ContinuationCheckpoint、WorkingContext | 与协作 DAG 的状态依赖集成 |
-| Agent 执行 | CLI/JSONL、工具执行与真实回执、持久化会话和执行恢复 | 更大规模长程任务端到端实验 |
-| 多智能体协作 P1 | Planner/Memory/Executor/Verifier 串行链、有限 DAG、核验交接、共享预算 | 完整版本前沿、依赖失效、局部修复、选择性经验写回、可选只读并行 |
-| 正式基准 | 工程回归、有限真实 Provider 工具 Smoke | MemoryArena 完整依赖组、强单 Agent 对照和消融 |
+| 方向 | 当前实现 |
+| --- | --- |
+| Task 1 长期事实 | 生命周期提案、不可变 revision、provenance、原子写入、回收与恢复 |
+| Task 2 检索 | BM25、可选 Dense/RRF、适用性与 EvidenceBundle；协作中按需求追加检索和原文窗口读取 |
+| Task 3 长程任务 | 任务台账、约束/目标、工作上下文、检查点、任务与对话输入版本核验 |
+| 协作执行 | 最多三个子任务的 DAG、只读工具、独立验证、持久交接与共享模型调用预算 |
+| 证据不足处理 | EvidenceSearch 结构化提案驱动最多两轮补查；保留原需求、证据来源和未解决缺口 |
+| 来源版本 | 原消息/记忆 revision/回执完整性；read_file 绑定原定位路径、实际路径和完整字节哈希，恢复时重新检查 |
+| 局部修复 | 依赖闭包失效、独立子运行、快照恢复、锁、持久预算；未变化且可核验的独立根节点可复用 |
+| 自动处理 | 会话恢复或显式 drain 检查文件来源和修复队列；同一来源图的多个事件合并到一次修复 |
+| 程序性经验 | 与用户事实分区；候选、独立审核、适用性筛选、反馈、隔离、撤销与新修订；来源失效时停止复用 |
+| 产品入口 | CLI 和 JSONL 的修复及经验操作，保留真实回执和状态 |
 
-完整算法、论文对照与下一阶段研究机制统一见 [MAPAS 核心算法与技术方案](research/mapas-core-algorithms.md)。分层证据检索、依赖感知执行记忆、版本化协作恢复与选择性经验演化是同一套系统中的互补机制。
+## 当前验收
 
-## 验证状态
+离线验收使用受控测试 Provider、真实文件和临时 SQLite，不消耗真实 API。
+覆盖绑定任务的双文件读取与合并、修改一个文件后关闭/重开应用、只重做受影响分支、
+第二次修改另一文件、重复恢复幂等、同时变更的事件合并、来源删除/权限收回、
+长原文窗口补查、按需求扩大召回、经验准入/不确定性/撤销/反馈和修订。
+2026-10-31 最终全量回归为 **520 passed、1 skipped**，跳过项为 Windows 可选 readline。
+最新全量结果与代码快照见 [功能验收记录](evaluations/functional-closeout-20261031.json)。
 
-2026-10-14 [P0–P1 实施报告](phases/multi-agent-p0-p1-20261014.md)记录的工程结果为 **432 passed、1 skipped**，并验证了一次真实 Provider 只读工具执行闭环。该数字对应当日版本，尚未在当前 GitHub HEAD 上重新运行全量测试。
+真实 Provider 联调与离线回归分开保存。新的双文件/修复/经验联调见
+[真实联调记录](evaluations/live-source-repair-experience-20261031.json)。
+只有该记录中的 `engineering_assertions_passed=true` 才代表整条联调通过；
+这不是系统性能测评。请求模型身份与服务端实际返回模型身份不能混同。
+长原文尾部窗口的真实 Provider 联调另见 [证据补查联调](evaluations/live-evidence-expansion-20261031.json)。
+失败尝试作为独立 attempt 记录保留，未并入成功结论。
 
-目前尚无完整 MemoryArena 整组任务结果、同预算强单 Agent 对照、有效的多 Agent 性能提升结论或自动局部修复测量。四角色 P1 采用串行只读执行，不具备分布式并行或经验全自动写入。
+2026-10-28/29 的单节点真实 API 历史证据保留在 `evaluations/live-*.json`，
+包含任务约束、成果撤销、对话/回执变化、修复快照和队列恢复。其测试数字不作为当前版本结果。
+
+## 明确边界
+
+- 目标、约束或规划阶段暴露的来源变化仍使整图失效，要求新请求。
+- 外部当前状态核验现支持 `read_file`；网页、天气、MCP 等没有适配器的观察保持 UNKNOWN，不能据旧回执授权复用。
+- 当前成果复用只开放独立根节点。带依赖的其他节点即使仍有效也保守重跑；不承诺任意 DAG 或任意外部工具复用。
+- 来源检查与多数据库写入没有分布式原子保证；恢复机制不是常驻后台服务。
+- 经验提炼通过显式 learn 入口启动；已准入经验的筛选、来源重验及消费结果反馈接入协作流程。没有策略训练或强化学习。
+- 旧记录缺少完整版本/快照或协议不兼容时失败关闭，不猜测迁移和复原。
+- 仍暂缓正式性能对照。没有 MemoryArena 完整依赖组得分、同预算单多 Agent 优劣结论、只读工作者并行或分布式多用户能力。
 
 ## 文档入口
 
 - [核心算法与技术方案](research/mapas-core-algorithms.md)
-- [当前系统架构](architecture/overview.md)
-- [四角色协作基础层](architecture/multi-agent-foundation.md)
-- [原研究设计与实施阶段记录](research/mapas-multi-agent-plan-2026-10-14.md)
+- [协作架构](architecture/multi-agent-foundation.md)
+- [需求驱动证据与原文窗口](architecture/source-backed-evidence.md)
+- [来源版本与修复](architecture/repair-execution.md)
+- [程序性经验生命周期](architecture/procedural-experience.md)
 - [CLI/JSONL 使用说明](cli-user-guide.md)
 
-早期技术进展保留为 [2026-09-05 历史快照](history/project-progress-2026-09-05.md)。快照内的旧运行入口、测试数量及阶段结论仅描述其产生时的版本。
+更早的进度保留在 [2026-09-05 历史快照](history/project-progress-2026-09-05.md)。

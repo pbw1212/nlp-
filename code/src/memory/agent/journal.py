@@ -6,8 +6,9 @@ import hashlib
 import json
 import sqlite3
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any
 
 from src.memory.agent.models import PendingAction, canonical_json_bytes
 from src.memory.storage.sqlite_utils import ClosingSQLiteConnection
@@ -91,7 +92,9 @@ class AgentExecutionJournal:
             version = int(connection.execute("PRAGMA user_version").fetchone()[0])
             tables = {
                 row[0]
-                for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
             }
             if not tables:
                 self._create_schema(connection)
@@ -100,18 +103,29 @@ class AgentExecutionJournal:
 
             if version == 1:
                 # Migrate v1 -> v2 schema with non-empty execution identities
-                connection.execute("ALTER TABLE pending_actions ADD COLUMN agent_step_id TEXT NOT NULL DEFAULT ''")
-                connection.execute("ALTER TABLE pending_actions ADD COLUMN arguments_hash TEXT NOT NULL DEFAULT ''")
-                connection.execute("ALTER TABLE pending_actions ADD COLUMN idempotency_key TEXT NOT NULL DEFAULT ''")
+                connection.execute(
+                    "ALTER TABLE pending_actions ADD COLUMN agent_step_id TEXT NOT NULL DEFAULT ''"
+                )
+                connection.execute(
+                    "ALTER TABLE pending_actions ADD COLUMN arguments_hash TEXT NOT NULL DEFAULT ''"
+                )
+                connection.execute(
+                    "ALTER TABLE pending_actions ADD COLUMN idempotency_key TEXT NOT NULL DEFAULT ''"
+                )
 
                 # Populate missing identity fields for existing v1 rows
-                rows = connection.execute("SELECT * FROM pending_actions WHERE agent_step_id='' OR idempotency_key=''").fetchall()
+                rows = connection.execute(
+                    "SELECT * FROM pending_actions WHERE agent_step_id='' OR idempotency_key=''"
+                ).fetchall()
                 for row in rows:
                     pending_id = row["pending_action_id"]
                     t_call_id = row["tool_call_id"]
 
                     # Check if matching receipt exists
-                    rec = connection.execute("SELECT * FROM tool_execution_receipts WHERE tool_call_id=?", (t_call_id,)).fetchone()
+                    rec = connection.execute(
+                        "SELECT * FROM tool_execution_receipts WHERE tool_call_id=?",
+                        (t_call_id,),
+                    ).fetchone()
                     if rec is not None:
                         step_id = rec["agent_step_id"]
                         arg_h = rec["arguments_hash"]
@@ -119,12 +133,16 @@ class AgentExecutionJournal:
                     else:
                         run_id = row["agent_run_id"]
                         tool_name = row["tool_name"]
-                        args_dict = json.loads(row["arguments_json"]) if row["arguments_json"] else {}
-                        step_seed = f"{run_id}:legacy:{t_call_id}".encode("utf-8")
+                        args_dict = (
+                            json.loads(row["arguments_json"])
+                            if row["arguments_json"]
+                            else {}
+                        )
+                        step_seed = f"{run_id}:legacy:{t_call_id}".encode()
                         step_id = f"step_{hashlib.sha256(step_seed).hexdigest()[:12]}"
                         args_bytes = canonical_json_bytes(args_dict)
                         arg_h = hashlib.sha256(args_bytes).hexdigest()[:12]
-                        idemp_seed = f"{run_id}:{step_id}:{tool_name}:{arg_h}:{t_call_id}".encode("utf-8")
+                        idemp_seed = f"{run_id}:{step_id}:{tool_name}:{arg_h}:{t_call_id}".encode()
                         idemp = f"idemp_{hashlib.sha256(idemp_seed).hexdigest()[:16]}"
 
                     connection.execute(
@@ -138,16 +156,29 @@ class AgentExecutionJournal:
 
             if version == 2:
                 # Migrate v2 -> v3 schema adding arguments_json, tool_effect, idempotency_support, runtime_reconciled
-                connection.execute("ALTER TABLE tool_execution_receipts ADD COLUMN arguments_json TEXT NOT NULL DEFAULT '{}'")
-                connection.execute("ALTER TABLE tool_execution_receipts ADD COLUMN tool_effect TEXT NOT NULL DEFAULT 'SIDE_EFFECT'")
-                connection.execute("ALTER TABLE tool_execution_receipts ADD COLUMN idempotency_support TEXT NOT NULL DEFAULT 'NONE'")
-                connection.execute("ALTER TABLE tool_execution_receipts ADD COLUMN runtime_reconciled INTEGER NOT NULL DEFAULT 0")
+                connection.execute(
+                    "ALTER TABLE tool_execution_receipts ADD COLUMN arguments_json TEXT NOT NULL DEFAULT '{}'"
+                )
+                connection.execute(
+                    "ALTER TABLE tool_execution_receipts ADD COLUMN tool_effect TEXT NOT NULL DEFAULT 'SIDE_EFFECT'"
+                )
+                connection.execute(
+                    "ALTER TABLE tool_execution_receipts ADD COLUMN idempotency_support TEXT NOT NULL DEFAULT 'NONE'"
+                )
+                connection.execute(
+                    "ALTER TABLE tool_execution_receipts ADD COLUMN runtime_reconciled INTEGER NOT NULL DEFAULT 0"
+                )
 
                 # Populate arguments_json & tool_effect from pending_actions if matching row exists
-                rec_rows = connection.execute("SELECT * FROM tool_execution_receipts").fetchall()
+                rec_rows = connection.execute(
+                    "SELECT * FROM tool_execution_receipts"
+                ).fetchall()
                 for r_row in rec_rows:
                     t_call_id = r_row["tool_call_id"]
-                    p_row = connection.execute("SELECT arguments_json, effect FROM pending_actions WHERE tool_call_id=?", (t_call_id,)).fetchone()
+                    p_row = connection.execute(
+                        "SELECT arguments_json, effect FROM pending_actions WHERE tool_call_id=?",
+                        (t_call_id,),
+                    ).fetchone()
                     if p_row is not None:
                         connection.execute(
                             "UPDATE tool_execution_receipts SET arguments_json=?, tool_effect=? WHERE tool_call_id=?",
@@ -160,7 +191,9 @@ class AgentExecutionJournal:
 
             if version == 3:
                 # Migrate v3 -> v4: pre-v4 DISPATCHING claims transition to UNKNOWN for fail-closed recovery
-                connection.execute("UPDATE tool_execution_receipts SET status='UNKNOWN' WHERE status='DISPATCHING'")
+                connection.execute(
+                    "UPDATE tool_execution_receipts SET status='UNKNOWN' WHERE status='DISPATCHING'"
+                )
                 connection.execute("PRAGMA user_version = 4")
                 connection.commit()
                 version = 4
@@ -251,7 +284,7 @@ class AgentExecutionJournal:
                 "updated_at": now,
             }
 
-    def get_run(self, agent_run_id: str) -> Optional[dict]:
+    def get_run(self, agent_run_id: str) -> dict | None:
         with self._connection() as connection:
             row = connection.execute(
                 "SELECT * FROM agent_runs WHERE agent_run_id=?", (agent_run_id,)
@@ -344,7 +377,7 @@ class AgentExecutionJournal:
             )
         return pending_action
 
-    def get_pending_action(self, pending_action_id: str) -> Optional[PendingAction]:
+    def get_pending_action(self, pending_action_id: str) -> PendingAction | None:
         with self._connection() as connection:
             row = connection.execute(
                 "SELECT * FROM pending_actions WHERE pending_action_id=?",
@@ -352,13 +385,17 @@ class AgentExecutionJournal:
             ).fetchone()
         if row is None:
             return None
-        if not row["agent_step_id"] or not row["arguments_hash"] or not row["idempotency_key"]:
+        if (
+            not row["agent_step_id"]
+            or not row["arguments_hash"]
+            or not row["idempotency_key"]
+        ):
             raise ValueError(
                 f"journal integrity error: pending action '{pending_action_id}' contains empty execution identity fields"
             )
         arguments = json.loads(row["arguments_json"])
         if not isinstance(arguments, dict):
-            raise ValueError(
+            raise ValueError(  # noqa: TRY004
                 f"journal integrity error: pending action '{pending_action_id}' arguments are not an object"
             )
         return PendingAction(
@@ -375,7 +412,9 @@ class AgentExecutionJournal:
             created_at=row["created_at"],
         )
 
-    def list_pending_actions(self, *, task_id: Optional[str] = None) -> List[PendingAction]:
+    def list_pending_actions(
+        self, *, task_id: str | None = None
+    ) -> list[PendingAction]:
         """Return durable, still-actionable confirmation requests newest first."""
         with self._connection() as connection:
             if task_id:
@@ -391,7 +430,7 @@ class AgentExecutionJournal:
                     WHERE status='PENDING'
                     ORDER BY created_at DESC, pending_action_id DESC"""
                 ).fetchall()
-        actions: List[PendingAction] = []
+        actions: list[PendingAction] = []
         for row in rows:
             action = self.get_pending_action(row["pending_action_id"])
             if action is not None:
@@ -409,7 +448,7 @@ class AgentExecutionJournal:
             if cursor.rowcount != 1:
                 raise KeyError(f"pending action not found: {pending_action_id}")
 
-    def get_pending_action_status(self, pending_action_id: str) -> Optional[str]:
+    def get_pending_action_status(self, pending_action_id: str) -> str | None:
         with self._connection() as connection:
             row = connection.execute(
                 "SELECT status FROM pending_actions WHERE pending_action_id=?",
@@ -430,7 +469,7 @@ class AgentExecutionJournal:
         arguments_json: str,
         tool_effect: str,
         idempotency_support: str,
-    ) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str, dict[str, Any] | None]:
         """Atomically attempts to claim execution ownership for a tool call using an IMMEDIATE transaction."""
         canon_args = canonicalize_json_string(arguments_json)
         now = time.time()
@@ -501,7 +540,8 @@ class AgentExecutionJournal:
         result_content: str = "",
         error_message: str = "",
         max_payload_chars: int = 10000,
-    ) -> Dict[str, Any]:
+        source_observations: tuple[dict[str, Any], ...] = (),
+    ) -> dict[str, Any]:
         """Completes a claimed execution by storing the final receipt status and payload."""
         if status not in {"SUCCEEDED", "FAILED"}:
             raise ValueError(f"invalid terminal tool receipt status: {status}")
@@ -523,6 +563,13 @@ class AgentExecutionJournal:
             "error_message": bounded_error,
             "updated_at": now,
         }
+        if source_observations:
+            if len(source_observations) > 8:
+                raise ValueError("too many source observations")
+            encoded = json.dumps(source_observations, allow_nan=False)
+            if len(encoded) > 16000:
+                raise ValueError("source observations exceed receipt limit")
+            payload["source_observations"] = json.loads(encoded)
         payload_json = json.dumps(payload, sort_keys=True, ensure_ascii=False)
 
         with self._transaction() as connection:
@@ -554,7 +601,7 @@ class AgentExecutionJournal:
             if cursor.rowcount != 1:
                 raise KeyError(f"tool execution receipt not found: {tool_call_id}")
 
-    def get_unreconciled_receipts(self, agent_run_id: str) -> List[Dict[str, Any]]:
+    def get_unreconciled_receipts(self, agent_run_id: str) -> list[dict[str, Any]]:
         with self._connection() as connection:
             rows = connection.execute(
                 "SELECT * FROM tool_execution_receipts WHERE agent_run_id=? AND status IN ('SUCCEEDED', 'FAILED') AND runtime_reconciled=0 ORDER BY created_at ASC, tool_call_id ASC",
@@ -562,7 +609,7 @@ class AgentExecutionJournal:
             ).fetchall()
             return [dict(r) for r in rows]
 
-    def get_unreconciled_receipts_for_task(self, task_id: str) -> List[Dict[str, Any]]:
+    def get_unreconciled_receipts_for_task(self, task_id: str) -> list[dict[str, Any]]:
         with self._connection() as connection:
             rows = connection.execute(
                 """SELECT r.* FROM tool_execution_receipts r
@@ -573,7 +620,7 @@ class AgentExecutionJournal:
             ).fetchall()
             return [dict(r) for r in rows]
 
-    def get_receipt(self, tool_call_id: str) -> Optional[Dict[str, Any]]:
+    def get_receipt(self, tool_call_id: str) -> dict[str, Any] | None:
         with self._connection() as connection:
             row = connection.execute(
                 "SELECT * FROM tool_execution_receipts WHERE tool_call_id=?",
@@ -583,7 +630,9 @@ class AgentExecutionJournal:
                 return None
             return dict(row)
 
-    def get_receipt_by_idempotency_key(self, idempotency_key: str) -> Optional[Dict[str, Any]]:
+    def get_receipt_by_idempotency_key(
+        self, idempotency_key: str
+    ) -> dict[str, Any] | None:
         with self._connection() as connection:
             row = connection.execute(
                 "SELECT * FROM tool_execution_receipts WHERE idempotency_key=?",

@@ -1,5 +1,29 @@
 > 2026-10-14 维护说明：完整浏览器/桌面 UI 已移除，CLI 与 JSONL 为现有入口。最新验证和限制见维护报告。
 
+## 协作修复
+
+以 `--execution-mode multi_fixed` 运行时，`/repair-graphs` 列出当前会话协作图与成果 ID，
+`/repairs` 查看修复队列，`/repair <run_id> <event_id>` 执行已有撤销事件的修复，
+`/revoke-repair <run_id> <artifact_id> <event_id>` 撤销指定成果并立即尝试修复。
+恢复会话时会检查最近的文件来源并有界处理最多 3 个待修复事件；同一图多个事件合并执行，失败保持原成果失效。
+
+JSONL 接口使用 `repair/graphs`、`repair/list`、`repair/run`、`repair/revoke` 和
+`repair/drain`；修复请求参数为 `runId`、`eventId`，撤销还需要 `artifactId`，
+可选 `threadId` 用于选择会话。执行和限制见 [修复执行说明](architecture/repair-execution.md)。
+
+## 程序性经验
+
+在 multi_fixed 下使用 `/experience list` 查看候选及准入状态，
+`/experience learn <run_id> [revision_of]` 从成功且来源可核验的运行提炼经验。
+待澄清候选通过 `/experience review <id> <确认说明>` 重新审核，
+`/experience revoke <id> <event_id>` 撤销经验，
+`/experience feedback <id> <run_id> <event_id>` 显式记录后续消费结果。
+
+仅明确适用于当前任务的有效经验会进入协作输入；失败反馈会隔离经验，
+用户事实记忆仍通过原来的 /remember 等入口维护。来源撤销或变化后旧经验停止复用。
+JSONL 对应 experience/list、experience/learn、experience/review、experience/revoke、
+experience/feedback；参数详见 [经验说明](architecture/procedural-experience.md)。
+
 # MAPAS CLI 用户使用手册
 
 这是一份只面向使用者的说明。你不需要了解 Task 1、Task 2、Task 3 或数据库结构；只需要配置一次 API，然后在 `你 >` 提示符后输入问题即可。

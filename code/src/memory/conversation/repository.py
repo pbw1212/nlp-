@@ -8,8 +8,8 @@ import os
 import sqlite3
 import time
 import uuid
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
-from typing import Iterable, Iterator, List, Optional, Tuple
 
 from src.memory.conversation.models import (
     ConversationCompaction,
@@ -20,20 +20,27 @@ from src.memory.conversation.models import (
     ConversationSession,
 )
 from src.memory.core.paths import default_agent_data_dir
+from src.memory.core.schema import payload_hash
 from src.memory.storage.sqlite_utils import ClosingSQLiteConnection
 
 
 class ConversationRepository:
     """Persistent SQLite repository managing conversation sessions and transcripts."""
 
-    def __init__(self, db_path: Optional[str] = None, sessions_dir: Optional[str] = None) -> None:
-        default_db_path = os.path.join(default_agent_data_dir(), "conversations", "conversation.db")
+    def __init__(
+        self, db_path: str | None = None, sessions_dir: str | None = None
+    ) -> None:
+        default_db_path = os.path.join(
+            default_agent_data_dir(), "conversations", "conversation.db"
+        )
         self.db_path = os.path.abspath(db_path or default_db_path)
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         # SQLite is the single authoritative conversation store. Keep the
         # legacy attribute for callers that inspect the old layout, but do not
         # create or write one directory per Session anymore.
-        self.sessions_dir = os.path.abspath(sessions_dir or os.path.dirname(self.db_path))
+        self.sessions_dir = os.path.abspath(
+            sessions_dir or os.path.dirname(self.db_path)
+        )
         self._init_db()
 
     def _get_connection(self) -> sqlite3.Connection:
@@ -57,7 +64,8 @@ class ConversationRepository:
 
     def _init_db(self) -> None:
         with self._connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS conversation_sessions (
                     session_id TEXT PRIMARY KEY,
                     title TEXT NOT NULL,
@@ -68,10 +76,13 @@ class ConversationRepository:
                     workspace_roots_json TEXT NOT NULL DEFAULT '[]',
                     current_workspace_root TEXT
                 );
-            """)
+            """
+            )
             columns = {
                 row["name"]
-                for row in conn.execute("PRAGMA table_info(conversation_sessions)").fetchall()
+                for row in conn.execute(
+                    "PRAGMA table_info(conversation_sessions)"
+                ).fetchall()
             }
             if "workspace_roots_json" not in columns:
                 conn.execute(
@@ -81,7 +92,8 @@ class ConversationRepository:
                 conn.execute(
                     "ALTER TABLE conversation_sessions ADD COLUMN current_workspace_root TEXT"
                 )
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS conversation_messages (
                     message_id TEXT PRIMARY KEY,
                     session_id TEXT NOT NULL,
@@ -91,16 +103,22 @@ class ConversationRepository:
                     created_at REAL NOT NULL,
                     FOREIGN KEY (session_id) REFERENCES conversation_sessions(session_id) ON DELETE CASCADE
                 );
-            """)
-            conn.execute("""
+            """
+            )
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_messages_session_time 
                 ON conversation_messages(session_id, created_at);
-            """)
-            conn.execute("""
+            """
+            )
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_sessions_updated 
                 ON conversation_sessions(updated_at);
-            """)
-            conn.execute("""
+            """
+            )
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS conversation_compactions (
                     compaction_id TEXT PRIMARY KEY,
                     session_id TEXT NOT NULL,
@@ -112,13 +130,16 @@ class ConversationRepository:
                     created_at REAL NOT NULL,
                     FOREIGN KEY (session_id) REFERENCES conversation_sessions(session_id) ON DELETE CASCADE
                 );
-            """)
+            """
+            )
             # Existing runtime databases predate compaction diagnostics. Keep
             # the transcript and checkpoints intact while adding the fields in
             # place; this is intentionally a small forward-only migration.
             columns = {
                 row["name"]
-                for row in conn.execute("PRAGMA table_info(conversation_compactions)").fetchall()
+                for row in conn.execute(
+                    "PRAGMA table_info(conversation_compactions)"
+                ).fetchall()
             }
             if "source" not in columns:
                 conn.execute(
@@ -128,29 +149,37 @@ class ConversationRepository:
                 conn.execute(
                     "ALTER TABLE conversation_compactions ADD COLUMN degraded_reason TEXT"
                 )
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_compactions_session_time
                 ON conversation_compactions(session_id, created_at);
-            """)
+            """
+            )
             conn.commit()
 
     def create_session(
         self,
-        session_id: Optional[str] = None,
-        title: Optional[str] = None,
-        active_task_id: Optional[str] = None,
+        session_id: str | None = None,
+        title: str | None = None,
+        active_task_id: str | None = None,
         workspace_roots: Iterable[str] = (),
-        current_workspace_root: Optional[str] = None,
+        current_workspace_root: str | None = None,
     ) -> ConversationSession:
         now = time.time()
         sid = session_id or f"session_{uuid.uuid4().hex[:12]}"
         if not title:
-            dt_str = datetime.datetime.fromtimestamp(now).strftime("%Y-%m-%d %H:%M")
+            dt_str = (
+                datetime.datetime.fromtimestamp(now, tz=datetime.timezone.utc)
+                .astimezone()
+                .strftime("%Y-%m-%d %H:%M")
+            )
             t_str = f"Session {dt_str}"
         else:
             t_str = title
 
-        roots = tuple(dict.fromkeys(str(root) for root in workspace_roots if str(root).strip()))
+        roots = tuple(
+            dict.fromkeys(str(root) for root in workspace_roots if str(root).strip())
+        )
         if current_workspace_root is not None:
             current_workspace_root = str(current_workspace_root)
             if current_workspace_root not in roots:
@@ -175,15 +204,21 @@ class ConversationRepository:
                  workspace_roots_json, current_workspace_root)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (session.session_id, session.title, session.active_task_id or "",
-                 session.created_at, session.updated_at, session.status,
-                 json.dumps(session.workspace_roots, ensure_ascii=False),
-                 session.current_workspace_root),
+                (
+                    session.session_id,
+                    session.title,
+                    session.active_task_id or "",
+                    session.created_at,
+                    session.updated_at,
+                    session.status,
+                    json.dumps(session.workspace_roots, ensure_ascii=False),
+                    session.current_workspace_root,
+                ),
             )
             conn.commit()
         return session
 
-    def get_session(self, session_id: str) -> Optional[ConversationSession]:
+    def get_session(self, session_id: str) -> ConversationSession | None:
         with self._connection() as conn:
             row = conn.execute(
                 """SELECT session_id, title, active_task_id, created_at, updated_at, status,
@@ -205,7 +240,7 @@ class ConversationRepository:
             )
 
     @staticmethod
-    def _workspace_roots_from_row(row: sqlite3.Row) -> Tuple[str, ...]:
+    def _workspace_roots_from_row(row: sqlite3.Row) -> tuple[str, ...]:
         raw = row["workspace_roots_json"]
         if not raw:
             return ()
@@ -215,9 +250,11 @@ class ConversationRepository:
             return ()
         if not isinstance(values, list):
             return ()
-        return tuple(str(value) for value in values if isinstance(value, str) and value.strip())
+        return tuple(
+            str(value) for value in values if isinstance(value, str) and value.strip()
+        )
 
-    def list_sessions(self) -> List[ConversationSession]:
+    def list_sessions(self) -> list[ConversationSession]:
         with self._connection() as conn:
             rows = conn.execute(
                 """SELECT session_id, title, active_task_id, created_at, updated_at, status,
@@ -238,8 +275,10 @@ class ConversationRepository:
                 for r in rows
             ]
 
-    def get_latest_active_session(self) -> Optional[ConversationSession]:
-        sessions = [session for session in self.list_sessions() if session.status == "ACTIVE"]
+    def get_latest_active_session(self) -> ConversationSession | None:
+        sessions = [
+            session for session in self.list_sessions() if session.status == "ACTIVE"
+        ]
         return sessions[0] if sessions else None
 
     _UNSET_TASK_BINDING = object()
@@ -265,16 +304,18 @@ class ConversationRepository:
                 raise KeyError(f"conversation session not found: {session_id}")
             conn.commit()
 
-    def update_session_task(self, session_id: str, active_task_id: Optional[str]) -> None:
+    def update_session_task(self, session_id: str, active_task_id: str | None) -> None:
         self.touch_session(session_id, active_task_id=active_task_id)
 
     def update_session_workspace(
         self,
         session_id: str,
         workspace_roots: Iterable[str],
-        current_workspace_root: Optional[str],
+        current_workspace_root: str | None,
     ) -> None:
-        roots = tuple(dict.fromkeys(str(root) for root in workspace_roots if str(root).strip()))
+        roots = tuple(
+            dict.fromkeys(str(root) for root in workspace_roots if str(root).strip())
+        )
         if current_workspace_root is not None:
             current_workspace_root = str(current_workspace_root)
             if current_workspace_root not in roots:
@@ -285,7 +326,12 @@ class ConversationRepository:
                 """UPDATE conversation_sessions
                    SET updated_at=?, workspace_roots_json=?, current_workspace_root=?
                    WHERE session_id=?""",
-                (now, json.dumps(roots, ensure_ascii=False), current_workspace_root, session_id),
+                (
+                    now,
+                    json.dumps(roots, ensure_ascii=False),
+                    current_workspace_root,
+                    session_id,
+                ),
             )
             if cursor.rowcount != 1:
                 raise KeyError(f"conversation session not found: {session_id}")
@@ -297,7 +343,7 @@ class ConversationRepository:
         turn_id: str,
         role: ConversationRole,
         content: str,
-        created_at: Optional[float] = None,
+        created_at: float | None = None,
     ) -> ConversationMessage:
         now = created_at if created_at is not None else time.time()
         if not isinstance(content, str) or not content:
@@ -343,7 +389,14 @@ class ConversationRepository:
                 INSERT INTO conversation_messages (message_id, session_id, turn_id, role, content, created_at)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (msg.message_id, msg.session_id, msg.turn_id, msg.role.value, msg.content, msg.created_at),
+                (
+                    msg.message_id,
+                    msg.session_id,
+                    msg.turn_id,
+                    msg.role.value,
+                    msg.content,
+                    msg.created_at,
+                ),
             )
             cursor = conn.execute(
                 "UPDATE conversation_sessions SET updated_at = ? WHERE session_id = ?",
@@ -354,7 +407,40 @@ class ConversationRepository:
             conn.commit()
             return msg
 
-    def list_recent_messages(self, session_id: str, limit: Optional[int] = None) -> Tuple[ConversationMessage, ...]:
+    def get_message(
+        self, session_id: str, message_id: str
+    ) -> ConversationMessage | None:
+        """Read one source by its complete identity, without scanning a transcript."""
+        with self._connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM conversation_messages WHERE session_id=? AND message_id=?",
+                (session_id, message_id),
+            ).fetchone()
+        if row is None:
+            return None
+        return ConversationMessage(
+            message_id=row["message_id"],
+            session_id=row["session_id"],
+            turn_id=row["turn_id"],
+            role=ConversationRole(row["role"]),
+            content=row["content"],
+            created_at=row["created_at"],
+        )
+
+    def get_message_by_turn(
+        self, session_id: str, turn_id: str, role: ConversationRole
+    ) -> ConversationMessage | None:
+        """Read the idempotent turn/role message without enumerating a session."""
+        with self._connection() as conn:
+            row = conn.execute(
+                "SELECT message_id FROM conversation_messages WHERE session_id=? AND turn_id=? AND role=?",
+                (session_id, turn_id, role.value),
+            ).fetchone()
+        return self.get_message(session_id, row["message_id"]) if row else None
+
+    def list_recent_messages(
+        self, session_id: str, limit: int | None = None
+    ) -> tuple[ConversationMessage, ...]:
         if limit is not None and limit < 0:
             raise ValueError("message limit 不能为负数")
         with self._connection() as conn:
@@ -364,7 +450,7 @@ class ConversationRepository:
                 WHERE session_id = ? 
                 ORDER BY created_at DESC, rowid DESC
             """
-            params: Tuple[object, ...] = (session_id,)
+            params: tuple[object, ...] = (session_id,)
             if limit is not None:
                 query += " LIMIT ?"
                 params += (limit,)
@@ -382,7 +468,7 @@ class ConversationRepository:
             ]
             return tuple(messages)
 
-    def list_messages(self, session_id: str) -> Tuple[ConversationMessage, ...]:
+    def list_messages(self, session_id: str) -> tuple[ConversationMessage, ...]:
         """Return the complete durable transcript in insertion order."""
         with self._connection() as conn:
             rows = conn.execute(
@@ -396,14 +482,17 @@ class ConversationRepository:
             ).fetchall()
         return tuple(
             ConversationMessage(
-                message_id=row["message_id"], session_id=row["session_id"],
-                turn_id=row["turn_id"], role=ConversationRole(row["role"]),
-                content=row["content"], created_at=row["created_at"],
+                message_id=row["message_id"],
+                session_id=row["session_id"],
+                turn_id=row["turn_id"],
+                role=ConversationRole(row["role"]),
+                content=row["content"],
+                created_at=row["created_at"],
             )
             for row in rows
         )
 
-    def get_latest_compaction(self, session_id: str) -> Optional[ConversationCompaction]:
+    def get_latest_compaction(self, session_id: str) -> ConversationCompaction | None:
         with self._connection() as conn:
             row = conn.execute(
                 """
@@ -419,10 +508,13 @@ class ConversationRepository:
         if row is None:
             return None
         return ConversationCompaction(
-            compaction_id=row["compaction_id"], session_id=row["session_id"],
-            boundary_message_id=row["boundary_message_id"], summary=row["summary"],
+            compaction_id=row["compaction_id"],
+            session_id=row["session_id"],
+            boundary_message_id=row["boundary_message_id"],
+            summary=row["summary"],
             summarized_message_count=row["summarized_message_count"],
-            source=row["source"] or "MODEL", degraded_reason=row["degraded_reason"],
+            source=row["source"] or "MODEL",
+            degraded_reason=row["degraded_reason"],
             created_at=row["created_at"],
         )
 
@@ -433,9 +525,9 @@ class ConversationRepository:
         summary: str,
         summarized_message_count: int,
         *,
-        compaction_id: Optional[str] = None,
+        compaction_id: str | None = None,
         source: str = "MODEL",
-        degraded_reason: Optional[str] = None,
+        degraded_reason: str | None = None,
     ) -> ConversationCompaction:
         if not summary.strip():
             raise ValueError("compaction summary 不能为空")
@@ -449,7 +541,9 @@ class ConversationRepository:
                 (boundary_message_id, session_id),
             ).fetchone()
             if boundary is None:
-                raise KeyError(f"conversation boundary not found: {boundary_message_id}")
+                raise KeyError(
+                    f"conversation boundary not found: {boundary_message_id}"
+                )
             existing = conn.execute(
                 """
                 SELECT compaction_id, session_id, boundary_message_id, summary,
@@ -462,8 +556,10 @@ class ConversationRepository:
             ).fetchone()
             if existing is not None and existing["summary"] == summary:
                 return ConversationCompaction(
-                    compaction_id=existing["compaction_id"], session_id=existing["session_id"],
-                    boundary_message_id=existing["boundary_message_id"], summary=existing["summary"],
+                    compaction_id=existing["compaction_id"],
+                    session_id=existing["session_id"],
+                    boundary_message_id=existing["boundary_message_id"],
+                    summary=existing["summary"],
                     summarized_message_count=existing["summarized_message_count"],
                     source=existing["source"] or "MODEL",
                     degraded_reason=existing["degraded_reason"],
@@ -472,9 +568,13 @@ class ConversationRepository:
             now = time.time()
             item = ConversationCompaction(
                 compaction_id=compaction_id or f"compact_{uuid.uuid4().hex[:12]}",
-                session_id=session_id, boundary_message_id=boundary_message_id,
-                summary=summary, summarized_message_count=summarized_message_count,
-                source=source, degraded_reason=degraded_reason, created_at=now,
+                session_id=session_id,
+                boundary_message_id=boundary_message_id,
+                summary=summary,
+                summarized_message_count=summarized_message_count,
+                source=source,
+                degraded_reason=degraded_reason,
+                created_at=now,
             )
             conn.execute(
                 """
@@ -483,14 +583,23 @@ class ConversationRepository:
                  summarized_message_count, source, degraded_reason, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (item.compaction_id, item.session_id, item.boundary_message_id,
-                 item.summary, item.summarized_message_count, item.source,
-                 item.degraded_reason, item.created_at),
+                (
+                    item.compaction_id,
+                    item.session_id,
+                    item.boundary_message_id,
+                    item.summary,
+                    item.summarized_message_count,
+                    item.source,
+                    item.degraded_reason,
+                    item.created_at,
+                ),
             )
             conn.commit()
             return item
 
-    def list_messages_after(self, session_id: str, boundary_message_id: str) -> Tuple[ConversationMessage, ...]:
+    def list_messages_after(
+        self, session_id: str, boundary_message_id: str
+    ) -> tuple[ConversationMessage, ...]:
         """Return the intact transcript tail after a compaction boundary."""
         with self._connection() as conn:
             rows = conn.execute(
@@ -508,9 +617,12 @@ class ConversationRepository:
             ).fetchall()
         return tuple(
             ConversationMessage(
-                message_id=row["message_id"], session_id=row["session_id"],
-                turn_id=row["turn_id"], role=ConversationRole(row["role"]),
-                content=row["content"], created_at=row["created_at"],
+                message_id=row["message_id"],
+                session_id=row["session_id"],
+                turn_id=row["turn_id"],
+                role=ConversationRole(row["role"]),
+                content=row["content"],
+                created_at=row["created_at"],
             )
             for row in rows
         )
@@ -518,12 +630,12 @@ class ConversationRepository:
     def build_conversation_context(
         self,
         session_id: str,
-        max_messages: Optional[int] = None,
-        max_chars: Optional[int] = None,
+        max_messages: int | None = None,
+        max_chars: int | None = None,
         *,
-        summary: Optional[str] = None,
+        summary: str | None = None,
         summarized_message_count: int = 0,
-        exclude_turn_id: Optional[str] = None,
+        exclude_turn_id: str | None = None,
     ) -> ConversationContext:
         """Build a model-window projection; raw transcript is never deleted."""
         if max_messages is not None and max_messages < 0:
@@ -535,7 +647,11 @@ class ConversationRepository:
             total_count_row = conn.execute(
                 "SELECT COUNT(*) as cnt FROM conversation_messages WHERE session_id = ?"
                 + (" AND turn_id != ?" if exclude_turn_id is not None else ""),
-                (session_id,) if exclude_turn_id is None else (session_id, exclude_turn_id),
+                (
+                    (session_id,)
+                    if exclude_turn_id is None
+                    else (session_id, exclude_turn_id)
+                ),
             ).fetchone()
             total_count = total_count_row["cnt"] if total_count_row else 0
 
@@ -543,13 +659,23 @@ class ConversationRepository:
         if summary is None and latest_compaction is not None:
             summary = latest_compaction.summary
             summarized_message_count = latest_compaction.summarized_message_count
-            recent_msgs = self.list_messages_after(session_id, latest_compaction.boundary_message_id)
+            recent_msgs = self.list_messages_after(
+                session_id, latest_compaction.boundary_message_id
+            )
         else:
-            recent_msgs = self.list_recent_messages(session_id, limit=max_messages or 0) if max_messages is not None else self.list_messages(session_id)
+            recent_msgs = (
+                self.list_recent_messages(session_id, limit=max_messages or 0)
+                if max_messages is not None
+                else self.list_messages(session_id)
+            )
         if exclude_turn_id is not None:
-            recent_msgs = tuple(message for message in recent_msgs if message.turn_id != exclude_turn_id)
+            recent_msgs = tuple(
+                message for message in recent_msgs if message.turn_id != exclude_turn_id
+            )
 
-        compaction_source = latest_compaction.source if latest_compaction is not None else "NONE"
+        compaction_source = (
+            latest_compaction.source if latest_compaction is not None else "NONE"
+        )
         compaction_degraded = compaction_source == "FALLBACK"
 
         if max_messages == 0 or max_chars == 0:
@@ -564,7 +690,9 @@ class ConversationRepository:
             )
         if not recent_msgs:
             return ConversationContext(
-                session_id=session_id, summary=summary, recent_messages=(),
+                session_id=session_id,
+                summary=summary,
+                recent_messages=(),
                 omitted_message_count=max(0, total_count - summarized_message_count),
                 summarized_message_count=summarized_message_count,
                 compaction_source=compaction_source,
@@ -572,12 +700,14 @@ class ConversationRepository:
             )
 
         # Truncate by total character budget if needed, keeping most recent
-        selected_views: List[ConversationMessageView] = []
+        selected_views: list[ConversationMessageView] = []
         accumulated_chars = 0
 
         for msg in reversed(recent_msgs):
             content_text = msg.content
-            remaining = (max_chars - accumulated_chars) if max_chars is not None else None
+            remaining = (
+                (max_chars - accumulated_chars) if max_chars is not None else None
+            )
             if remaining is not None and remaining <= 0:
                 break
             if remaining is not None and len(content_text) > remaining:
@@ -588,16 +718,25 @@ class ConversationRepository:
                     content_text = content_text[:remaining]
                 else:
                     content_text = content_text[: remaining - len(marker)] + marker
-            
-            selected_views.insert(0, ConversationMessageView(role=msg.role, content=content_text))
+
+            selected_views.insert(
+                0,
+                ConversationMessageView(
+                    role=msg.role,
+                    content=content_text,
+                    message_id=msg.message_id,
+                    source_content_hash=payload_hash(msg.content),
+                ),
+            )
             accumulated_chars += len(content_text)
 
-        omitted_count = max(0, total_count - len(selected_views))
         return ConversationContext(
             session_id=session_id,
             summary=summary,
             recent_messages=tuple(selected_views),
-            omitted_message_count=max(0, total_count - summarized_message_count - len(selected_views)),
+            omitted_message_count=max(
+                0, total_count - summarized_message_count - len(selected_views)
+            ),
             summarized_message_count=summarized_message_count,
             compaction_source=compaction_source,
             compaction_degraded=compaction_degraded,

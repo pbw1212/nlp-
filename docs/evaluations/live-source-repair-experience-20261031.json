@@ -1,0 +1,72 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 2048
+  },
+  "checks": {
+    "bound_three_node_task": true,
+    "restart_selective_repair": true,
+    "repeat_resume_no_calls": true,
+    "experience_admitted": true,
+    "experience_applied": true,
+    "experience_feedback_and_revocation": true
+  },
+  "initial": {
+    "status": "SUCCESS",
+    "answer": "left_value=17\nright_value=23",
+    "model_calls": 15,
+    "error": null
+  },
+  "repair": {
+    "status": "SUCCESS",
+    "answer": "left_value = 91\nright_value = 23",
+    "model_calls": 8,
+    "reused_subtasks": [
+      "right"
+    ],
+    "executed_tool_calls": 1
+  },
+  "experience": {
+    "state": "ACTIVE",
+    "decision": null,
+    "experience_id": "ma_df2ef067df216b2ea3c8673c"
+  },
+  "consumer": {
+    "status": "SUCCESS",
+    "answer": "left_value = 91\nright_value = 23",
+    "experience_inputs": [
+      {
+        "experience_id": "ma_df2ef067df216b2ea3c8673c",
+        "revision_id": "ee56d227b3a34aa540ef5084a09aad8f7abdcbc89e660445d91e55665808a506"
+      }
+    ],
+    "model_calls": 16,
+    "error": null,
+    "operations": [
+      "task_binding_decision_v1",
+      "task_state_proposal_batch_v1",
+      "collaboration_experienceselect_v1",
+      "collaboration_planner_v1",
+      "collaboration_memory_v2",
+      "agent_action",
+      "task_state_proposal_batch_v1",
+      "collaboration_verifier_v1",
+      "collaboration_memory_v2",
+      "agent_action",
+      "task_state_proposal_batch_v1",
+      "collaboration_verifier_v1",
+      "collaboration_memory_v2",
+      "agent_action",
+      "collaboration_verifier_v1",
+      "collaboration_verifier_v1"
+    ]
+  },
+  "engineering_assertions_passed": true
+}

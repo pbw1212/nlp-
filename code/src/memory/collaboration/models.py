@@ -66,7 +66,113 @@ PLAN_SCHEMA = object_schema(
     }
 )
 MEMORY_SCHEMA = object_schema(
-    {"schema_version": VERSION, "selected_memory_ids": IDS, "missing_information": IDS}
+    {
+        "schema_version": {"type": "integer", "const": 2},
+        "selected_memory_ids": IDS,
+        "missing_information": IDS,
+        "evidence_needs": {
+            "type": "array",
+            "maxItems": 8,
+            "items": object_schema(
+                {
+                    "need_id": {"type": "string", "minLength": 1, "maxLength": 80},
+                    "requirement": TEXT,
+                    "requires_original": {"type": "boolean"},
+                }
+            ),
+        },
+        "source_requests": {
+            "type": "array",
+            "maxItems": 4,
+            "items": object_schema({"source_ref": TEXT, "need_ids": IDS}),
+        },
+    }
+)
+EVIDENCE_CHECK_SCHEMA = object_schema(
+    {
+        "schema_version": VERSION,
+        "assessments": {
+            "type": "array",
+            "maxItems": 8,
+            "items": object_schema(
+                {
+                    "need_id": {"type": "string", "minLength": 1, "maxLength": 80},
+                    "status": {
+                        "type": "string",
+                        "enum": ["SUPPORTED", "MISSING", "UNCERTAIN"],
+                    },
+                    "evidence_ids": IDS,
+                    "reason": TEXT,
+                }
+            ),
+        },
+    }
+)
+SEARCH_SCHEMA = object_schema(
+    {
+        "schema_version": VERSION,
+        "queries": {
+            "type": "array",
+            "maxItems": 2,
+            "items": object_schema({"query": TEXT, "need_ids": IDS}),
+        },
+        "source_windows": {
+            "type": "array",
+            "maxItems": 2,
+            "items": object_schema(
+                {
+                    "source_ref": TEXT,
+                    "offset": {"type": "integer", "minimum": 0, "maximum": 10000000},
+                    "length": {"type": "integer", "minimum": 1, "maximum": 4000},
+                    "need_ids": IDS,
+                }
+            ),
+        },
+        "reason": TEXT,
+    }
+)
+EXPERIENCE_SCHEMA = object_schema(
+    {
+        "schema_version": VERSION,
+        "decision": {"type": "string", "enum": ["PROPOSE", "ABSTAIN"]},
+        "task_type": TEXT,
+        "preconditions": IDS,
+        "action_summary": TEXT,
+        "observed_outcome": TEXT,
+        "artifact_ids": IDS,
+        "applicability_scope": TEXT,
+        "reason": TEXT,
+    }
+)
+EXPERIENCE_REVIEW_SCHEMA = object_schema(
+    {
+        "schema_version": VERSION,
+        "verdict": {
+            "type": "string",
+            "enum": ["ADMIT", "QUARANTINE", "NEEDS_CONFIRMATION"],
+        },
+        "artifact_ids": IDS,
+        "reason": TEXT,
+    }
+)
+EXPERIENCE_SELECT_SCHEMA = object_schema(
+    {
+        "schema_version": VERSION,
+        "assessments": {
+            "type": "array",
+            "maxItems": 16,
+            "items": object_schema(
+                {
+                    "experience_id": TEXT,
+                    "verdict": {
+                        "type": "string",
+                        "enum": ["APPLICABLE", "INAPPLICABLE", "UNCERTAIN"],
+                    },
+                    "reason": TEXT,
+                }
+            ),
+        },
+    }
 )
 VERIFY_SCHEMA = object_schema(
     {

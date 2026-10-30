@@ -23,6 +23,9 @@
 - 研究算法：[`research/mapas-core-algorithms.md`](research/mapas-core-algorithms.md)。
 - 理解系统：[`architecture/overview.md`](architecture/overview.md) 与 [`architecture/system-integration.md`](architecture/system-integration.md)。
 - 查看当前进度：[`project-progress.md`](project-progress.md)；早期记录见 [`history/project-progress-2026-09-05.md`](history/project-progress-2026-09-05.md)。
+- 协作中的证据需求、原文读取与缺口阻断：[`architecture/source-backed-evidence.md`](architecture/source-backed-evidence.md)。
+- 来源版本与跨重启修复：[`architecture/repair-execution.md`](architecture/repair-execution.md)。
+- 程序性经验准入、适用性与撤销：[`architecture/procedural-experience.md`](architecture/procedural-experience.md)。
 - 使用 JSONL host：查看 `code/scripts/personal_agent_app_server.py` 的模块说明和 `system-integration.md` 的协议列表。
 
 `phases/`、`evaluations/` 和带日期的 `research/` 文件是历史记录或研究证据，

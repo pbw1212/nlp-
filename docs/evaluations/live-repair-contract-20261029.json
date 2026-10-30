@@ -1,0 +1,275 @@
+{
+  "kind": "engineering_smoke",
+  "official_benchmark_score": null,
+  "requested_model": "deepseek-v4-flash",
+  "limits": {
+    "max_model_calls": 12,
+    "max_token_units": 120000,
+    "deadline_seconds": 150,
+    "max_completion_tokens": 2048
+  },
+  "gpu_used": false,
+  "fake_model_used": false,
+  "input": "Use the calculator to compute 17*23. Use one subtask. Report the exact result.",
+  "expected": [
+    "391"
+  ],
+  "provenance_check": {
+    "conversation_bound": true,
+    "receipt_observations_bound": true,
+    "recorded_tool_calls": 1
+  },
+  "execution_contract_check": {
+    "original": "PARTIAL_MATCH",
+    "after_model_change": "CHANGED"
+  },
+  "artifact_revocation_check": {
+    "artifact_found": true,
+    "stale_replay_blocked": true,
+    "node_statuses": [
+      "STALE"
+    ]
+  },
+  "result": {
+    "root_turn_id": "live-p1-smoke",
+    "task_id": "task_362f062ba0c5",
+    "agent_run_id": "ma_93f6d2e600bcedc8301f4b9f",
+    "status": "SUCCESS",
+    "request_turn_id": "live-p1-smoke",
+    "final_response": "17*23 = 391",
+    "executed_tool_call_ids": [
+      "call_4cf75a562739"
+    ],
+    "pending_action": null,
+    "step_count": 1,
+    "warnings": [],
+    "error_info": null,
+    "trace_metadata": {
+      "execution_mode": "multi_fixed",
+      "verified_subtasks": [
+        "compute_product"
+      ],
+      "tool_stage_traces": [
+        {
+          "stage": "TASK_RESOLUTION",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.0007123947143554688
+        },
+        {
+          "stage": "TASK_UPDATE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 1.8028130531311035
+        },
+        {
+          "stage": "MAINTENANCE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 1.9073486328125e-06
+        },
+        {
+          "stage": "CONTEXT_BUILD",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.002719402313232422
+        }
+      ],
+      "memory_inputs": [],
+      "source_reads": [],
+      "observation_frontier_version": 1,
+      "execution_contract_hash": "c76edaff76f90ce4dd042c57dc160b29e4e308f58b3975b8c4bbfa60c4805a4e",
+      "conversation_frontier": {
+        "session_id": "session_875f5686d57c",
+        "messages": [
+          {
+            "message_id": "msg_babd3952c99e",
+            "role": "USER",
+            "source_content_hash": "4ac347b7930d603279fabf4ae77c4c1133dfe170d47ff4397fd9b8ed19c6ae30",
+            "projection_hash": "cc9c48a08e4dff3139534f6bdd74a8fb5bb8340bf0a83f627de16d56d37d7826",
+            "projection_kind": "FULL",
+            "prefix_length": 78
+          }
+        ],
+        "summary_present": false,
+        "untracked": false
+      },
+      "task_frontier": {
+        "task_id": "task_362f062ba0c5",
+        "status": "ACTIVE",
+        "entries": [
+          {
+            "entry_id": "entry_1eb8d2cfb64b4cfaae5be91b84dac668",
+            "kind": "GOAL",
+            "updated_at": 1793243834.3016572,
+            "content_hash": "acce21ee85ef829ab84d922b2dafe5683eade0cfd332ef10b5cb25768ed566d7",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          },
+          {
+            "entry_id": "entry_turn:live-p1-smoke:user_p1",
+            "kind": "CONSTRAINT",
+            "updated_at": 1793243836.130438,
+            "content_hash": "ec916a60c104c1c3307b227a21d9faa31ca2dc46bb35de32cba36b46f09c03e3",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          },
+          {
+            "entry_id": "entry_turn:live-p1-smoke:user_p2",
+            "kind": "CONSTRAINT",
+            "updated_at": 1793243836.130438,
+            "content_hash": "a9b26ed06f7440d725b64e7b0aeedb34a5d06764726a9ed1b009cee3f620b7f2",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          }
+        ]
+      },
+      "collaboration_run_id": "ma_93f6d2e600bcedc8301f4b9f",
+      "collaboration_usage": {
+        "model_calls": 8,
+        "charged_token_units": 12923,
+        "calls": [
+          {
+            "role": "Runtime",
+            "operation": "task_binding_decision_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 457,
+            "usage_json": "{\"input_tokens\":433,\"output_tokens\":24,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":177}",
+            "elapsed": 0.9842265999977826,
+            "usage": {
+              "input_tokens": 433,
+              "output_tokens": 24,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 177
+            }
+          },
+          {
+            "role": "Runtime",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2575,
+            "usage_json": "{\"input_tokens\":2240,\"output_tokens\":335,\"prompt_cache_hit_tokens\":1792,\"prompt_cache_miss_tokens\":448}",
+            "elapsed": 1.8121190999954706,
+            "usage": {
+              "input_tokens": 2240,
+              "output_tokens": 335,
+              "prompt_cache_hit_tokens": 1792,
+              "prompt_cache_miss_tokens": 448
+            }
+          },
+          {
+            "role": "Planner",
+            "operation": "collaboration_planner_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2135,
+            "usage_json": "{\"input_tokens\":2059,\"output_tokens\":76,\"prompt_cache_hit_tokens\":1152,\"prompt_cache_miss_tokens\":907}",
+            "elapsed": 1.541140400004224,
+            "usage": {
+              "input_tokens": 2059,
+              "output_tokens": 76,
+              "prompt_cache_hit_tokens": 1152,
+              "prompt_cache_miss_tokens": 907
+            }
+          },
+          {
+            "role": "Memory",
+            "operation": "collaboration_memory_v2",
+            "status": "SUCCEEDED",
+            "charged_units": 826,
+            "usage_json": "{\"input_tokens\":795,\"output_tokens\":31,\"prompt_cache_hit_tokens\":512,\"prompt_cache_miss_tokens\":283}",
+            "elapsed": 0.8776274000047124,
+            "usage": {
+              "input_tokens": 795,
+              "output_tokens": 31,
+              "prompt_cache_hit_tokens": 512,
+              "prompt_cache_miss_tokens": 283
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "agent_action",
+            "status": "SUCCEEDED",
+            "charged_units": 2256,
+            "usage_json": "{\"input_tokens\":2221,\"output_tokens\":35,\"prompt_cache_hit_tokens\":1408,\"prompt_cache_miss_tokens\":813,\"reasoning_tokens\":0}",
+            "elapsed": 0.8611014000052819,
+            "usage": {
+              "input_tokens": 2221,
+              "output_tokens": 35,
+              "prompt_cache_hit_tokens": 1408,
+              "prompt_cache_miss_tokens": 813,
+              "reasoning_tokens": 0
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2961,
+            "usage_json": "{\"input_tokens\":2730,\"output_tokens\":231,\"prompt_cache_hit_tokens\":1664,\"prompt_cache_miss_tokens\":1066}",
+            "elapsed": 1.7821645000003628,
+            "usage": {
+              "input_tokens": 2730,
+              "output_tokens": 231,
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 1066
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 943,
+            "usage_json": "{\"input_tokens\":834,\"output_tokens\":109,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":578}",
+            "elapsed": 1.1262162999992142,
+            "usage": {
+              "input_tokens": 834,
+              "output_tokens": 109,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 578
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 770,
+            "usage_json": "{\"input_tokens\":646,\"output_tokens\":124,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":390}",
+            "elapsed": 1.9268941999980598,
+            "usage": {
+              "input_tokens": 646,
+              "output_tokens": 124,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 390
+            }
+          }
+        ]
+      },
+      "long_term_memory_update": {
+        "attempted": false,
+        "tool_call_ids": [],
+        "route": "agent_tool_decision"
+      },
+      "event_sequence": 17
+    }
+  },
+  "receipts": [
+    {
+      "tool_call_id": "call_4cf75a562739",
+      "agent_run_id": "run_6ab27d7ad625",
+      "agent_step_id": "step_3506ba829039",
+      "tool_name": "calculator",
+      "arguments_json": "{\"expression\": \"17*23\"}",
+      "arguments_hash": "7ef6586e32d4",
+      "idempotency_key": "idemp_d233429813c53b06",
+      "tool_effect": "READ_ONLY",
+      "idempotency_support": "NONE",
+      "status": "SUCCEEDED",
+      "runtime_reconciled": 1,
+      "result_json": "{\"error_message\": \"\", \"result_content\": \"计算结果: 391\", \"status\": \"SUCCEEDED\", \"tool_call_id\": \"call_4cf75a562739\", \"updated_at\": 1793243839.4863837}",
+      "created_at": 1793243839.4841106,
+      "updated_at": 1793243841.2996604
+    }
+  ],
+  "engineering_assertions_passed": true,
+  "user_messages": 1
+}

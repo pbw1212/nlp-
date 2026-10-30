@@ -5,9 +5,12 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-from src.memory.agent.journal import AgentExecutionJournal, JournalConfigurationMismatchError
+from src.memory.agent.journal import (
+    AgentExecutionJournal,
+    JournalConfigurationMismatchError,
+)
 from src.memory.agent.models import (
     ActionConfirmation,
     AgentActionKind,
@@ -22,7 +25,12 @@ from src.memory.agent.models import (
     derive_stable_identities,
 )
 from src.memory.agent.reasoner import AgentReasoner, InvalidAgentActionError
-from src.memory.agent.tooling import IdempotencySupport, ToolEffect, ToolExecutionRequest, ToolRegistry
+from src.memory.agent.tooling import (
+    IdempotencySupport,
+    ToolEffect,
+    ToolExecutionRequest,
+    ToolRegistry,
+)
 from src.memory.core.diagnostics import log_boundary_failure
 from src.memory.llm.errors import ContextWindowOverflowError, ProviderError
 from src.memory.runtime.agent_runtime import AgentRuntime
@@ -32,10 +40,10 @@ from src.memory.runtime.models import (
     ToolCallStatus,
     TurnStage,
     TurnStageStatus,
+    TurnStageTrace,
 )
 from src.memory.runtime.task_router import UNBOUND_TASK_ID
 from src.memory.task_state.models import TaskIntent
-
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +72,9 @@ class ToolExecutionIdentity:
 @dataclass(frozen=True)
 class ReconciliationResult:
     ok: bool
-    updated_context: Optional[AgentTurnContext] = None
-    failure_result: Optional[AgentResult] = None
-    observation: Optional[ToolObservation] = None
+    updated_context: AgentTurnContext | None = None
+    failure_result: AgentResult | None = None
+    observation: ToolObservation | None = None
 
 
 class AgentLoopController:
@@ -78,20 +86,24 @@ class AgentLoopController:
         journal: AgentExecutionJournal,
         registry: ToolRegistry,
         reasoner: AgentReasoner,
-        config: Optional[AgentLoopConfig] = None,
+        config: AgentLoopConfig | None = None,
     ) -> None:
         self.runtime = runtime
         self.journal = journal
         self.registry = registry
         self.reasoner = reasoner
         self.config = config or AgentLoopConfig()
-        self.last_tool_stage_traces: List[TurnStageTrace] = []
+        self.last_tool_stage_traces: list[TurnStageTrace] = []
 
     @staticmethod
     def _truthful_final_response(content: str, turn_context: AgentTurnContext) -> str:
         """Prevent optimistic model wording from hiding a rejected Task 3 write."""
         task_trace = next(
-            (trace for trace in turn_context.stage_traces if trace.stage is TurnStage.TASK_UPDATE),
+            (
+                trace
+                for trace in turn_context.stage_traces
+                if trace.stage is TurnStage.TASK_UPDATE
+            ),
             None,
         )
         if task_trace is None or task_trace.status is not TurnStageStatus.WARNING:
@@ -114,17 +126,19 @@ class AgentLoopController:
         self,
         turn_context: AgentTurnContext,
         user_input: str,
-        recent_history: Tuple[TurnConversationItem, ...] = (),
-        confirmation: Optional[ActionConfirmation] = None,
-        conversation_context: Optional[Any] = None,
-        context_overflow_handler: Optional[Any] = None,
+        recent_history: tuple[TurnConversationItem, ...] = (),
+        confirmation: ActionConfirmation | None = None,
+        conversation_context: Any | None = None,
+        context_overflow_handler: Any | None = None,
     ) -> AgentResult:
         request_turn_id = turn_context.turn_id
         task_id = turn_context.task_id
         self.last_tool_stage_traces = []
 
         # 1. Check Confirmation Decision (if provided)
-        pending_tool_to_execute: Optional[Tuple[PendingAction, ToolExecutionIdentity]] = None
+        pending_tool_to_execute: tuple[PendingAction, ToolExecutionIdentity] | None = (
+            None
+        )
         if confirmation is not None:
             pending = self.journal.get_pending_action(confirmation.pending_action_id)
             if pending is None or pending.task_id != task_id:
@@ -135,7 +149,9 @@ class AgentLoopController:
                     safe_message=f"Pending action '{confirmation.pending_action_id}' does not match task '{task_id}'.",
                 )
                 identities = derive_stable_identities(request_turn_id, task_id)
-                self.journal.register_run(identities["agent_run_id"], request_turn_id, task_id)
+                self.journal.register_run(
+                    identities["agent_run_id"], request_turn_id, task_id
+                )
                 self.journal.update_run_status(identities["agent_run_id"], "FAILED")
                 return AgentResult(
                     root_turn_id=request_turn_id,
@@ -168,7 +184,9 @@ class AgentLoopController:
             agent_run_id = pending.agent_run_id
 
             if confirmation.decision == ConfirmationDecision.REJECT:
-                pending_status = self.journal.get_pending_action_status(pending.pending_action_id)
+                pending_status = self.journal.get_pending_action_status(
+                    pending.pending_action_id
+                )
                 if pending_status != "PENDING":
                     return AgentResult(
                         root_turn_id=root_turn_id,
@@ -183,7 +201,9 @@ class AgentLoopController:
                             safe_message=f"Pending action '{pending.pending_action_id}' is already {pending_status}.",
                         ),
                     )
-                self.journal.update_pending_action_status(pending.pending_action_id, "REJECTED")
+                self.journal.update_pending_action_status(
+                    pending.pending_action_id, "REJECTED"
+                )
                 self.journal.update_run_status(agent_run_id, "CANCELLED")
                 return AgentResult(
                     root_turn_id=root_turn_id,
@@ -197,7 +217,9 @@ class AgentLoopController:
                     warnings=turn_context.warnings,
                 )
             elif confirmation.decision == ConfirmationDecision.CONFIRM:
-                pending_status = self.journal.get_pending_action_status(pending.pending_action_id)
+                pending_status = self.journal.get_pending_action_status(
+                    pending.pending_action_id
+                )
                 if pending_status not in {"PENDING", "CONFIRMED"}:
                     return AgentResult(
                         root_turn_id=root_turn_id,
@@ -213,7 +235,9 @@ class AgentLoopController:
                         ),
                     )
                 if pending_status == "PENDING":
-                    self.journal.update_pending_action_status(pending.pending_action_id, "CONFIRMED")
+                    self.journal.update_pending_action_status(
+                        pending.pending_action_id, "CONFIRMED"
+                    )
                 restored_id = ToolExecutionIdentity(
                     agent_run_id=pending.agent_run_id,
                     agent_step_id=pending.agent_step_id,
@@ -228,9 +252,9 @@ class AgentLoopController:
             agent_run_id = identities["agent_run_id"]
             self.journal.register_run(agent_run_id, root_turn_id, task_id)
 
-        executed_tool_ids: List[str] = []
-        tool_observations: List[ToolObservation] = []
-        successful_read_only_results: Dict[str, ToolObservation] = {}
+        executed_tool_ids: list[str] = []
+        tool_observations: list[ToolObservation] = []
+        successful_read_only_results: dict[str, ToolObservation] = {}
         context_overflow_retried = False
 
         # Task-scoped pre-reasoner deterministic reconciliation: process all task-unreconciled terminal receipts
@@ -288,7 +312,9 @@ class AgentLoopController:
                     )
 
                 if exec_result.error_info is not None:
-                    self.journal.update_run_status(agent_run_id, exec_result.status.value)
+                    self.journal.update_run_status(
+                        agent_run_id, exec_result.status.value
+                    )
                     return exec_result
 
                 if obs is not None:
@@ -318,7 +344,7 @@ class AgentLoopController:
                 ):
                     try:
                         rebuilt_context = context_overflow_handler()
-                    except Exception as compact_exc:
+                    except Exception as compact_exc:  # noqa: BLE001
                         log_boundary_failure(
                             logger,
                             "agent_context_overflow_compaction_failed",
@@ -384,7 +410,7 @@ class AgentLoopController:
                     error_info=err_info,
                     warnings=turn_context.warnings,
                 )
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 self.journal.update_run_status(agent_run_id, "FAILED")
                 metadata = log_boundary_failure(
                     logger,
@@ -423,7 +449,9 @@ class AgentLoopController:
                     task_id=task_id,
                     agent_run_id=agent_run_id,
                     status=AgentResultStatus.SUCCESS,
-                    final_response=self._truthful_final_response(action.content, turn_context),
+                    final_response=self._truthful_final_response(
+                        action.content, turn_context
+                    ),
                     executed_tool_call_ids=tuple(executed_tool_ids),
                     step_count=step_index + 1,
                     warnings=turn_context.warnings,
@@ -483,7 +511,11 @@ class AgentLoopController:
                 if spec.effect == ToolEffect.SIDE_EFFECT:
                     # Side-effect requires explicit user confirmation
                     identities = derive_stable_identities(
-                        root_turn_id, task_id, step_index=step_index, tool_name=tool_name, tool_arguments=tool_args
+                        root_turn_id,
+                        task_id,
+                        step_index=step_index,
+                        tool_name=tool_name,
+                        tool_arguments=tool_args,
                     )
                     pending_id = f"pend_{identities['tool_call_id']}"
 
@@ -500,7 +532,9 @@ class AgentLoopController:
                         effect=spec.effect.value,
                     )
                     self.journal.add_pending_action(pending_action)
-                    self.journal.update_run_status(agent_run_id, "AWAITING_CONFIRMATION")
+                    self.journal.update_run_status(
+                        agent_run_id, "AWAITING_CONFIRMATION"
+                    )
 
                     return AgentResult(
                         root_turn_id=root_turn_id,
@@ -537,10 +571,13 @@ class AgentLoopController:
                         final_response=prior_observation.text,
                         executed_tool_call_ids=tuple(executed_tool_ids),
                         step_count=step_index + 1,
-                        warnings=turn_context.warnings + (
+                        warnings=turn_context.warnings
+                        + (
                             "Suppressed a duplicate read-only tool call and reused its successful result.",
                         ),
-                        trace_metadata={"duplicate_read_only_tool_call_suppressed": True},
+                        trace_metadata={
+                            "duplicate_read_only_tool_call_suppressed": True
+                        },
                     )
 
                 exec_result, obs, updated_ctx = self._execute_tool_dispatch(
@@ -554,7 +591,9 @@ class AgentLoopController:
                 turn_context = updated_ctx
 
                 if exec_result.error_info is not None:
-                    self.journal.update_run_status(agent_run_id, exec_result.status.value)
+                    self.journal.update_run_status(
+                        agent_run_id, exec_result.status.value
+                    )
                     return exec_result
 
                 if obs is not None:
@@ -562,21 +601,20 @@ class AgentLoopController:
                     tool_observations.append(obs)
                     if obs.status == "SUCCESS" and spec.effect == ToolEffect.READ_ONLY:
                         successful_read_only_results[call_signature] = obs
-                    if obs.status == "SUCCESS":
-                        if spec.returns_user_facing_result:
-                            self.journal.update_run_status(agent_run_id, "COMPLETED")
-                            return AgentResult(
-                                root_turn_id=root_turn_id,
-                                request_turn_id=request_turn_id,
-                                task_id=task_id,
-                                agent_run_id=agent_run_id,
-                                status=AgentResultStatus.SUCCESS,
-                                final_response=obs.text,
-                                executed_tool_call_ids=tuple(executed_tool_ids),
-                                step_count=step_index + 1,
-                                warnings=turn_context.warnings,
-                                trace_metadata={"direct_tool_result": True},
-                            )
+                    if obs.status == "SUCCESS" and spec.returns_user_facing_result:
+                        self.journal.update_run_status(agent_run_id, "COMPLETED")
+                        return AgentResult(
+                            root_turn_id=root_turn_id,
+                            request_turn_id=request_turn_id,
+                            task_id=task_id,
+                            agent_run_id=agent_run_id,
+                            status=AgentResultStatus.SUCCESS,
+                            final_response=obs.text,
+                            executed_tool_call_ids=tuple(executed_tool_ids),
+                            step_count=step_index + 1,
+                            warnings=turn_context.warnings,
+                            trace_metadata={"direct_tool_result": True},
+                        )
 
         # Loop steps exhausted
         self.journal.update_run_status(agent_run_id, "STEP_LIMIT_REACHED")
@@ -604,8 +642,8 @@ class AgentLoopController:
         agent_run_id: str,
         task_id: str,
         tool_call_id: str,
-        root_turn_id: Optional[str] = None,
-        request_turn_id: Optional[str] = None,
+        root_turn_id: str | None = None,
+        request_turn_id: str | None = None,
     ) -> ReconciliationResult:
         req_turn = request_turn_id or turn_context.turn_id
         run_row = self.journal.get_run(agent_run_id)
@@ -656,18 +694,22 @@ class AgentLoopController:
             args_json = rec_row["arguments_json"]
             tool_arguments = json.loads(args_json)
             if not isinstance(tool_arguments, dict):
-                raise ValueError("arguments_json must encode an object")
+                raise ValueError("arguments_json must encode an object")  # noqa: TRY004
             result_data = json.loads(rec_row["result_json"])
             if not isinstance(result_data, dict):
-                raise ValueError("result_json must encode an object")
+                raise ValueError("result_json must encode an object")  # noqa: TRY004
             if result_data.get("tool_call_id") != tool_call_id:
                 raise ValueError("receipt payload tool_call_id mismatch")
             if result_data.get("status") != status_str:
                 raise ValueError("receipt payload status mismatch")
             result_content = result_data.get("result_content", "")
             error_message = result_data.get("error_message", "")
-            if not isinstance(result_content, str) or not isinstance(error_message, str):
-                raise ValueError("receipt result/error fields must be strings")
+            if not isinstance(result_content, str) or not isinstance(
+                error_message, str
+            ):
+                raise ValueError(  # noqa: TRY004
+                    "receipt result/error fields must be strings"
+                )
             if status_str == "SUCCEEDED" and error_message:
                 raise ValueError("successful receipt cannot contain error_message")
             if status_str == "FAILED" and (result_content or not error_message.strip()):
@@ -707,10 +749,16 @@ class AgentLoopController:
             return ReconciliationResult(
                 ok=True,
                 updated_context=turn_context,
-                observation=self._create_tool_observation(tool_call_id, tool_name, obs_status, obs_text),
+                observation=self._create_tool_observation(
+                    tool_call_id, tool_name, obs_status, obs_text
+                ),
             )
 
-        replayed_status = ToolCallStatus.SUCCESS if status_str == "SUCCEEDED" else ToolCallStatus.FAILED
+        replayed_status = (
+            ToolCallStatus.SUCCESS
+            if status_str == "SUCCEEDED"
+            else ToolCallStatus.FAILED
+        )
         tool_res = ToolCallResult(
             tool_call_id=tool_call_id,
             tool_name=tool_name,
@@ -749,7 +797,9 @@ class AgentLoopController:
 
         obs_status = "SUCCESS" if status_str == "SUCCEEDED" else "FAILED"
         obs_text = result_content if obs_status == "SUCCESS" else error_message
-        obs = self._create_tool_observation(tool_call_id, tool_name, obs_status, obs_text)
+        obs = self._create_tool_observation(
+            tool_call_id, tool_name, obs_status, obs_text
+        )
         return ReconciliationResult(
             ok=True,
             updated_context=turn_res.context,
@@ -762,13 +812,15 @@ class AgentLoopController:
         agent_run_id: str,
         step_index: int,
         tool_name: str,
-        tool_arguments: Dict[str, Any],
-        restored_identity: Optional[ToolExecutionIdentity] = None,
-        root_turn_id: Optional[str] = None,
-    ) -> Tuple[AgentResult, Optional[ToolObservation], AgentTurnContext]:
+        tool_arguments: dict[str, Any],
+        restored_identity: ToolExecutionIdentity | None = None,
+        root_turn_id: str | None = None,
+    ) -> tuple[AgentResult, ToolObservation | None, AgentTurnContext]:
         task_id = turn_context.task_id
         run_row = self.journal.get_run(agent_run_id)
-        effective_root_turn_id = root_turn_id or (run_row["root_turn_id"] if run_row else turn_context.turn_id)
+        effective_root_turn_id = root_turn_id or (
+            run_row["root_turn_id"] if run_row else turn_context.turn_id
+        )
 
         if restored_identity is not None:
             agent_step_id = restored_identity.agent_step_id
@@ -777,7 +829,11 @@ class AgentLoopController:
             idempotency_key = restored_identity.idempotency_key
         else:
             identities = derive_stable_identities(
-                effective_root_turn_id, task_id, step_index=step_index, tool_name=tool_name, tool_arguments=tool_arguments
+                effective_root_turn_id,
+                task_id,
+                step_index=step_index,
+                tool_name=tool_name,
+                tool_arguments=tool_arguments,
             )
             agent_step_id = identities["agent_step_id"]
             tool_call_id = identities["tool_call_id"]
@@ -801,7 +857,12 @@ class AgentLoopController:
                 status=AgentResultStatus.FAILED,
                 error_info=err_info,
             )
-            dummy_obs = ToolObservation(tool_call_id=tool_call_id, tool_name=tool_name, status="FAILED", text=err_info.safe_message)
+            dummy_obs = ToolObservation(
+                tool_call_id=tool_call_id,
+                tool_name=tool_name,
+                status="FAILED",
+                text=err_info.safe_message,
+            )
             return dummy_res, dummy_obs, turn_context
 
         # Atomic Journal Claim
@@ -852,21 +913,48 @@ class AgentLoopController:
                 status=AgentResultStatus.FAILED,
                 error_info=err_info,
             )
-            dummy_obs = ToolObservation(tool_call_id=tool_call_id, tool_name=tool_name, status="FAILED", text=err_info.safe_message)
+            dummy_obs = ToolObservation(
+                tool_call_id=tool_call_id,
+                tool_name=tool_name,
+                status="FAILED",
+                text=err_info.safe_message,
+            )
             return dummy_res, dummy_obs, turn_context
 
         if not claimed:
             if status_str in ("SUCCEEDED", "FAILED"):
                 rec_res = self._reconcile_tool_receipt(
-                    turn_context, agent_run_id, task_id, tool_call_id, root_turn_id=effective_root_turn_id, request_turn_id=turn_context.turn_id
+                    turn_context,
+                    agent_run_id,
+                    task_id,
+                    tool_call_id,
+                    root_turn_id=effective_root_turn_id,
+                    request_turn_id=turn_context.turn_id,
                 )
                 if not rec_res.ok:
                     fail_res = rec_res.failure_result
                     return (
-                        fail_res if fail_res is not None else AgentResult(
-                            root_turn_id=effective_root_turn_id, request_turn_id=turn_context.turn_id, task_id=task_id, agent_run_id=agent_run_id, status=AgentResultStatus.FAILED
+                        (
+                            fail_res
+                            if fail_res is not None
+                            else AgentResult(
+                                root_turn_id=effective_root_turn_id,
+                                request_turn_id=turn_context.turn_id,
+                                task_id=task_id,
+                                agent_run_id=agent_run_id,
+                                status=AgentResultStatus.FAILED,
+                            )
                         ),
-                        ToolObservation(tool_call_id=tool_call_id, tool_name=tool_name, status="FAILED", text=fail_res.error_info.safe_message if fail_res and fail_res.error_info else "Runtime reconciliation failed"),
+                        ToolObservation(
+                            tool_call_id=tool_call_id,
+                            tool_name=tool_name,
+                            status="FAILED",
+                            text=(
+                                fail_res.error_info.safe_message
+                                if fail_res and fail_res.error_info
+                                else "Runtime reconciliation failed"
+                            ),
+                        ),
                         turn_context,
                     )
                 updated_ctx = rec_res.updated_context or turn_context
@@ -876,13 +964,28 @@ class AgentLoopController:
                     request_turn_id=turn_context.turn_id,
                     task_id=task_id,
                     agent_run_id=agent_run_id,
-                    status=AgentResultStatus.SUCCESS if obs and obs.status == "SUCCESS" else AgentResultStatus.FAILED,
+                    status=(
+                        AgentResultStatus.SUCCESS
+                        if obs and obs.status == "SUCCESS"
+                        else AgentResultStatus.FAILED
+                    ),
                 )
                 return dummy_res, obs, updated_ctx
             elif status_str == "DISPATCHING":
-                stored_effect = receipt_data.get("tool_effect") if receipt_data else spec.effect.value
-                stored_idemp = receipt_data.get("idempotency_support") if receipt_data else spec.idempotency_support.value
-                if spec.effect.value != stored_effect or spec.idempotency_support.value != stored_idemp:
+                stored_effect = (
+                    receipt_data.get("tool_effect")
+                    if receipt_data
+                    else spec.effect.value
+                )
+                stored_idemp = (
+                    receipt_data.get("idempotency_support")
+                    if receipt_data
+                    else spec.idempotency_support.value
+                )
+                if (
+                    spec.effect.value != stored_effect
+                    or spec.idempotency_support.value != stored_idemp
+                ):
                     err_info = AgentErrorInfo(
                         stage="TOOL_DISPATCH",
                         category="CONFIGURATION_MISMATCH",
@@ -897,7 +1000,12 @@ class AgentLoopController:
                         status=AgentResultStatus.FAILED,
                         error_info=err_info,
                     )
-                    dummy_obs = ToolObservation(tool_call_id=tool_call_id, tool_name=tool_name, status="FAILED", text=err_info.safe_message)
+                    dummy_obs = ToolObservation(
+                        tool_call_id=tool_call_id,
+                        tool_name=tool_name,
+                        status="FAILED",
+                        text=err_info.safe_message,
+                    )
                     return dummy_res, dummy_obs, turn_context
 
                 if stored_idemp == IdempotencySupport.NONE.value:
@@ -915,7 +1023,12 @@ class AgentLoopController:
                         status=AgentResultStatus.EXECUTION_STATUS_UNKNOWN,
                         error_info=err_info,
                     )
-                    dummy_obs = ToolObservation(tool_call_id=tool_call_id, tool_name=tool_name, status="UNKNOWN", text=err_info.safe_message)
+                    dummy_obs = ToolObservation(
+                        tool_call_id=tool_call_id,
+                        tool_name=tool_name,
+                        status="UNKNOWN",
+                        text=err_info.safe_message,
+                    )
                     return dummy_res, dummy_obs, turn_context
 
         # Physical Tool Execution
@@ -933,9 +1046,11 @@ class AgentLoopController:
             is_success = exec_res.status == ToolCallStatus.SUCCESS
             result_content = exec_res.result_content or ""
             err_msg = exec_res.error_message or ""
-        except Exception as exc:
+            source_observations = exec_res.source_observations
+        except Exception as exc:  # noqa: BLE001
             is_success = False
             result_content = ""
+            source_observations = ()
             metadata = log_boundary_failure(
                 logger,
                 "tool_executor_raised",
@@ -953,19 +1068,42 @@ class AgentLoopController:
             status=st_val,
             result_content=result_content,
             error_message=err_msg,
+            source_observations=source_observations,
         )
 
         # Reconcile receipt with AgentRuntime / Task 3
         rec_res = self._reconcile_tool_receipt(
-            turn_context, agent_run_id, task_id, tool_call_id, root_turn_id=effective_root_turn_id, request_turn_id=turn_context.turn_id
+            turn_context,
+            agent_run_id,
+            task_id,
+            tool_call_id,
+            root_turn_id=effective_root_turn_id,
+            request_turn_id=turn_context.turn_id,
         )
         if not rec_res.ok:
             fail_res = rec_res.failure_result
             return (
-                fail_res if fail_res is not None else AgentResult(
-                    root_turn_id=effective_root_turn_id, request_turn_id=turn_context.turn_id, task_id=task_id, agent_run_id=agent_run_id, status=AgentResultStatus.FAILED
+                (
+                    fail_res
+                    if fail_res is not None
+                    else AgentResult(
+                        root_turn_id=effective_root_turn_id,
+                        request_turn_id=turn_context.turn_id,
+                        task_id=task_id,
+                        agent_run_id=agent_run_id,
+                        status=AgentResultStatus.FAILED,
+                    )
                 ),
-                ToolObservation(tool_call_id=tool_call_id, tool_name=tool_name, status="FAILED", text=fail_res.error_info.safe_message if fail_res and fail_res.error_info else "Runtime reconciliation failed"),
+                ToolObservation(
+                    tool_call_id=tool_call_id,
+                    tool_name=tool_name,
+                    status="FAILED",
+                    text=(
+                        fail_res.error_info.safe_message
+                        if fail_res and fail_res.error_info
+                        else "Runtime reconciliation failed"
+                    ),
+                ),
                 turn_context,
             )
 
@@ -976,7 +1114,9 @@ class AgentLoopController:
             request_turn_id=turn_context.turn_id,
             task_id=task_id,
             agent_run_id=agent_run_id,
-            status=AgentResultStatus.SUCCESS if is_success else AgentResultStatus.FAILED,
+            status=(
+                AgentResultStatus.SUCCESS if is_success else AgentResultStatus.FAILED
+            ),
         )
         return dummy_res, obs, updated_ctx
 

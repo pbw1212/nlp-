@@ -1,0 +1,37 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "source_data": "isolated_synthetic_user_record",
+  "official_benchmark_score": null,
+  "limits": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 2048
+  },
+  "result": {
+    "status": "SUCCESS",
+    "answer": "已批准的项目交付截止日期与时刻为 2026年12月18日 17:30（完整日期 2026-12-18，时刻 17:30）。该值取自原始消息末尾的原文窗口（source:ac11cf53a9ebec161996a3de5a14b262#window:48b1d983f0350afb，状态 RESOLVED、未截断、哈希与预期一致），其末尾原文载明：“唯一批准的项目交付截止日期与时刻为2026年12月18日17:30。”偏移 0 处的窗口为 TRUNCATED，仅含重复背景说明，未作为依据。本次核对未调用任何文件或联网工具。",
+    "model_calls": 13,
+    "error": null
+  },
+  "source_length": 6334,
+  "window_offsets": [
+    2334
+  ],
+  "windows": [
+    {
+      "offset": 2334,
+      "length": 4000
+    }
+  ],
+  "checks": {
+    "original_window_supplied": true,
+    "exact_deadline": true,
+    "repeat_replay_no_calls": true,
+    "seeded_memory_id": "mem_6b7f9b264460"
+  },
+  "engineering_assertions_passed": true
+}

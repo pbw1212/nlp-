@@ -1,0 +1,241 @@
+{
+  "kind": "engineering_smoke",
+  "official_benchmark_score": null,
+  "requested_model": "deepseek-v4-flash",
+  "limits": {
+    "max_model_calls": 12,
+    "max_token_units": 120000,
+    "deadline_seconds": 150,
+    "max_completion_tokens": 2048
+  },
+  "gpu_used": false,
+  "fake_model_used": false,
+  "input": "Continue the current calculation task. Use the calculator to compute 17*23. Use one subtask. Report the exact result.",
+  "expected": [
+    "391"
+  ],
+  "task_frontier_check": {
+    "bound": true,
+    "stale_replay_blocked": true,
+    "node_statuses": [
+      "STALE"
+    ]
+  },
+  "result": {
+    "root_turn_id": "live-p1-smoke",
+    "task_id": "task_1_0e2bca",
+    "agent_run_id": "ma_bd6a0632688a41e08e161ed7",
+    "status": "SUCCESS",
+    "request_turn_id": "live-p1-smoke",
+    "final_response": "17*23 = 391",
+    "executed_tool_call_ids": [
+      "call_cd71e77548ce"
+    ],
+    "pending_action": null,
+    "step_count": 1,
+    "warnings": [],
+    "error_info": null,
+    "trace_metadata": {
+      "execution_mode": "multi_fixed",
+      "verified_subtasks": [
+        "calc_17x23"
+      ],
+      "tool_stage_traces": [
+        {
+          "stage": "TASK_RESOLUTION",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.0009551048278808594
+        },
+        {
+          "stage": "TASK_UPDATE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 1.4084498882293701
+        },
+        {
+          "stage": "MAINTENANCE",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 1.6689300537109375e-06
+        },
+        {
+          "stage": "CONTEXT_BUILD",
+          "status": "SUCCESS",
+          "warnings": [],
+          "duration_seconds": 0.0037992000579833984
+        }
+      ],
+      "memory_inputs": [],
+      "source_reads": [],
+      "task_frontier": {
+        "task_id": "task_1_0e2bca",
+        "status": "ACTIVE",
+        "entries": [
+          {
+            "entry_id": "entry_d401d629bbb746b6a408a5aeb06a3854",
+            "kind": "GOAL",
+            "updated_at": 1793170357.5538454,
+            "content_hash": "1e3c942415809316d6921b8691e746d7e1157bd34a0dfd979828d90c3f2437cb",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          },
+          {
+            "entry_id": "entry_turn:live-p1-smoke:user_p1",
+            "kind": "CONSTRAINT",
+            "updated_at": 1793170359.662335,
+            "content_hash": "0d20fe19c4789c91afe0798784a5fde66a70be0d058ff0f85a18f1e3ea565b11",
+            "source_kind": "USER",
+            "basis": "EXPLICIT"
+          }
+        ]
+      },
+      "collaboration_run_id": "ma_bd6a0632688a41e08e161ed7",
+      "collaboration_usage": {
+        "model_calls": 8,
+        "charged_token_units": 12843,
+        "calls": [
+          {
+            "role": "Runtime",
+            "operation": "task_binding_decision_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 522,
+            "usage_json": "{\"input_tokens\":494,\"output_tokens\":28,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":238}",
+            "elapsed": 0.5948090000310913,
+            "usage": {
+              "input_tokens": 494,
+              "output_tokens": 28,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 238
+            }
+          },
+          {
+            "role": "Runtime",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2507,
+            "usage_json": "{\"input_tokens\":2243,\"output_tokens\":264,\"prompt_cache_hit_tokens\":1792,\"prompt_cache_miss_tokens\":451}",
+            "elapsed": 1.4528935000416823,
+            "usage": {
+              "input_tokens": 2243,
+              "output_tokens": 264,
+              "prompt_cache_hit_tokens": 1792,
+              "prompt_cache_miss_tokens": 451
+            }
+          },
+          {
+            "role": "Planner",
+            "operation": "collaboration_planner_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2037,
+            "usage_json": "{\"input_tokens\":1955,\"output_tokens\":82,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":1699}",
+            "elapsed": 0.934829699981492,
+            "usage": {
+              "input_tokens": 1955,
+              "output_tokens": 82,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 1699
+            }
+          },
+          {
+            "role": "Memory",
+            "operation": "collaboration_memory_v2",
+            "status": "SUCCEEDED",
+            "charged_units": 838,
+            "usage_json": "{\"input_tokens\":807,\"output_tokens\":31,\"prompt_cache_hit_tokens\":512,\"prompt_cache_miss_tokens\":295}",
+            "elapsed": 0.9339891000417992,
+            "usage": {
+              "input_tokens": 807,
+              "output_tokens": 31,
+              "prompt_cache_hit_tokens": 512,
+              "prompt_cache_miss_tokens": 295
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "agent_action",
+            "status": "SUCCEEDED",
+            "charged_units": 2329,
+            "usage_json": "{\"input_tokens\":2236,\"output_tokens\":93,\"prompt_cache_hit_tokens\":1408,\"prompt_cache_miss_tokens\":828,\"reasoning_tokens\":57}",
+            "elapsed": 0.9188491000095382,
+            "usage": {
+              "input_tokens": 2236,
+              "output_tokens": 93,
+              "prompt_cache_hit_tokens": 1408,
+              "prompt_cache_miss_tokens": 828,
+              "reasoning_tokens": 57
+            }
+          },
+          {
+            "role": "Executor",
+            "operation": "task_state_proposal_batch_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 2846,
+            "usage_json": "{\"input_tokens\":2614,\"output_tokens\":232,\"prompt_cache_hit_tokens\":1664,\"prompt_cache_miss_tokens\":950}",
+            "elapsed": 1.3738901000469923,
+            "usage": {
+              "input_tokens": 2614,
+              "output_tokens": 232,
+              "prompt_cache_hit_tokens": 1664,
+              "prompt_cache_miss_tokens": 950
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 986,
+            "usage_json": "{\"input_tokens\":846,\"output_tokens\":140,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":590}",
+            "elapsed": 1.311320999986492,
+            "usage": {
+              "input_tokens": 846,
+              "output_tokens": 140,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 590
+            }
+          },
+          {
+            "role": "Verifier",
+            "operation": "collaboration_verifier_v1",
+            "status": "SUCCEEDED",
+            "charged_units": 778,
+            "usage_json": "{\"input_tokens\":664,\"output_tokens\":114,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":408}",
+            "elapsed": 1.1817726999870501,
+            "usage": {
+              "input_tokens": 664,
+              "output_tokens": 114,
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 408
+            }
+          }
+        ]
+      },
+      "long_term_memory_update": {
+        "attempted": false,
+        "tool_call_ids": [],
+        "route": "agent_tool_decision"
+      },
+      "event_sequence": 17
+    }
+  },
+  "receipts": [
+    {
+      "tool_call_id": "call_cd71e77548ce",
+      "agent_run_id": "run_da10c9d28673",
+      "agent_step_id": "step_500a6a5a246d",
+      "tool_name": "calculator",
+      "arguments_json": "{\"expression\": \"17*23\"}",
+      "arguments_hash": "7ef6586e32d4",
+      "idempotency_key": "idemp_fc6162e26b76b880",
+      "tool_effect": "READ_ONLY",
+      "idempotency_support": "NONE",
+      "status": "SUCCEEDED",
+      "runtime_reconciled": 1,
+      "result_json": "{\"error_message\": \"\", \"result_content\": \"计算结果: 391\", \"status\": \"SUCCEEDED\", \"tool_call_id\": \"call_cd71e77548ce\", \"updated_at\": 1793170362.5750463}",
+      "created_at": 1793170362.5702186,
+      "updated_at": 1793170363.998964
+    }
+  ],
+  "engineering_assertions_passed": true,
+  "user_messages": 1
+}

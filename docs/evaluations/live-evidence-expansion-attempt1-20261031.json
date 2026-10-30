@@ -1,0 +1,37 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "source_data": "isolated_synthetic_user_record",
+  "official_benchmark_score": null,
+  "limits": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 2048
+  },
+  "result": {
+    "status": "FAILED",
+    "answer": null,
+    "model_calls": 12,
+    "error": {
+      "stage": "REASONING",
+      "category": "PROVIDER_ERROR",
+      "code": "PROVIDER_RESPONSE_ERROR",
+      "safe_message": "Provider returned invalid response for deepseek (chat.completions).",
+      "retryable": false,
+      "details": {
+        "provider": "deepseek",
+        "operation": "chat.completions",
+        "status_code": null
+      }
+    }
+  },
+  "source_length": 6334,
+  "window_offsets": [
+    2334
+  ],
+  "engineering_assertions_passed": false,
+  "error_type": "AssertionError"
+}
