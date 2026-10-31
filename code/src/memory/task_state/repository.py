@@ -1,36 +1,37 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sqlite3
 import time
 import uuid
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from typing import Iterator, Optional, Sequence, Tuple
 
+from src.memory.storage.sqlite_utils import ClosingSQLiteConnection
 from src.memory.task_state.models import (
     ContinuationCheckpoint,
     EntryKind,
     EntryStatus,
+    EventProcessStatus,
     EvidenceRef,
     LedgerEntry,
     Priority,
+    ProposalAction,
     ProposalBasis,
     RelationKind,
     SourceKind,
-    TaskEvent,
     TaskAnalysis,
+    TaskEvent,
     TaskLedger,
+    TaskRelation,
     TaskStateProposal,
     TaskStateProposalBatch,
     TaskStateUpdateReceipt,
     TaskStatus,
-    EventProcessStatus,
-    ProposalAction,
-    TaskRelation,
+    _json_value,
 )
-from src.memory.storage.sqlite_utils import ClosingSQLiteConnection
-
 
 TASK_STATE_SCHEMA_VERSION = 5
 
@@ -79,10 +80,13 @@ class TaskStateRepository:
             version = int(connection.execute("PRAGMA user_version").fetchone()[0])
             tables = {
                 row[0]
-                for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
             }
             if not tables:
                 self._create_schema(connection)
+                self._ensure_completion_schema(connection)
                 connection.commit()
                 return
             if version == 1:
@@ -102,12 +106,22 @@ class TaskStateRepository:
                     f"unsupported task-state schema {version}; expected {TASK_STATE_SCHEMA_VERSION}"
                 )
             self._backfill_legacy_tool_payloads(connection)
+            self._ensure_completion_schema(connection)
             connection.commit()
             tables = {
                 row[0]
-                for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
             }
-            required = {"task_ledgers", "task_entries", "task_relations", "task_checkpoints", "task_operations", "task_events"}
+            required = {
+                "task_ledgers",
+                "task_entries",
+                "task_relations",
+                "task_checkpoints",
+                "task_operations",
+                "task_events",
+            }
             if not required.issubset(tables):
                 raise ValueError("task-state schema is incomplete")
 
@@ -190,14 +204,136 @@ class TaskStateRepository:
         connection.execute(f"PRAGMA user_version={TASK_STATE_SCHEMA_VERSION}")
 
     @staticmethod
+    def _ensure_completion_schema(connection: sqlite3.Connection) -> None:
+        connection.execute(
+            """CREATE TABLE IF NOT EXISTS task_completion_receipts(
+            task_id TEXT PRIMARY KEY REFERENCES task_ledgers(task_id), completion_id TEXT NOT NULL UNIQUE,
+            payload_json TEXT NOT NULL, payload_hash TEXT NOT NULL,
+            completed_ledger_hash TEXT NOT NULL, created REAL NOT NULL)"""
+        )
+
+    @staticmethod
+    def ledger_hash(ledger: TaskLedger) -> str:
+        encoded = json.dumps(
+            _json_value(ledger),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+    def _ledger_on(self, connection: sqlite3.Connection, task_id: str) -> TaskLedger:
+        row = connection.execute(
+            "SELECT * FROM task_ledgers WHERE task_id=?", (task_id,)
+        ).fetchone()
+        if row is None:
+            raise KeyError(task_id)
+        entries = connection.execute(
+            "SELECT * FROM task_entries WHERE task_id=? ORDER BY created_at,entry_id",
+            (task_id,),
+        ).fetchall()
+        return TaskLedger(
+            task_id,
+            tuple(self._entry_from_row(entry) for entry in entries),
+            row["created_at"],
+            row["updated_at"],
+            TaskStatus(row["status"]),
+        )
+
+    def seal_completion(
+        self, task_id: str, completion_id: str, expected_ledger_hash: str, payload: dict
+    ) -> dict:
+        """Compare and seal in the same Task 3 transaction, never ignore a status change."""
+        encoded = json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        fingerprint = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+        if (
+            payload.get("task_id") != task_id
+            or payload.get("completion_id") != completion_id
+        ):
+            raise ValueError("completion receipt ownership mismatch")
+        with self._transaction() as connection:
+            old = connection.execute(
+                "SELECT * FROM task_completion_receipts WHERE task_id=?", (task_id,)
+            ).fetchone()
+            if old:
+                if (
+                    old["completion_id"] != completion_id
+                    or old["payload_hash"] != fingerprint
+                ):
+                    raise ValueError("task already has another completion receipt")
+            else:
+                ledger = self._ledger_on(connection, task_id)
+                if (
+                    ledger.status is not TaskStatus.ACTIVE
+                    or self.ledger_hash(ledger) != expected_ledger_hash
+                ):
+                    raise ValueError("task changed before completion sealing")
+                connection.execute(
+                    "UPDATE task_ledgers SET status='COMPLETED',updated_at=? WHERE task_id=?",
+                    (time.time(), task_id),
+                )
+                completed = self._ledger_on(connection, task_id)
+                connection.execute(
+                    "INSERT INTO task_completion_receipts VALUES(?,?,?,?,?,?)",
+                    (
+                        task_id,
+                        completion_id,
+                        encoded,
+                        fingerprint,
+                        self.ledger_hash(completed),
+                        time.time(),
+                    ),
+                )
+        return self.get_completion_receipt(task_id)
+
+    def get_completion_receipt(self, task_id: str) -> dict | None:
+        with self._connection() as connection:
+            connection.execute("BEGIN")
+            row = connection.execute(
+                "SELECT * FROM task_completion_receipts WHERE task_id=?", (task_id,)
+            ).fetchone()
+            if row is None:
+                return None
+            payload = json.loads(row["payload_json"])
+            encoded = json.dumps(
+                payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+            ledger = self._ledger_on(connection, task_id)
+            if (
+                hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+                != row["payload_hash"]
+                or payload.get("task_id") != task_id
+                or payload.get("completion_id") != row["completion_id"]
+                or ledger.status is not TaskStatus.COMPLETED
+                or self.ledger_hash(ledger) != row["completed_ledger_hash"]
+            ):
+                raise ValueError("completion receipt or sealed task state changed")
+            return payload
+
+    @staticmethod
     def _migrate_v1_to_v2(connection: sqlite3.Connection) -> None:
         tables = {
             row[0]
-            for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
         }
         if "task_entries" not in tables:
             raise ValueError("cannot migrate incomplete task-state v1 schema")
-        connection.execute("ALTER TABLE task_entries ADD COLUMN source_kind TEXT NOT NULL DEFAULT 'USER'")
+        connection.execute(
+            "ALTER TABLE task_entries ADD COLUMN source_kind TEXT NOT NULL DEFAULT 'USER'"
+        )
         connection.execute(
             """CREATE TABLE IF NOT EXISTS task_events (
                 event_id TEXT PRIMARY KEY,
@@ -219,12 +355,16 @@ class TaskStateRepository:
 
     @staticmethod
     def _migrate_v2_to_v3(connection: sqlite3.Connection) -> None:
-        connection.execute("ALTER TABLE task_entries ADD COLUMN basis TEXT NOT NULL DEFAULT 'EXPLICIT'")
+        connection.execute(
+            "ALTER TABLE task_entries ADD COLUMN basis TEXT NOT NULL DEFAULT 'EXPLICIT'"
+        )
         connection.execute("PRAGMA user_version=3")
 
     @staticmethod
     def _migrate_v3_to_v4(connection: sqlite3.Connection) -> None:
-        connection.execute("ALTER TABLE task_ledgers ADD COLUMN status TEXT NOT NULL DEFAULT 'ACTIVE'")
+        connection.execute(
+            "ALTER TABLE task_ledgers ADD COLUMN status TEXT NOT NULL DEFAULT 'ACTIVE'"
+        )
         connection.execute("PRAGMA user_version=4")
 
     @staticmethod
@@ -260,15 +400,20 @@ class TaskStateRepository:
             }
             connection.execute(
                 "UPDATE task_events SET structured_payload_json=? WHERE event_id=?",
-                (json.dumps(payload, ensure_ascii=False, sort_keys=True), row["event_id"]),
+                (
+                    json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                    row["event_id"],
+                ),
             )
 
     @staticmethod
     def _refs_to_json(refs: Sequence[EvidenceRef]) -> str:
-        return json.dumps([ref.to_dict() for ref in refs], ensure_ascii=False, sort_keys=True)
+        return json.dumps(
+            [ref.to_dict() for ref in refs], ensure_ascii=False, sort_keys=True
+        )
 
     @staticmethod
-    def _refs_from_json(raw: str) -> Tuple[EvidenceRef, ...]:
+    def _refs_from_json(raw: str) -> tuple[EvidenceRef, ...]:
         return tuple(
             EvidenceRef(
                 bundle_id=item["bundle_id"],
@@ -293,7 +438,9 @@ class TaskStateRepository:
             source_kind=SourceKind(row["source_kind"]),
             basis=ProposalBasis(row["basis"]),
             source_ref=row["source_ref"],
-            evidence_refs=TaskStateRepository._refs_from_json(row["evidence_refs_json"]),
+            evidence_refs=TaskStateRepository._refs_from_json(
+                row["evidence_refs_json"]
+            ),
             supersedes_entry_id=row["supersedes_entry_id"],
         )
 
@@ -320,11 +467,19 @@ class TaskStateRepository:
                 "SELECT * FROM task_entries WHERE task_id=? ORDER BY created_at, entry_id",
                 (task_id,),
             ).fetchall()
-        return TaskLedger(task_id, tuple(self._entry_from_row(row) for row in rows), ledger["created_at"], ledger["updated_at"], TaskStatus(ledger["status"]))
+        return TaskLedger(
+            task_id,
+            tuple(self._entry_from_row(row) for row in rows),
+            ledger["created_at"],
+            ledger["updated_at"],
+            TaskStatus(ledger["status"]),
+        )
 
     def get_entry(self, entry_id: str) -> LedgerEntry:
         with self._connection() as connection:
-            row = connection.execute("SELECT * FROM task_entries WHERE entry_id=?", (entry_id,)).fetchone()
+            row = connection.execute(
+                "SELECT * FROM task_entries WHERE entry_id=?", (entry_id,)
+            ).fetchone()
         if row is None:
             raise KeyError(f"unknown entry: {entry_id}")
         return self._entry_from_row(row)
@@ -338,10 +493,10 @@ class TaskStateRepository:
         priority: Priority = Priority.NORMAL,
         source_kind: SourceKind = SourceKind.USER,
         basis: ProposalBasis = ProposalBasis.EXPLICIT,
-        source_ref: Optional[str] = None,
+        source_ref: str | None = None,
         evidence_refs: Sequence[EvidenceRef] = (),
-        operation_id: Optional[str] = None,
-        entry_id: Optional[str] = None,
+        operation_id: str | None = None,
+        entry_id: str | None = None,
     ) -> LedgerEntry:
         if not content.strip():
             raise ValueError("entry content must be non-empty")
@@ -357,27 +512,50 @@ class TaskStateRepository:
                 (entry_id, task_id, kind, content, status, priority, source_kind, basis, source_ref,
                  evidence_refs_json, supersedes_entry_id, created_at, updated_at)
                 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (entry_id, task_id, kind.value, content, EntryStatus.ACTIVE.value, int(priority), source_kind.value, basis.value, source_ref,
-                 self._refs_to_json(evidence_refs), None, now, now),
+                (
+                    entry_id,
+                    task_id,
+                    kind.value,
+                    content,
+                    EntryStatus.ACTIVE.value,
+                    int(priority),
+                    source_kind.value,
+                    basis.value,
+                    source_ref,
+                    self._refs_to_json(evidence_refs),
+                    None,
+                    now,
+                    now,
+                ),
             )
             if operation_id:
                 connection.execute(
                     "INSERT INTO task_operations(operation_id, task_id, operation_kind, entry_id, created_at) VALUES(?,?,?,?,?)",
                     (operation_id, task_id, "ADD", entry_id, now),
                 )
-            connection.execute("UPDATE task_ledgers SET updated_at=? WHERE task_id=?", (now, task_id))
+            connection.execute(
+                "UPDATE task_ledgers SET updated_at=? WHERE task_id=?", (now, task_id)
+            )
             return self._entry_from_connection(connection, entry_id)
 
     def _ensure_task(self, connection: sqlite3.Connection, task_id: str) -> None:
-        if connection.execute("SELECT 1 FROM task_ledgers WHERE task_id=?", (task_id,)).fetchone() is None:
+        if (
+            connection.execute(
+                "SELECT 1 FROM task_ledgers WHERE task_id=?", (task_id,)
+            ).fetchone()
+            is None
+        ):
             raise KeyError(f"unknown task: {task_id}")
 
     @staticmethod
-    def _operation_entry(connection: sqlite3.Connection, operation_id: Optional[str], task_id: str) -> Optional[str]:
+    def _operation_entry(
+        connection: sqlite3.Connection, operation_id: str | None, task_id: str
+    ) -> str | None:
         if operation_id is None:
             return None
         row = connection.execute(
-            "SELECT task_id, entry_id FROM task_operations WHERE operation_id=?", (operation_id,)
+            "SELECT task_id, entry_id FROM task_operations WHERE operation_id=?",
+            (operation_id,),
         ).fetchone()
         if row is None:
             return None
@@ -386,53 +564,75 @@ class TaskStateRepository:
         return row["entry_id"]
 
     @staticmethod
-    def _entry_from_connection(connection: sqlite3.Connection, entry_id: Optional[str]) -> LedgerEntry:
+    def _entry_from_connection(
+        connection: sqlite3.Connection, entry_id: str | None
+    ) -> LedgerEntry:
         if entry_id is None:
             raise ValueError("operation has no entry result")
-        row = connection.execute("SELECT * FROM task_entries WHERE entry_id=?", (entry_id,)).fetchone()
+        row = connection.execute(
+            "SELECT * FROM task_entries WHERE entry_id=?", (entry_id,)
+        ).fetchone()
         if row is None:
             raise KeyError(f"operation entry missing: {entry_id}")
         return TaskStateRepository._entry_from_row(row)
 
-    def update_status(self, entry_id: str, status: EntryStatus, *, operation_id: Optional[str] = None) -> LedgerEntry:
+    def update_status(
+        self, entry_id: str, status: EntryStatus, *, operation_id: str | None = None
+    ) -> LedgerEntry:
         now = time.time()
         with self._transaction() as connection:
-            row = connection.execute("SELECT * FROM task_entries WHERE entry_id=?", (entry_id,)).fetchone()
+            row = connection.execute(
+                "SELECT * FROM task_entries WHERE entry_id=?", (entry_id,)
+            ).fetchone()
             if row is None:
                 raise KeyError(f"unknown entry: {entry_id}")
-            if operation_id and self._operation_entry(connection, operation_id, row["task_id"]):
+            if operation_id and self._operation_entry(
+                connection, operation_id, row["task_id"]
+            ):
                 return self._entry_from_connection(connection, entry_id)
             current = EntryStatus(row["status"])
             if current is not status and current is not EntryStatus.ACTIVE:
                 raise ValueError(f"cannot transition {current.value} to {status.value}")
-            connection.execute("UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?", (status.value, now, entry_id))
+            connection.execute(
+                "UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?",
+                (status.value, now, entry_id),
+            )
             if operation_id:
                 connection.execute(
                     "INSERT INTO task_operations(operation_id, task_id, operation_kind, entry_id, created_at) VALUES(?,?,?,?,?)",
                     (operation_id, row["task_id"], status.value, entry_id, now),
                 )
-            connection.execute("UPDATE task_ledgers SET updated_at=? WHERE task_id=?", (now, row["task_id"]))
+            connection.execute(
+                "UPDATE task_ledgers SET updated_at=? WHERE task_id=?",
+                (now, row["task_id"]),
+            )
             return self._entry_from_connection(connection, entry_id)
 
-    def resolve_entry(self, entry_id: str, *, operation_id: Optional[str] = None) -> LedgerEntry:
-        return self.update_status(entry_id, EntryStatus.RESOLVED, operation_id=operation_id)
+    def resolve_entry(
+        self, entry_id: str, *, operation_id: str | None = None
+    ) -> LedgerEntry:
+        return self.update_status(
+            entry_id, EntryStatus.RESOLVED, operation_id=operation_id
+        )
 
     def supersede_entry(
         self,
         entry_id: str,
         content: str,
         *,
-        priority: Optional[Priority] = None,
-        source_kind: Optional[SourceKind] = None,
-        basis: Optional[ProposalBasis] = None,
-        source_ref: Optional[str] = None,
+        priority: Priority | None = None,
+        source_kind: SourceKind | None = None,
+        basis: ProposalBasis | None = None,
+        source_ref: str | None = None,
         evidence_refs: Sequence[EvidenceRef] = (),
-        operation_id: Optional[str] = None,
+        operation_id: str | None = None,
     ) -> LedgerEntry:
         now = time.time()
         new_id = f"entry_{uuid.uuid4().hex}"
         with self._transaction() as connection:
-            old = connection.execute("SELECT * FROM task_entries WHERE entry_id=?", (entry_id,)).fetchone()
+            old = connection.execute(
+                "SELECT * FROM task_entries WHERE entry_id=?", (entry_id,)
+            ).fetchone()
             if old is None:
                 raise KeyError(f"unknown entry: {entry_id}")
             existing = self._operation_entry(connection, operation_id, old["task_id"])
@@ -445,12 +645,26 @@ class TaskStateRepository:
                 (entry_id, task_id, kind, content, status, priority, source_kind, basis, source_ref,
                  evidence_refs_json, supersedes_entry_id, created_at, updated_at)
                 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (new_id, old["task_id"], old["kind"], content, EntryStatus.ACTIVE.value,
-                 int(priority or Priority(old["priority"])), (source_kind or SourceKind(old["source_kind"])).value, (basis or ProposalBasis(old["basis"])).value,
-                 source_ref or old["source_ref"],
-                 self._refs_to_json(evidence_refs), entry_id, now, now),
+                (
+                    new_id,
+                    old["task_id"],
+                    old["kind"],
+                    content,
+                    EntryStatus.ACTIVE.value,
+                    int(priority or Priority(old["priority"])),
+                    (source_kind or SourceKind(old["source_kind"])).value,
+                    (basis or ProposalBasis(old["basis"])).value,
+                    source_ref or old["source_ref"],
+                    self._refs_to_json(evidence_refs),
+                    entry_id,
+                    now,
+                    now,
+                ),
             )
-            connection.execute("UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?", (EntryStatus.SUPERSEDED.value, now, entry_id))
+            connection.execute(
+                "UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?",
+                (EntryStatus.SUPERSEDED.value, now, entry_id),
+            )
             connection.execute(
                 "INSERT INTO task_relations(task_id, from_entry_id, to_entry_id, relation_kind) VALUES(?,?,?,?)",
                 (old["task_id"], new_id, entry_id, RelationKind.SUPERSEDES.value),
@@ -460,26 +674,38 @@ class TaskStateRepository:
                     "INSERT INTO task_operations(operation_id, task_id, operation_kind, entry_id, created_at) VALUES(?,?,?,?,?)",
                     (operation_id, old["task_id"], "SUPERSEDE", new_id, now),
                 )
-            connection.execute("UPDATE task_ledgers SET updated_at=? WHERE task_id=?", (now, old["task_id"]))
+            connection.execute(
+                "UPDATE task_ledgers SET updated_at=? WHERE task_id=?",
+                (now, old["task_id"]),
+            )
             return self._entry_from_connection(connection, new_id)
 
     def add_relation(self, relation: TaskRelation) -> None:
         with self._transaction() as connection:
             self._ensure_task(connection, relation.task_id)
             for entry_id in (relation.from_entry_id, relation.to_entry_id):
-                row = connection.execute("SELECT task_id FROM task_entries WHERE entry_id=?", (entry_id,)).fetchone()
+                row = connection.execute(
+                    "SELECT task_id FROM task_entries WHERE entry_id=?", (entry_id,)
+                ).fetchone()
                 if row is None or row["task_id"] != relation.task_id:
                     raise ValueError("relation entries must belong to the same task")
             connection.execute(
                 "INSERT OR IGNORE INTO task_relations(task_id, from_entry_id, to_entry_id, relation_kind) VALUES(?,?,?,?)",
-                (relation.task_id, relation.from_entry_id, relation.to_entry_id, relation.kind.value),
+                (
+                    relation.task_id,
+                    relation.from_entry_id,
+                    relation.to_entry_id,
+                    relation.kind.value,
+                ),
             )
 
     def register_event(self, event: TaskEvent) -> EventProcessStatus:
         now = time.time()
         with self._transaction() as connection:
             self._ensure_task(connection, event.task_id)
-            existing = connection.execute("SELECT * FROM task_events WHERE event_id=?", (event.event_id,)).fetchone()
+            existing = connection.execute(
+                "SELECT * FROM task_events WHERE event_id=?", (event.event_id,)
+            ).fetchone()
             if existing is not None:
                 structured_payload_json = json.dumps(
                     dict(event.structured_payload), ensure_ascii=False, sort_keys=True
@@ -493,38 +719,62 @@ class TaskStateRepository:
                     or existing["turn_id"] != event.turn_id
                     or existing["tool_call_id"] != event.tool_call_id
                 ):
-                    raise ValueError("event_id already belongs to a different event identity")
+                    raise ValueError(
+                        "event_id already belongs to a different event identity"
+                    )
                 return EventProcessStatus(existing["status"])
             connection.execute(
                 """INSERT INTO task_events
                 (event_id, task_id, source_kind, content, structured_payload_json,
                  occurred_at, source_ref, turn_id, tool_call_id, status, created_at)
                 VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
-                (event.event_id, event.task_id, event.source_kind.value, event.content,
-                 json.dumps(dict(event.structured_payload), ensure_ascii=False, sort_keys=True),
-                 event.occurred_at or now, event.source_ref, event.turn_id, event.tool_call_id,
-                 EventProcessStatus.RECEIVED.value, now),
+                (
+                    event.event_id,
+                    event.task_id,
+                    event.source_kind.value,
+                    event.content,
+                    json.dumps(
+                        dict(event.structured_payload),
+                        ensure_ascii=False,
+                        sort_keys=True,
+                    ),
+                    event.occurred_at or now,
+                    event.source_ref,
+                    event.turn_id,
+                    event.tool_call_id,
+                    EventProcessStatus.RECEIVED.value,
+                    now,
+                ),
             )
             return EventProcessStatus.RECEIVED
 
-    def get_event(self, event_id: str) -> Optional[TaskEvent]:
+    def get_event(self, event_id: str) -> TaskEvent | None:
         with self._connection() as connection:
-            row = connection.execute("SELECT * FROM task_events WHERE event_id=?", (event_id,)).fetchone()
+            row = connection.execute(
+                "SELECT * FROM task_events WHERE event_id=?", (event_id,)
+            ).fetchone()
         if row is None:
             return None
         return TaskEvent(
-            task_id=row["task_id"], event_id=row["event_id"], source_kind=SourceKind(row["source_kind"]),
-            content=row["content"], structured_payload=json.loads(row["structured_payload_json"]),
-            occurred_at=row["occurred_at"], source_ref=row["source_ref"], turn_id=row["turn_id"],
+            task_id=row["task_id"],
+            event_id=row["event_id"],
+            source_kind=SourceKind(row["source_kind"]),
+            content=row["content"],
+            structured_payload=json.loads(row["structured_payload_json"]),
+            occurred_at=row["occurred_at"],
+            source_ref=row["source_ref"],
+            turn_id=row["turn_id"],
             tool_call_id=row["tool_call_id"],
         )
 
-    def get_event_status(self, event_id: str) -> Optional[EventProcessStatus]:
+    def get_event_status(self, event_id: str) -> EventProcessStatus | None:
         with self._connection() as connection:
-            row = connection.execute("SELECT status FROM task_events WHERE event_id=?", (event_id,)).fetchone()
+            row = connection.execute(
+                "SELECT status FROM task_events WHERE event_id=?", (event_id,)
+            ).fetchone()
         return None if row is None else EventProcessStatus(row["status"])
 
-    def get_recent_events(self, task_id: str, limit: int = 4) -> Tuple[TaskEvent, ...]:
+    def get_recent_events(self, task_id: str, limit: int = 4) -> tuple[TaskEvent, ...]:
         if limit <= 0:
             return ()
         with self._connection() as connection:
@@ -534,18 +784,25 @@ class TaskStateRepository:
             ).fetchall()
         events = tuple(
             TaskEvent(
-                task_id=row["task_id"], event_id=row["event_id"], source_kind=SourceKind(row["source_kind"]),
-                content=row["content"], structured_payload=json.loads(row["structured_payload_json"]),
-                occurred_at=row["occurred_at"], source_ref=row["source_ref"], turn_id=row["turn_id"],
+                task_id=row["task_id"],
+                event_id=row["event_id"],
+                source_kind=SourceKind(row["source_kind"]),
+                content=row["content"],
+                structured_payload=json.loads(row["structured_payload_json"]),
+                occurred_at=row["occurred_at"],
+                source_ref=row["source_ref"],
+                turn_id=row["turn_id"],
                 tool_call_id=row["tool_call_id"],
             )
             for row in rows
         )
         return tuple(reversed(events))
 
-    def get_event_receipt(self, event_id: str) -> Optional[TaskStateUpdateReceipt]:
+    def get_event_receipt(self, event_id: str) -> TaskStateUpdateReceipt | None:
         with self._connection() as connection:
-            row = connection.execute("SELECT receipt_json FROM task_events WHERE event_id=?", (event_id,)).fetchone()
+            row = connection.execute(
+                "SELECT receipt_json FROM task_events WHERE event_id=?", (event_id,)
+            ).fetchone()
         if row is None or row["receipt_json"] is None:
             return None
         return self._receipt_from_json(row["receipt_json"])
@@ -554,12 +811,16 @@ class TaskStateRepository:
     def _receipt_from_json(raw: str) -> TaskStateUpdateReceipt:
         data = json.loads(raw)
         return TaskStateUpdateReceipt(
-            task_id=data["task_id"], event_id=data["event_id"], status=EventProcessStatus(data["status"]),
-            batch_id=data["batch_id"], proposal_ids=tuple(data.get("proposal_ids", ())),
+            task_id=data["task_id"],
+            event_id=data["event_id"],
+            status=EventProcessStatus(data["status"]),
+            batch_id=data["batch_id"],
+            proposal_ids=tuple(data.get("proposal_ids", ())),
             applied_entry_ids=tuple(data.get("applied_entry_ids", ())),
             superseded_entry_ids=tuple(data.get("superseded_entry_ids", ())),
             resolved_entry_ids=tuple(data.get("resolved_entry_ids", ())),
-            relation_keys=tuple(data.get("relation_keys", ())), warnings=tuple(data.get("warnings", ())),
+            relation_keys=tuple(data.get("relation_keys", ())),
+            warnings=tuple(data.get("warnings", ())),
             ledger_updated_at=data.get("ledger_updated_at", 0.0),
             analysis=TaskAnalysis.from_dict(data.get("analysis")),
         )
@@ -573,16 +834,24 @@ class TaskStateRepository:
             if cursor.rowcount != 1:
                 raise KeyError(f"task event not found: {event_id}")
 
-    def mark_event_rejected(self, event_id: str, receipt: TaskStateUpdateReceipt) -> None:
+    def mark_event_rejected(
+        self, event_id: str, receipt: TaskStateUpdateReceipt
+    ) -> None:
         with self._transaction() as connection:
             cursor = connection.execute(
                 "UPDATE task_events SET status=?, receipt_json=? WHERE event_id=?",
-                (EventProcessStatus.REJECTED.value, json.dumps(receipt.to_dict(), sort_keys=True), event_id),
+                (
+                    EventProcessStatus.REJECTED.value,
+                    json.dumps(receipt.to_dict(), sort_keys=True),
+                    event_id,
+                ),
             )
             if cursor.rowcount != 1:
                 raise KeyError(f"task event not found: {event_id}")
 
-    def mark_event_pending_confirmation(self, event_id: str, receipt: TaskStateUpdateReceipt) -> None:
+    def mark_event_pending_confirmation(
+        self, event_id: str, receipt: TaskStateUpdateReceipt
+    ) -> None:
         if receipt.status is not EventProcessStatus.PENDING_CONFIRMATION:
             raise ValueError("pending confirmation receipt has an invalid status")
         with self._transaction() as connection:
@@ -597,11 +866,16 @@ class TaskStateRepository:
             if cursor.rowcount != 1:
                 raise KeyError(f"task event not found: {event_id}")
 
-    def apply_proposal_batch(self, event: TaskEvent, batch: TaskStateProposalBatch) -> TaskStateUpdateReceipt:
+    def apply_proposal_batch(
+        self, event: TaskEvent, batch: TaskStateProposalBatch
+    ) -> TaskStateUpdateReceipt:
         now = time.time()
         batch_id = f"batch:{event.event_id}"
         with self._transaction() as connection:
-            row = connection.execute("SELECT status, receipt_json FROM task_events WHERE event_id=?", (event.event_id,)).fetchone()
+            row = connection.execute(
+                "SELECT status, receipt_json FROM task_events WHERE event_id=?",
+                (event.event_id,),
+            ).fetchone()
             if row is None:
                 raise KeyError("event must be registered before apply")
             if EventProcessStatus(row["status"]) is EventProcessStatus.APPLIED:
@@ -612,12 +886,17 @@ class TaskStateRepository:
             resolved: list[str] = []
             relation_keys: list[str] = []
             for proposal in batch.proposals:
-                result = self._apply_proposal_connection(connection, event, proposal, now)
+                result = self._apply_proposal_connection(
+                    connection, event, proposal, now
+                )
                 applied.extend(result[0])
                 superseded.extend(result[1])
                 resolved.extend(result[2])
                 relation_keys.extend(result[3])
-            connection.execute("UPDATE task_ledgers SET updated_at=? WHERE task_id=?", (now, event.task_id))
+            connection.execute(
+                "UPDATE task_ledgers SET updated_at=? WHERE task_id=?",
+                (now, event.task_id),
+            )
             receipt = TaskStateUpdateReceipt(
                 task_id=event.task_id,
                 event_id=event.event_id,
@@ -634,18 +913,32 @@ class TaskStateRepository:
             )
             connection.execute(
                 "UPDATE task_events SET status=?, receipt_json=? WHERE event_id=?",
-                (EventProcessStatus.APPLIED.value, json.dumps(receipt.to_dict(), sort_keys=True), event.event_id),
+                (
+                    EventProcessStatus.APPLIED.value,
+                    json.dumps(receipt.to_dict(), sort_keys=True),
+                    event.event_id,
+                ),
             )
             return receipt
 
-    def _apply_proposal_connection(self, connection: sqlite3.Connection, event: TaskEvent, proposal: TaskStateProposal, now: float) -> tuple[list[str], list[str], list[str], list[str]]:
+    def _apply_proposal_connection(
+        self,
+        connection: sqlite3.Connection,
+        event: TaskEvent,
+        proposal: TaskStateProposal,
+        now: float,
+    ) -> tuple[list[str], list[str], list[str], list[str]]:
         applied: list[str] = []
         superseded: list[str] = []
         resolved: list[str] = []
         relations: list[str] = []
         operation_id = f"{event.event_id}:{proposal.proposal_id}"
         if proposal.action is ProposalAction.ADD:
-            if proposal.entry_kind is None or proposal.content is None or proposal.basis is None:
+            if (
+                proposal.entry_kind is None
+                or proposal.content is None
+                or proposal.basis is None
+            ):
                 raise ValueError("ADD proposal is missing validated fields")
             entry_id = f"entry_{event.event_id}_{proposal.proposal_id}"
             connection.execute(
@@ -653,10 +946,21 @@ class TaskStateRepository:
                 (entry_id, task_id, kind, content, status, priority, source_kind, basis, source_ref,
                  evidence_refs_json, supersedes_entry_id, created_at, updated_at)
                 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (entry_id, event.task_id, proposal.entry_kind.value, proposal.content,
-                 EntryStatus.ACTIVE.value, int(proposal.priority or Priority.NORMAL), event.source_kind.value, proposal.basis.value,
-                 event.source_ref or f"event:{event.event_id}", self._refs_to_json(proposal.evidence_refs),
-                 None, now, now),
+                (
+                    entry_id,
+                    event.task_id,
+                    proposal.entry_kind.value,
+                    proposal.content,
+                    EntryStatus.ACTIVE.value,
+                    int(proposal.priority or Priority.NORMAL),
+                    event.source_kind.value,
+                    proposal.basis.value,
+                    event.source_ref or f"event:{event.event_id}",
+                    self._refs_to_json(proposal.evidence_refs),
+                    None,
+                    now,
+                    now,
+                ),
             )
             connection.execute(
                 "INSERT INTO task_operations(operation_id, task_id, operation_kind, entry_id, created_at) VALUES(?,?,?,?,?)",
@@ -666,28 +970,55 @@ class TaskStateRepository:
         elif proposal.action is ProposalAction.RESOLVE:
             if proposal.target_entry_id is None:
                 raise ValueError("RESOLVE proposal is missing target_entry_id")
-            connection.execute("UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?", (EntryStatus.RESOLVED.value, now, proposal.target_entry_id))
+            connection.execute(
+                "UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?",
+                (EntryStatus.RESOLVED.value, now, proposal.target_entry_id),
+            )
             connection.execute(
                 "INSERT INTO task_operations(operation_id, task_id, operation_kind, entry_id, created_at) VALUES(?,?,?,?,?)",
-                (operation_id, event.task_id, ProposalAction.RESOLVE.value, proposal.target_entry_id, now),
+                (
+                    operation_id,
+                    event.task_id,
+                    ProposalAction.RESOLVE.value,
+                    proposal.target_entry_id,
+                    now,
+                ),
             )
             resolved.append(proposal.target_entry_id)
         elif proposal.action is ProposalAction.REMOVE:
             if proposal.target_entry_id is None:
                 raise ValueError("REMOVE proposal is missing target_entry_id")
-            connection.execute("UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?", (EntryStatus.REMOVED.value, now, proposal.target_entry_id))
+            connection.execute(
+                "UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?",
+                (EntryStatus.REMOVED.value, now, proposal.target_entry_id),
+            )
             connection.execute(
                 "INSERT INTO task_operations(operation_id, task_id, operation_kind, entry_id, created_at) VALUES(?,?,?,?,?)",
-                (operation_id, event.task_id, ProposalAction.REMOVE.value, proposal.target_entry_id, now),
+                (
+                    operation_id,
+                    event.task_id,
+                    ProposalAction.REMOVE.value,
+                    proposal.target_entry_id,
+                    now,
+                ),
             )
             applied.append(proposal.target_entry_id)
         elif proposal.action is ProposalAction.SET_PRIORITY:
             if proposal.target_entry_id is None or proposal.priority is None:
                 raise ValueError("SET_PRIORITY proposal is missing validated fields")
-            connection.execute("UPDATE task_entries SET priority=?, updated_at=? WHERE entry_id=?", (int(proposal.priority), now, proposal.target_entry_id))
+            connection.execute(
+                "UPDATE task_entries SET priority=?, updated_at=? WHERE entry_id=?",
+                (int(proposal.priority), now, proposal.target_entry_id),
+            )
             connection.execute(
                 "INSERT INTO task_operations(operation_id, task_id, operation_kind, entry_id, created_at) VALUES(?,?,?,?,?)",
-                (operation_id, event.task_id, ProposalAction.SET_PRIORITY.value, proposal.target_entry_id, now),
+                (
+                    operation_id,
+                    event.task_id,
+                    ProposalAction.SET_PRIORITY.value,
+                    proposal.target_entry_id,
+                    now,
+                ),
             )
             applied.append(proposal.target_entry_id)
         elif proposal.action is ProposalAction.LINK_RELATION:
@@ -696,9 +1027,16 @@ class TaskStateRepository:
                 raise ValueError("LINK_RELATION proposal is missing relation")
             connection.execute(
                 "INSERT OR IGNORE INTO task_relations(task_id, from_entry_id, to_entry_id, relation_kind) VALUES(?,?,?,?)",
-                (event.task_id, relation.from_entry_id, relation.to_entry_id, relation.kind.value),
+                (
+                    event.task_id,
+                    relation.from_entry_id,
+                    relation.to_entry_id,
+                    relation.kind.value,
+                ),
             )
-            relation_key = f"{relation.from_entry_id}:{relation.kind.value}:{relation.to_entry_id}"
+            relation_key = (
+                f"{relation.from_entry_id}:{relation.kind.value}:{relation.to_entry_id}"
+            )
             relations.append(relation_key)
         elif proposal.action is ProposalAction.SUPERSEDE:
             if (
@@ -707,41 +1045,66 @@ class TaskStateRepository:
                 or proposal.basis is None
             ):
                 raise ValueError("SUPERSEDE proposal is missing validated fields")
-            old = connection.execute("SELECT * FROM task_entries WHERE entry_id=?", (proposal.target_entry_id,)).fetchone()
+            old = connection.execute(
+                "SELECT * FROM task_entries WHERE entry_id=?",
+                (proposal.target_entry_id,),
+            ).fetchone()
             new_id = f"entry_{event.event_id}_{proposal.proposal_id}"
             connection.execute(
                 """INSERT INTO task_entries
                 (entry_id, task_id, kind, content, status, priority, source_kind, basis, source_ref,
                  evidence_refs_json, supersedes_entry_id, created_at, updated_at)
                 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (new_id, event.task_id, old["kind"], proposal.replacement_content,
-                 EntryStatus.ACTIVE.value, int(proposal.priority or Priority(old["priority"])), event.source_kind.value, proposal.basis.value,
-                 event.source_ref or f"event:{event.event_id}", self._refs_to_json(proposal.evidence_refs),
-                 old["entry_id"], now, now),
+                (
+                    new_id,
+                    event.task_id,
+                    old["kind"],
+                    proposal.replacement_content,
+                    EntryStatus.ACTIVE.value,
+                    int(proposal.priority or Priority(old["priority"])),
+                    event.source_kind.value,
+                    proposal.basis.value,
+                    event.source_ref or f"event:{event.event_id}",
+                    self._refs_to_json(proposal.evidence_refs),
+                    old["entry_id"],
+                    now,
+                    now,
+                ),
             )
-            connection.execute("UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?", (EntryStatus.SUPERSEDED.value, now, old["entry_id"]))
+            connection.execute(
+                "UPDATE task_entries SET status=?, updated_at=? WHERE entry_id=?",
+                (EntryStatus.SUPERSEDED.value, now, old["entry_id"]),
+            )
             connection.execute(
                 "INSERT INTO task_relations(task_id, from_entry_id, to_entry_id, relation_kind) VALUES(?,?,?,?)",
                 (event.task_id, new_id, old["entry_id"], RelationKind.SUPERSEDES.value),
             )
             connection.execute(
                 "INSERT INTO task_operations(operation_id, task_id, operation_kind, entry_id, created_at) VALUES(?,?,?,?,?)",
-                (operation_id, event.task_id, ProposalAction.SUPERSEDE.value, new_id, now),
+                (
+                    operation_id,
+                    event.task_id,
+                    ProposalAction.SUPERSEDE.value,
+                    new_id,
+                    now,
+                ),
             )
             applied.append(new_id)
             superseded.append(old["entry_id"])
         return applied, superseded, resolved, relations
 
-    def list_active_entries(self, task_id: str) -> Tuple[LedgerEntry, ...]:
+    def list_active_entries(self, task_id: str) -> tuple[LedgerEntry, ...]:
         ledger = self.get_ledger(task_id)
         return ledger.active_entries
 
-    def get_history(self, task_id: str) -> Tuple[LedgerEntry, ...]:
+    def get_history(self, task_id: str) -> tuple[LedgerEntry, ...]:
         return self.get_ledger(task_id).entries
 
     def get_task_status(self, task_id: str) -> TaskStatus:
         with self._connection() as connection:
-            row = connection.execute("SELECT status FROM task_ledgers WHERE task_id=?", (task_id,)).fetchone()
+            row = connection.execute(
+                "SELECT status FROM task_ledgers WHERE task_id=?", (task_id,)
+            ).fetchone()
         if row is None:
             raise KeyError(f"unknown task: {task_id}")
         return TaskStatus(row["status"])
@@ -750,21 +1113,31 @@ class TaskStateRepository:
         now = time.time()
         with self._transaction() as connection:
             self._ensure_task(connection, task_id)
-            connection.execute("UPDATE task_ledgers SET status=?, updated_at=? WHERE task_id=?", (status.value, now, task_id))
+            connection.execute(
+                "UPDATE task_ledgers SET status=?, updated_at=? WHERE task_id=?",
+                (status.value, now, task_id),
+            )
         return self.get_ledger(task_id)
 
-    def list_tasks(self, *, status: Optional[TaskStatus] = None) -> Tuple[TaskLedger, ...]:
+    def list_tasks(self, *, status: TaskStatus | None = None) -> tuple[TaskLedger, ...]:
         with self._connection() as connection:
             if status is None:
-                rows = connection.execute("SELECT task_id FROM task_ledgers ORDER BY created_at, task_id").fetchall()
+                rows = connection.execute(
+                    "SELECT task_id FROM task_ledgers ORDER BY created_at, task_id"
+                ).fetchall()
             else:
-                rows = connection.execute("SELECT task_id FROM task_ledgers WHERE status=? ORDER BY created_at, task_id", (status.value,)).fetchall()
+                rows = connection.execute(
+                    "SELECT task_id FROM task_ledgers WHERE status=? ORDER BY created_at, task_id",
+                    (status.value,),
+                ).fetchall()
         return tuple(self.get_ledger(row["task_id"]) for row in rows)
 
-    def list_active_tasks(self) -> Tuple[TaskLedger, ...]:
+    def list_active_tasks(self) -> tuple[TaskLedger, ...]:
         return self.list_tasks(status=TaskStatus.ACTIVE)
 
-    def write_checkpoint(self, checkpoint: ContinuationCheckpoint) -> ContinuationCheckpoint:
+    def write_checkpoint(
+        self, checkpoint: ContinuationCheckpoint
+    ) -> ContinuationCheckpoint:
         created_at = checkpoint.created_at or time.time()
         if checkpoint.created_at == 0.0:
             checkpoint = ContinuationCheckpoint(
@@ -792,16 +1165,26 @@ class TaskStateRepository:
                  critical_constraint_ids_json, open_question_ids_json, decision_ids_json,
                  evidence_refs_json, created_at)
                 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (checkpoint.checkpoint_id, checkpoint.task_id, checkpoint.last_processed_event,
-                 json.dumps(checkpoint.goal_entry_ids), checkpoint.current_step, checkpoint.focus,
-                 checkpoint.next_action, checkpoint.world_state, checkpoint.continuation_note,
-                 json.dumps(checkpoint.critical_constraint_ids), json.dumps(checkpoint.open_question_ids),
-                 json.dumps(checkpoint.decision_ids), self._refs_to_json(checkpoint.evidence_refs),
-                 created_at),
+                (
+                    checkpoint.checkpoint_id,
+                    checkpoint.task_id,
+                    checkpoint.last_processed_event,
+                    json.dumps(checkpoint.goal_entry_ids),
+                    checkpoint.current_step,
+                    checkpoint.focus,
+                    checkpoint.next_action,
+                    checkpoint.world_state,
+                    checkpoint.continuation_note,
+                    json.dumps(checkpoint.critical_constraint_ids),
+                    json.dumps(checkpoint.open_question_ids),
+                    json.dumps(checkpoint.decision_ids),
+                    self._refs_to_json(checkpoint.evidence_refs),
+                    created_at,
+                ),
             )
         return checkpoint
 
-    def get_latest_checkpoint(self, task_id: str) -> Optional[ContinuationCheckpoint]:
+    def get_latest_checkpoint(self, task_id: str) -> ContinuationCheckpoint | None:
         with self._connection() as connection:
             row = connection.execute(
                 "SELECT * FROM task_checkpoints WHERE task_id=? ORDER BY created_at DESC, checkpoint_id DESC LIMIT 1",
@@ -810,12 +1193,18 @@ class TaskStateRepository:
         if row is None:
             return None
         return ContinuationCheckpoint(
-            task_id=row["task_id"], checkpoint_id=row["checkpoint_id"],
+            task_id=row["task_id"],
+            checkpoint_id=row["checkpoint_id"],
             last_processed_event=row["last_processed_event"],
             goal_entry_ids=tuple(json.loads(row["goal_entry_ids_json"])),
-            current_step=row["current_step"], continuation_note=row["continuation_note"],
-            focus=row["focus"], next_action=row["next_action"], world_state=row["world_state"],
-            critical_constraint_ids=tuple(json.loads(row["critical_constraint_ids_json"])),
+            current_step=row["current_step"],
+            continuation_note=row["continuation_note"],
+            focus=row["focus"],
+            next_action=row["next_action"],
+            world_state=row["world_state"],
+            critical_constraint_ids=tuple(
+                json.loads(row["critical_constraint_ids_json"])
+            ),
             open_question_ids=tuple(json.loads(row["open_question_ids_json"])),
             decision_ids=tuple(json.loads(row["decision_ids_json"])),
             evidence_refs=self._refs_from_json(row["evidence_refs_json"]),

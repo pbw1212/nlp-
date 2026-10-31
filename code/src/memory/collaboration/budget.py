@@ -16,7 +16,7 @@ from src.memory.collaboration.repository import (
     CoordinationConflict,
     CoordinationRepository,
 )
-from src.memory.llm.errors import ProviderError
+from src.memory.llm.errors import ProviderError, ProviderResponseError
 from src.memory.llm.llm_client import LLMClientBase
 
 
@@ -73,8 +73,11 @@ class BudgetedLLMClient(LLMClientBase):
         client: LLMClientBase,
         repository: CoordinationRepository,
         limits: CollaborationLimits,
+        *,
+        structured_recovery: bool = False,
     ) -> None:
         self.client, self.repository, self.limits = client, repository, limits
+        self.structured_recovery = structured_recovery
         if hasattr(client, "max_retries") and client.max_retries != 1:
             raise ValueError("multi_fixed requires provider max_retries=1")
         if hasattr(client, "max_completion_tokens") and (
@@ -185,12 +188,32 @@ class BudgetedLLMClient(LLMClientBase):
     def generate_json(
         self, system_prompt: str, user_prompt: str, **kwargs: Any
     ) -> dict[str, Any]:
-        return self._call("generate_json", system_prompt, user_prompt, **kwargs)
+        return self._structured_call(
+            "generate_json", system_prompt, user_prompt, **kwargs
+        )
+
+    def _structured_call(
+        self, method: str, system_prompt: str, user_prompt: str, **kwargs: Any
+    ) -> dict[str, Any]:
+        try:
+            return self._call(method, system_prompt, user_prompt, **kwargs)
+        except ProviderResponseError:
+            if (
+                not self.structured_recovery
+                or self.active_run_id is None
+                or kwargs.get("response_schema") is None
+            ):
+                raise
+            # The first reservation is already settled as FAILED. This second
+            # attempt makes its own durable reservation in the SAME run. No
+            # malformed proposal can dispatch a tool or mutate durable state.
+            correction = "\nYour previous attempt was not a valid JSON response for the supplied schema. Return exactly one JSON object conforming to every declared field/type/nullability, with no additional keys or prose. Preserve all original evidence, task constraints and capability limits."
+            return self._call(method, system_prompt + correction, user_prompt, **kwargs)
 
     def generate_reasoned_json(
         self, system_prompt: str, user_prompt: str, **kwargs: Any
     ) -> dict[str, Any]:
-        return self._call(
+        return self._structured_call(
             "generate_reasoned_json", system_prompt, user_prompt, **kwargs
         )
 

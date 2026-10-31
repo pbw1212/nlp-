@@ -8,6 +8,8 @@ from typing import Any
 
 from src.memory.collaboration.models import canonical, digest, identity
 from src.memory.collaboration.repository import CoordinationConflict
+from src.memory.conversation.models import ConversationRole
+from src.memory.core.schema import payload_hash
 
 
 class ExperienceService:
@@ -145,8 +147,18 @@ class ExperienceService:
             trace.get("memory_inputs", []),
             run["task_id"],
         )
-        host._validate_task_frontier(run["task_id"], trace["task_frontier"])
+        host._validate_task_frontier(
+            run["task_id"], trace["task_frontier"], sealed_source_run_id=run_id
+        )
+        if "repair" in trace:
+            self.repository.get_repair_plan(trace["repair"]["repair_id"])
         host._validate_conversation_frontier(trace["conversation_frontier"])
+        user_turn = trace.get("prepared_turn_id", run["turn_id"])
+        user_message = host.sources.conversations.get_message_by_turn(
+            run["session_id"], user_turn, ConversationRole.USER
+        )
+        if user_message is None:
+            raise CoordinationConflict("experience source has no original user request")
         host._validate_experience_refs(trace.get("experience_inputs", []))
         self.repository.validate_completed_graph(run_id)
         host._validate_replay_observations(run_id, run["task_id"])
@@ -200,6 +212,20 @@ class ExperienceService:
         return {
             "source_run_id": run_id,
             "task_id": run["task_id"],
+            "user_request": {
+                "session_id": run["session_id"],
+                "message_id": user_message.message_id,
+                "role": "USER",
+                "content": user_message.content,
+                "content_hash": payload_hash(user_message.content),
+            },
+            "task_completion": (
+                host.runtime.task_service.repository.get_completion_receipt(
+                    run["task_id"]
+                )
+                if run["task_id"] != "__unbound__"
+                else None
+            ),
             "plan": json.loads(graph["plan_json"]),
             "artifacts": artifacts,
             "outcome": saved["final_response"],

@@ -163,6 +163,7 @@ def main() -> None:
             data_dir=str(Path(temporary) / "state"),
             config=cfg,
             execution_mode="multi_fixed",
+            task_lifecycle_enabled=False,
             collaboration_limits=limits,
         )
         try:
@@ -426,6 +427,7 @@ def main() -> None:
                                 data_dir=str(Path(temporary) / "state"),
                                 config=cfg,
                                 execution_mode="multi_fixed",
+                                task_lifecycle_enabled=False,
                                 collaboration_limits=limits,
                             )
                             resumed = app.resume_session(session_id)

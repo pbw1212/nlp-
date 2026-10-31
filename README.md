@@ -54,7 +54,8 @@ python code/scripts/personal_agent.py --execution-mode multi_fixed
 
 该模式是实验性的 P1 串行协作链路；未指定参数时仍使用默认 `single` 模式。
 协作支持需求驱动补查、原文窗口与来源核验；已适配文件变化可触发依赖修复和重启恢复。
-程序性经验与用户事实分开，经过提炼、审核和适用性筛选后用于后续任务。
+程序性经验与用户事实分开，整个任务验收并封存后自动排队提炼、审核，后续按适用条件使用。
+`multi_fixed` 默认启用[任务级自动闭环](docs/architecture/task-lifecycle.md)，通过 `/task-loop` 查看状态，`/task-drain` 继续待处理作业。
 详见[证据闭环](docs/architecture/source-backed-evidence.md)、[修复执行](docs/architecture/repair-execution.md)和[经验生命周期](docs/architecture/procedural-experience.md)。
 
 使用 `/repair-graphs`、`/repairs` 查看修复状态；使用 `/experience list`、

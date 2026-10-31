@@ -53,6 +53,7 @@ def main():
             data_dir=str(base / "state"),
             config=config,
             execution_mode="multi_fixed",
+            task_lifecycle_enabled=False,
             collaboration_limits=limits,
         )
         try:
@@ -87,6 +88,7 @@ def main():
                 data_dir=str(base / "state"),
                 config=config,
                 execution_mode="multi_fixed",
+                task_lifecycle_enabled=False,
                 collaboration_limits=limits,
             )
             assert app.resume_session(session)

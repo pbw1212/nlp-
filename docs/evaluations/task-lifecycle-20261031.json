@@ -1,0 +1,112 @@
+{
+  "kind": "task_lifecycle_functional_acceptance",
+  "date": "2026-10-31",
+  "base_commit": "6e641dd5d6db015d841b5800215e6140e636f204",
+  "offline_regression": {
+    "command": "python -m pytest -q --junitxml=docs/evaluations/task-lifecycle-20261031.xml",
+    "junit_path": "docs/evaluations/task-lifecycle-20261031.xml",
+    "tests": 543,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 1,
+    "passed": 542,
+    "elapsed_seconds": 134.023
+  },
+  "checks": {
+    "ruff_changed_python_files": "passed",
+    "black_changed_python_files": "passed",
+    "git_diff_check": "passed"
+  },
+  "live": {
+    "path": "docs/evaluations/live-task-lifecycle-20261031.json",
+    "engineering_assertions_passed": true,
+    "requested_model": "deepseek-v4-flash",
+    "server_model_identity_retained": false,
+    "acceptance_checks": {
+      "waits_for_actual_user_approval": true,
+      "restart_repairs_without_inventing_approval": true,
+      "automatic_completion_seal_and_learning": true,
+      "repeated_drain_no_new_calls": true,
+      "sealed_experience_survives_restart_and_new_task_reuses_it": true,
+      "revoked_experience_blocks_old_consumer_answer": true
+    },
+    "observed_structured_response_failures": [
+      {
+        "operation": "agent_action",
+        "error_type": "ProviderResponseError",
+        "cause_type": "ValidationError",
+        "schema_path": [
+          "required"
+        ],
+        "json_position": null
+      }
+    ],
+    "second_task_new_learning_proposal_rejected": true,
+    "second_task_completed": true
+  },
+  "post_live_refinement": {
+    "files": [
+      "src/memory/collaboration/lifecycle.py",
+      "src/memory/app/console.py"
+    ],
+    "changes": [
+      "Preserve completion ID and explicit FAILED experience state on rejected learning proposals",
+      "Resolve waiting experience jobs and questions after explicit confirmation or rejection, preserving old immutable question records and adding a resolution record"
+    ],
+    "validation": [
+      "test_rejected_learning_keeps_completion_and_explicit_failed_experience_state",
+      "test_experience_confirmation_resolves_the_waiting_job_and_question",
+      "final full offline regression"
+    ]
+  },
+  "failed_or_unfulfilled_live_attempts": [
+    {
+      "path": "docs/evaluations/live-task-lifecycle-attempt1-20261031.json",
+      "outcome": "structured response rejected during original graph"
+    },
+    {
+      "path": "docs/evaluations/live-task-lifecycle-attempt2-20261031.json",
+      "outcome": "original closure and admission succeeded; subsequent task hit invalid structured output"
+    },
+    {
+      "path": "docs/evaluations/live-task-lifecycle-attempt3-20261031.json",
+      "outcome": "task completed and experience review legitimately abstained; scenario reuse precondition was not met"
+    },
+    {
+      "path": "docs/evaluations/live-task-lifecycle-attempt4-20261031.json",
+      "outcome": "task-state response and its bounded retry were rejected; task was not falsely completed"
+    }
+  ],
+  "scope": [
+    "serial multi_fixed, at most three read-only subtasks per graph",
+    "task review and sealed Task 3 provenance",
+    "durable repair/review/learning/notification jobs at activity boundaries",
+    "selective experience admission and cross-task use",
+    "one schema-response retry within the original persistent run budget"
+  ],
+  "not_claimed": [
+    "official benchmark scores or quality improvement",
+    "resident background file monitoring",
+    "parallel/distributed multi-agent workers",
+    "universal source freshness adapters",
+    "distributed atomicity across all databases"
+  ],
+  "python_source_sha256": {
+    "code/scripts/collaboration_smoke.py": "c24c849681eb9da20f39e83c4c800ffebfdf182d17f573283d10c4fef1f44668",
+    "code/scripts/evidence_expansion_smoke.py": "a4a25920a4870f7a30fa093ef8e253cdaef92cb0dd23ae883258229bfb7d7f6f",
+    "code/scripts/personal_agent_app_server.py": "76d5e68a6ad304e28529fb7f1f582e5e8507a172e22cbbe2aa2f6c3e31b33ede",
+    "code/scripts/source_repair_experience_smoke.py": "f27bf069de5fe2473ff695ff7ab8f62f4f48816abd069f857f06d5cb0ebf9f1d",
+    "code/scripts/task_lifecycle_smoke.py": "95a31ff8f1f83fa014a4ad87ecf1e63ee91c334c35973bf3c84a75d14d6d39e3",
+    "code/src/memory/app/console.py": "afc1695044727d67fcbcac2af7f0b9e8575c34bbb771fd8db5aa9e46ba82f60d",
+    "code/src/memory/collaboration/budget.py": "bfeb3c76594d2f81d8c48756becdfb80f356d89c445b2f3e91dec5b886c4a39d",
+    "code/src/memory/collaboration/coordinator.py": "bb9f7ab48a502758cf275a380a769a9c3119ebd9a1e0854c34d4957d4b2be6aa",
+    "code/src/memory/collaboration/experience.py": "a616446db3aa641b4bb1de382676d2e4888b96faf1116cf5f77f99c29bda931d",
+    "code/src/memory/collaboration/lifecycle.py": "d65e04f9a872a89194068260b51ab1f9b3cf2693764b0b7d85e8d1785da90df0",
+    "code/src/memory/collaboration/models.py": "021cae4b1affeebc7bd54b7ae11d2e72469e8550beee1eceb6892e77fc0835b5",
+    "code/src/memory/collaboration/roles.py": "bbec4693dd42f7633a178ec1573650791b0e221840f5e186fcb3bc2f5953cbc9",
+    "code/src/memory/task_state/interpreter.py": "0ca272e8f749ad5e686e8e1356a40343229ac3506daed033812c2b2fe326c675",
+    "code/src/memory/task_state/repository.py": "69d25edc654d1c23e7f556ee26be2c7d29c4be0b9b96f7a7505d4f19df303985",
+    "code/tests/test_collaboration.py": "34d2c495b0f32a3ae0607ac1e68f2033d1d1ebaddef183ea1f372cd03dd990c0",
+    "code/tests/test_task_lifecycle.py": "0a74d826a0d04827053e18e93d11c3c778d10728d944beb82a8092c37d551176"
+  }
+}

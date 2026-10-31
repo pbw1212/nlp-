@@ -11,10 +11,17 @@ JSONL 接口使用 `repair/graphs`、`repair/list`、`repair/run`、`repair/revo
 `repair/drain`；修复请求参数为 `runId`、`eventId`，撤销还需要 `artifactId`，
 可选 `threadId` 用于选择会话。执行和限制见 [修复执行说明](architecture/repair-execution.md)。
 
+## 任务级自动闭环
+
+multi_fixed 默认在轮次前后和会话恢复时处理修复、整个任务验收与经验提炼。
+`/task-loop` 查看完成记录、待问问题和作业状态，`/task-drain` 继续处理待办。
+`/complete` 必须通过全目标验收，`/cancel` 同时停止待处理作业。已完成任务的后续新请求会正常绑定新任务。
+JSONL 对应 task/lifecycle/read、task/lifecycle/drain；详见 [闭环说明](architecture/task-lifecycle.md)。
+
 ## 程序性经验
 
 在 multi_fixed 下使用 `/experience list` 查看候选及准入状态，
-`/experience learn <run_id> [revision_of]` 从成功且来源可核验的运行提炼经验。
+`/experience learn <run_id> [revision_of]` 从成功且来源可核验的运行显式提炼经验。任务完成后的自动提炼不需要调用此命令。
 待澄清候选通过 `/experience review <id> <确认说明>` 重新审核，
 `/experience revoke <id> <event_id>` 撤销经验，
 `/experience feedback <id> <run_id> <event_id>` 显式记录后续消费结果。

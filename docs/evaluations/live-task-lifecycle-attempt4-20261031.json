@@ -1,0 +1,97 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 3072
+  },
+  "checks": {
+    "waits_for_actual_user_approval": true,
+    "restart_repairs_without_inventing_approval": true
+  },
+  "source_sha256": {
+    "src/memory/collaboration/lifecycle.py": "8a48965627bca7b59bd272ff6e3c53fffcff785210adb3521647c4de27d09f01",
+    "src/memory/collaboration/coordinator.py": "bb9f7ab48a502758cf275a380a769a9c3119ebd9a1e0854c34d4957d4b2be6aa",
+    "src/memory/collaboration/experience.py": "a616446db3aa641b4bb1de382676d2e4888b96faf1116cf5f77f99c29bda931d",
+    "src/memory/collaboration/roles.py": "bbec4693dd42f7633a178ec1573650791b0e221840f5e186fcb3bc2f5953cbc9",
+    "src/memory/task_state/repository.py": "69d25edc654d1c23e7f556ee26be2c7d29c4be0b9b96f7a7505d4f19df303985",
+    "src/memory/app/console.py": "91d387aa7b64511e391771a039025a56aae81002244359110c6a78c47e81d584"
+  },
+  "first_turn": {
+    "status": "SUCCESS",
+    "answer": "All three subgoals are covered by verified subtasks. left: left.txt read via read_file (call_05f8c8d1bf07), literal content left_value=17. right: right.txt read via read_file (call_08cf1e9e3710), literal content right_value=23. merge: depends on left and right, reports literal fields left_value=17 and right_value=23, and explicitly keeps the task open pending the user's explicit approval without claiming completion. The user's goal is fully satisfied for this turn: both files were read with read_file, exactly three subgoals left/right/merge were used with merge depending on left and right, and the literal fields are reported.\n\nDo you approve the final values left_value=17 and right_value=23 so the task can be marked complete?",
+    "task_id": "task_1_e33735",
+    "graph_model_calls": 15,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_e33735",
+        "source_run_id": "ma_a942ef9bcfa70c3eb62344f5",
+        "state": "WAITING_USER",
+        "detail": {
+          "question": "Do you approve the final values left_value=17 and right_value=23 so the task can be marked complete?",
+          "reason": "All subgoals are verified and the literal fields are reported, but the tracked goal requires explicit user approval of the final values before completion. The user stated approval has not been given, so the task remains open pending that confirmation.",
+          "remaining_requirements": [
+            "Explicit user approval of the final values (left_value=17, right_value=23) before the task can be marked complete."
+          ]
+        },
+        "usage": {
+          "model_calls": 16,
+          "charged_units": 35906
+        }
+      }
+    ]
+  },
+  "repairs": [
+    {
+      "event_id": "ma_3ee6a9cc591f7991de57a196",
+      "run_id": "ma_a942ef9bcfa70c3eb62344f5",
+      "status": "SUCCEEDED",
+      "error_type": null,
+      "updated": 1793415438.7873273
+    }
+  ],
+  "approved_turn": {
+    "status": "FAILED",
+    "answer": null,
+    "task_id": "task_1_e33735",
+    "graph_model_calls": 3,
+    "error": {
+      "stage": "TASK_UPDATE",
+      "category": "PROVIDER_ERROR",
+      "code": "PROVIDER_RESPONSE_ERROR",
+      "safe_message": "Provider returned invalid response for deepseek (chat.completions).",
+      "retryable": false,
+      "details": {
+        "provider": "deepseek",
+        "operation": "chat.completions",
+        "status_code": null
+      }
+    },
+    "lifecycle": [
+      {
+        "task_id": "task_1_e33735",
+        "source_run_id": "ma_99e5efa2aef1f3363d152378",
+        "state": "WAITING_USER",
+        "detail": {
+          "question": "Do you approve the final values left_value=91 and right_value=23 so the task can be marked complete?",
+          "reason": "All three subgoals (left, right, merge) are verified with actual read_file receipts and the merge reports the literal fields, but the tracked goal and constraint require explicit user approval of the final values before completion. The user stated they have not approved completion, so the task remains open pending that approval.",
+          "remaining_requirements": [
+            "Explicit user approval of the final values (left_value=91, right_value=23) before the task can be marked complete."
+          ]
+        },
+        "usage": {
+          "model_calls": 25,
+          "charged_units": 56944
+        }
+      }
+    ]
+  },
+  "engineering_assertions_passed": false,
+  "error_type": "AssertionError"
+}

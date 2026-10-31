@@ -47,6 +47,7 @@ def main():
             data_dir=temporary,
             config=config,
             execution_mode="multi_fixed",
+            task_lifecycle_enabled=False,
             collaboration_limits=limits,
         )
         try:

@@ -1,0 +1,129 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 4096
+  },
+  "checks": {
+    "waits_for_actual_user_approval": true,
+    "restart_repairs_without_inventing_approval": true,
+    "automatic_completion_seal_and_learning": true,
+    "repeated_drain_no_new_calls": true,
+    "sealed_experience_survives_restart_and_new_task_reuses_it": true,
+    "revoked_experience_blocks_old_consumer_answer": true
+  },
+  "structured_failures": [
+    {
+      "operation": "agent_action",
+      "error_type": "ProviderResponseError",
+      "cause_type": "ValidationError",
+      "schema_path": [
+        "required"
+      ],
+      "json_position": null
+    }
+  ],
+  "source_sha256": {
+    "src/memory/collaboration/lifecycle.py": "8a48965627bca7b59bd272ff6e3c53fffcff785210adb3521647c4de27d09f01",
+    "src/memory/collaboration/coordinator.py": "bb9f7ab48a502758cf275a380a769a9c3119ebd9a1e0854c34d4957d4b2be6aa",
+    "src/memory/collaboration/experience.py": "a616446db3aa641b4bb1de382676d2e4888b96faf1116cf5f77f99c29bda931d",
+    "src/memory/collaboration/roles.py": "bbec4693dd42f7633a178ec1573650791b0e221840f5e186fcb3bc2f5953cbc9",
+    "src/memory/task_state/repository.py": "69d25edc654d1c23e7f556ee26be2c7d29c4be0b9b96f7a7505d4f19df303985",
+    "src/memory/app/console.py": "91d387aa7b64511e391771a039025a56aae81002244359110c6a78c47e81d584"
+  },
+  "first_turn": {
+    "status": "SUCCESS",
+    "answer": "Verified for this turn: left.txt was read with read_file (left_value=17) and right.txt was read with read_file (right_value=23). The merge subgoal reports both literal fields left_value=17 and right_value=23 (sum 40) and explicitly keeps the task open pending your explicit approval of the final values; no completion is claimed.\n\nDo you explicitly approve the final values left_value=17 and right_value=23 so the tracked task can be marked complete?",
+    "task_id": "task_1_1dfa3b",
+    "graph_model_calls": 15,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_1dfa3b",
+        "source_run_id": "ma_9cfa6a5260cad53a67e016f6",
+        "state": "WAITING_USER",
+        "detail": {
+          "question": "Do you explicitly approve the final values left_value=17 and right_value=23 so the tracked task can be marked complete?",
+          "reason": "All reads and the merge are verified with actual tool receipts, and the plan/field/dependency constraints are satisfied. However, the goal and constraint require explicit user approval of the final values before completion, and the current user request states approval has not been given. Therefore the task remains open pending that approval.",
+          "remaining_requirements": [
+            "Explicit user approval of the final values (left_value=17, right_value=23) before the task can be marked complete"
+          ]
+        },
+        "usage": {
+          "model_calls": 16,
+          "charged_units": 35646
+        }
+      }
+    ]
+  },
+  "repairs": [
+    {
+      "event_id": "ma_ce1bcc95721da95e28acc506",
+      "run_id": "ma_9cfa6a5260cad53a67e016f6",
+      "status": "SUCCEEDED",
+      "error_type": null,
+      "updated": 1793415671.5183547
+    }
+  ],
+  "approved_turn": {
+    "status": "SUCCESS",
+    "answer": "Verified against the whole user goal. left.txt was reread via read_file (call_0a0faa88a87c) yielding the literal field left_value=91; right.txt was reread via read_file (call_72bf457c08f4) yielding the literal field right_value=23. The merged report (ma_88dee0a742fde8eb701daba0) states both literal fields exactly (left_value = 91, right_value = 23), notes they were freshly re-observed from the source files rather than reused from earlier reads, and describes the three-part reusable procedure: (1) re-observe changing sources, (2) combine independently verified values, (3) keep task closure separate from user approval. It also records that the user explicitly approved the current final values and completion of this tracked task in this turn. All subgoals (left, right, merge with merge depending on the other two) are supported by actual tool receipts and source-bound evidence.\n\n任务已通过验收并完成。",
+    "task_id": "task_1_1dfa3b",
+    "graph_model_calls": 15,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_1dfa3b",
+        "source_run_id": "ma_c42f7a451350fd8b5e8a3ce5",
+        "state": "COMPLETED",
+        "detail": {
+          "completion_id": "ma_344a6afbb01cc5958f21057d",
+          "experience_id": "ma_001353fa470f8abca0ce17ee",
+          "experience_state": "ACTIVE",
+          "question": null,
+          "reason": "Verified task experience reviewed"
+        },
+        "usage": {
+          "model_calls": 43,
+          "charged_units": 115006
+        }
+      }
+    ]
+  },
+  "first_experience": [
+    {
+      "experience_id": "ma_001353fa470f8abca0ce17ee",
+      "state": "ACTIVE"
+    }
+  ],
+  "second_task": {
+    "status": "SUCCESS",
+    "answer": "All parts of the user goal are covered by verified subtasks. left_value = 91 from left.txt (read_file receipt call_b4a4b2eecdde; 15 bytes, sha256 7de3e49c7825a763fb952ea7d0e23ae7bae560e329b1e400ca719d16502c4a3f, not truncated). right_value = 23 from right.txt (read_file receipt call_e8f5d7cf90ec; 16 bytes, sha256 ea79598d9c752430187f547f5bbe8243430bc354136ff5addd4d28b3c06724ed, not truncated). The merge report (artifact ma_8d79dcc788f9a87bd29f01bd) states both exact fields verbatim with their source file paths, derived only from this turn's verified reads, and records approval status separately from task closure.\n\n任务已通过验收并完成。",
+    "task_id": "task_2_d0cd34",
+    "graph_model_calls": 17,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_2_d0cd34",
+        "source_run_id": "ma_3094de21576682184f298d10",
+        "state": "COMPLETED",
+        "detail": {
+          "error_code": "COORDINATION_5738f1c7e36ce721",
+          "question": null,
+          "reason": "Task automation stopped; source and budget must remain valid"
+        },
+        "usage": {
+          "model_calls": 19,
+          "charged_units": 82090
+        }
+      }
+    ]
+  },
+  "engineering_assertions_passed": true
+}

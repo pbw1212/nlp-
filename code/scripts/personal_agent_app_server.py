@@ -115,6 +115,8 @@ class JsonlAppServer:
                     "turnResume": True,
                     "collaborationRepair": self.app.collaboration is not None,
                     "proceduralExperiences": self.app.collaboration is not None,
+                    "taskLifecycle": self.app.collaboration is not None
+                    and self.app.collaboration.lifecycle is not None,
                     "eventReplay": True,
                     "contextDiagnostics": True,
                     "approvals": True,
@@ -186,6 +188,7 @@ class JsonlAppServer:
             }
         if method == "status/read":
             return {
+                "taskLifecycle": self.app.get_task_lifecycle_status(),
                 "status": self.app.get_task_status_summary(),
                 "memory": self.app.get_memory_update_status(),
                 "unfinishedTurns": self.app.list_unfinished_turns(),
@@ -253,6 +256,15 @@ class JsonlAppServer:
                 "result": _serialize_result(result),
                 "lastEventSequence": events[-1].sequence if events else before,
             }
+        if method in {"task/lifecycle/read", "task/lifecycle/drain"}:
+            thread_id = str(params.get("threadId") or self.app.active_session_id)
+            if thread_id != self.app.active_session_id and not self.app.resume_session(
+                thread_id
+            ):
+                raise ValueError("thread not found")
+            if method == "task/lifecycle/drain":
+                return self.app.drain_task_lifecycle()
+            return self.app.get_task_lifecycle_status(params.get("taskId"))
         if method.startswith("experience/"):
             thread_id = str(params.get("threadId") or self.app.active_session_id)
             if thread_id != self.app.active_session_id and not self.app.resume_session(

@@ -54,7 +54,7 @@ from src.memory.runtime.config import AgentRuntimeConfig
 from src.memory.runtime.events import AgentEvent, AgentEventStore, AgentEventStream
 from src.memory.runtime.models import ToolCallResult, ToolCallStatus
 from src.memory.runtime.task_router import UNBOUND_TASK_ID
-from src.memory.task_state.models import EntryKind
+from src.memory.task_state.models import EntryKind, TaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -275,11 +275,17 @@ class PersonalAgentApp:
         output_mode: str | OutputMode | None = None,
         execution_mode: str = "single",
         collaboration_limits: Any | None = None,
+        task_lifecycle_enabled: bool = True,
     ) -> None:
         if execution_mode not in {"single", "multi_fixed"}:
             raise ValueError("execution_mode must be single or multi_fixed")
         self.execution_mode = execution_mode
         self.collaboration = None
+        if not isinstance(task_lifecycle_enabled, bool):
+            # Keep the public constructor's ValueError validation contract.
+            raise ValueError("task_lifecycle_enabled must be a boolean")  # noqa: TRY004
+        self.task_lifecycle_enabled = task_lifecycle_enabled
+        self._draining_task_lifecycle = False
         self.data_dir = os.path.abspath(data_dir or default_agent_data_dir())
         os.makedirs(self.data_dir, exist_ok=True)
         self.storage_layout = AgentStorageLayout(self.data_dir)
@@ -356,7 +362,10 @@ class PersonalAgentApp:
                 str(self.storage_layout.execution_dir / "coordination.db")
             )
             self.llm_client = BudgetedLLMClient(
-                self.llm_client, self.coordination_repository, limits
+                self.llm_client,
+                self.coordination_repository,
+                limits,
+                structured_recovery=self.task_lifecycle_enabled,
             )
 
         # 3. Task 1 Long-term Memory Manager.  The Agent may invoke the
@@ -436,6 +445,10 @@ class PersonalAgentApp:
                 conversation_repository=self.conversation_repo,
             )
             self.agent.prepared_runner = self.collaboration
+            if self.task_lifecycle_enabled:
+                from src.memory.collaboration.lifecycle import TaskLifecycle
+
+                self.collaboration.lifecycle = TaskLifecycle(self.collaboration)
 
         # 8. Setup CLI Line Editing & Persistent History
         self.cli_history_file, self.readline_enabled = _setup_readline(
@@ -759,7 +772,10 @@ class PersonalAgentApp:
             payload={"task_id": self.active_task_id},
         )
         if self.collaboration is not None and not self.pending_confirmation_id:
-            self.process_pending_collaboration_repairs(limit=3)
+            if self.collaboration.lifecycle is not None:
+                self.drain_task_lifecycle()
+            else:
+                self.process_pending_collaboration_repairs(limit=3)
         return True
 
     def remember_explicit(self, content: str) -> dict[str, Any]:
@@ -1171,11 +1187,39 @@ class PersonalAgentApp:
 
     def complete_current_task(self) -> None:
         self._require_no_pending_confirmation()
+        if self.collaboration is not None and self.collaboration.lifecycle is not None:
+            task_id = self._require_active_task()
+            status = self.collaboration.lifecycle.status(
+                self.active_session_id, task_id
+            )
+            if not status["tasks"]:
+                raise ValueError("任务尚无已验证成果，不能生成完成记录")
+            source_run = status["tasks"][0]["source_run_id"]
+            if (
+                self.runtime.task_service.get_task(task_id).status
+                is TaskStatus.COMPLETED
+            ):
+                return
+            self.collaboration.lifecycle.enqueue_result(
+                source_run, trigger="host-complete"
+            )
+            self.drain_task_lifecycle()
+            if (
+                self.runtime.task_service.get_task(task_id).status
+                is not TaskStatus.COMPLETED
+            ):
+                raise ValueError(
+                    "整个任务尚未通过完成验收，请查看任务闭环状态中的待补充要求"
+                )
+            return
         self.runtime.task_service.complete_task(self._require_active_task())
 
     def cancel_current_task(self) -> None:
         self._require_no_pending_confirmation()
-        self.runtime.task_service.cancel_task(self._require_active_task())
+        task_id = self._require_active_task()
+        self.runtime.task_service.cancel_task(task_id)
+        if self.collaboration is not None and self.collaboration.lifecycle is not None:
+            self.collaboration.lifecycle.cancel(self.active_session_id, task_id)
 
     def get_conversation_context_status(self) -> dict[str, Any]:
         """Returns model-aware conversation window diagnostics without transcript content."""
@@ -1723,6 +1767,48 @@ class PersonalAgentApp:
             raise ValueError("未完成 turn 没有可恢复的用户输入")
         return self._process_chat_turn_with_id(message.content, turn_id, resume=True)
 
+    def get_task_lifecycle_status(self, task_id: str | None = None) -> dict[str, Any]:
+        if self.collaboration is None or self.collaboration.lifecycle is None:
+            return {"enabled": False, "tasks": [], "jobs": []}
+        return {
+            "enabled": True,
+            **self.collaboration.lifecycle.status(self.active_session_id, task_id),
+        }
+
+    def drain_task_lifecycle(self, *, limit: int = 4) -> dict[str, Any]:
+        if self.collaboration is None or self.collaboration.lifecycle is None:
+            return {"repairs": [], "lifecycle": []}
+        self._require_no_pending_confirmation()
+        if self._draining_task_lifecycle:
+            return {"repairs": [], "lifecycle": []}
+        self._draining_task_lifecycle = True
+        try:
+            repairs = self.process_pending_collaboration_repairs(limit=3)
+            outcomes = self.collaboration.lifecycle.drain(
+                self.active_session_id, limit=limit
+            )
+            for outcome in self.collaboration.lifecycle.notifications(
+                self.active_session_id
+            ):
+                self._emit_event(
+                    "task.lifecycle.updated",
+                    session_id=self.active_session_id,
+                    event_id="lifecycle:" + outcome["job_id"],
+                    payload=outcome,
+                )
+                question = outcome.get("result", {}).get("question")
+                if question:
+                    self.conversation_repo.append_message(
+                        self.active_session_id,
+                        outcome["job_id"],
+                        ConversationRole.ASSISTANT,
+                        question,
+                    )
+                self.collaboration.lifecycle.acknowledge(outcome)
+            return {"repairs": repairs, "lifecycle": outcomes}
+        finally:
+            self._draining_task_lifecycle = False
+
     def list_experiences(self) -> list[dict[str, Any]]:
         if self.collaboration is None:
             raise ValueError("collaboration mode is not enabled")
@@ -1753,12 +1839,19 @@ class PersonalAgentApp:
         if self.collaboration is None:
             raise ValueError("collaboration mode is not enabled")
         self._require_no_pending_confirmation()
-        return self.collaboration.experiences.review(experience_id, confirmation)
+        result = self.collaboration.experiences.review(experience_id, confirmation)
+        if self.collaboration.lifecycle is not None:
+            self.collaboration.lifecycle.resolve_experience(result)
+            self.drain_task_lifecycle()
+        return result
 
     def revoke_experience(self, experience_id: str, event_id: str) -> dict[str, Any]:
         if self.collaboration is None:
             raise ValueError("collaboration mode is not enabled")
-        return self.collaboration.experiences.revoke(experience_id, event_id)
+        result = self.collaboration.experiences.revoke(experience_id, event_id)
+        if self.collaboration.lifecycle is not None:
+            self.collaboration.lifecycle.resolve_experience(result)
+        return result
 
     def feedback_experience(
         self, experience_id: str, run_id: str, event_id: str
@@ -1824,6 +1917,12 @@ class PersonalAgentApp:
                 "status": result.status.value,
             },
         )
+        if (
+            self.collaboration.lifecycle is not None
+            and not self._draining_task_lifecycle
+            and not self.pending_confirmation_id
+        ):
+            self.drain_task_lifecycle()
         return result
 
     def process_pending_collaboration_repairs(
@@ -1843,6 +1942,23 @@ class PersonalAgentApp:
             if self.coordination_repository.repair_resolution(
                 item["run_id"], item["event_id"]
             ):
+                continue
+            source = self.coordination_repository.get_run(item["run_id"])
+            if (
+                source["task_id"] != "__unbound__"
+                and self.runtime.task_service.get_task(source["task_id"]).status
+                is not TaskStatus.ACTIVE
+            ):
+                self.coordination_repository.finish_repair_queue(
+                    item["event_id"], item["run_id"], "FAILED", "TASK_NOT_ACTIVE"
+                )
+                outcomes.append(
+                    {
+                        "event_id": item["event_id"],
+                        "status": "FAILED",
+                        "error_type": "TASK_NOT_ACTIVE",
+                    }
+                )
                 continue
             try:
                 result = self.repair_collaboration(item["run_id"], item["event_id"])
@@ -1890,6 +2006,22 @@ class PersonalAgentApp:
     ) -> AgentResult:
         if self.collaboration is None:
             return self._execute_chat_turn_with_id(user_input, turn_id, resume=resume)
+        if (
+            self.collaboration.lifecycle is not None
+            and not self.pending_confirmation_id
+        ):
+            self.drain_task_lifecycle()
+            if (
+                not resume
+                and self.active_task_id
+                and self.runtime.task_service.get_task(self.active_task_id).status
+                in {TaskStatus.COMPLETED, TaskStatus.CANCELLED}
+            ):
+                self.active_task_id = None
+                if self._session_persisted:
+                    self.conversation_repo.update_session_task(
+                        self.active_session_id, None
+                    )
         with self.llm_client.turn(
             self.active_session_id, turn_id, user_input
         ) as run_id:
@@ -1898,7 +2030,50 @@ class PersonalAgentApp:
                 # Explicit memory routes and runtime failures still have one
                 # truthful terminal receipt, without invoking model roles.
                 result = self.collaboration._finish(run_id, result)
-            return result
+        if (
+            self.collaboration.lifecycle is not None
+            and not self.pending_confirmation_id
+        ):
+            self.drain_task_lifecycle()
+            status = self.get_task_lifecycle_status(result.task_id)
+            if result.status is AgentResultStatus.FAILED and status["tasks"]:
+                latest = self.coordination_repository.get_run(
+                    status["tasks"][0]["source_run_id"]
+                )
+                if latest["result_json"]:
+                    payload = json.loads(latest["result_json"])
+                    if (
+                        payload.get("status") == "SUCCESS"
+                        and payload.get("trace_metadata", {})
+                        .get("repair", {})
+                        .get("source_run_id")
+                        == result.agent_run_id
+                    ):
+                        from src.memory.collaboration.coordinator import decode_result
+
+                        result = decode_result(payload)
+            result = replace(
+                result,
+                trace_metadata={**result.trace_metadata, "task_lifecycle": status},
+            )
+            if result.status is AgentResultStatus.SUCCESS and status["tasks"]:
+                cycle = status["tasks"][0]
+                if cycle["source_run_id"] == result.agent_run_id:
+                    question = cycle["detail"].get("question")
+                    if question:
+                        result = replace(
+                            result,
+                            final_response=(result.final_response or "")
+                            + "\n\n"
+                            + question,
+                        )
+                    elif cycle["state"] == "COMPLETED":
+                        result = replace(
+                            result,
+                            final_response=(result.final_response or "")
+                            + "\n\n任务已通过验收并完成。",
+                        )
+        return result
 
     def _execute_chat_turn_with_id(
         self,
@@ -2435,6 +2610,8 @@ class PersonalAgentApp:
   /pause [备注]      暂停当前任务（保留历史与工作集）
   /resume-task       恢复当前已暂停任务
   /complete          将当前任务标记为已完成
+  /task-loop         查看整个任务的验收、完成封存和经验作业
+  /task-drain        继续处理待修复、验收和经验作业
   /cancel            取消当前任务（保留历史）
 
 说明: 启动终端或 /new-session 都从未绑定 Task 的新 Session 开始；普通对话中
@@ -2979,6 +3156,24 @@ class PersonalAgentApp:
                                     print(f"[错误] 未找到任务 ID: {arg}")
                             except ValueError as exc:
                                 print(f"[提示] {exc}")
+
+                    elif cmd == "/task-loop":
+                        print(
+                            json.dumps(
+                                self.get_task_lifecycle_status(),
+                                ensure_ascii=False,
+                                indent=2,
+                            )
+                        )
+
+                    elif cmd == "/task-drain":
+                        try:
+                            value = self._run_with_wait_notice(
+                                self.drain_task_lifecycle
+                            )
+                            print(json.dumps(value, ensure_ascii=False, indent=2))
+                        except ValueError as exc:
+                            print(f"[提示] 任务闭环处理失败: {exc}")
 
                     elif cmd == "/status":
                         st = self.get_task_status_summary()

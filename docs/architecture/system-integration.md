@@ -156,3 +156,7 @@ AgentRuntime.process_tool_result(result, task_id)
 - **Pre-Reasoner 确定性 Runtime 对账引擎**：进程启动/重试时，Main Agent 在调用 `AgentReasoner` 之前优先对 `runtime_reconciled = 0` 的终端回执执行 `AgentRuntime.process_tool_result()` 对账。若 Runtime 对账失败，立即暂停推理并返回安全错误，物理工具零二次重复执行。对账成功后标记 `runtime_reconciled = 1`。
 - **执行策略 Snapshot 与崩溃恢复**：`claim_execution()` 原子事务中冻结 `arguments_json`、`tool_effect` 与 `idempotency_support` 策略 Snapshot。崩溃恢复时不依赖当前 Registry 飘移配置。针对 `IdempotencySupport.NONE` 且尚无回执的崩溃，恢复时返回 `EXECUTION_STATUS_UNKNOWN` 阻止无条件二次调度。
 - **零 Task 3 AGENT 事件污染**：Main Agent 产生的中间草稿、推理过程与 Final Response 不直接向 Task 3 写入 AGENT 事项；Task 3 事项仅通过 Runtime 的 USER 与 TOOL 权威路径产生。
+
+## 任务级自动闭环增量（2026-10-31）
+
+`multi_fixed` 默认在轮次边界和会话恢复时调度修复、TaskReview 整体验收、原子完成封存及经验作业。一次回答成功与任务完成分开；缺少必要信息或批准时等待用户，完成后经验可在后续任务使用。CLI 的 `/task-loop`、`/task-drain` 和 JSONL 的 `task/lifecycle/read`、`task/lifecycle/drain` 提供状态与恢复入口。实现、预算和封存来源边界见 [任务级自动闭环](task-lifecycle.md)。

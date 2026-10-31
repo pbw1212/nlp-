@@ -1,0 +1,57 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 3072
+  },
+  "checks": {},
+  "source_sha256": {
+    "src/memory/collaboration/lifecycle.py": "8a48965627bca7b59bd272ff6e3c53fffcff785210adb3521647c4de27d09f01",
+    "src/memory/collaboration/coordinator.py": "6f00110558553a397afc802e4f8d150368d9dbe586943ae6292fe70473e8f957",
+    "src/memory/collaboration/experience.py": "b079df2dfaf07271a5308f2864f651222f30e0f1e58971e0d2ae237621aa9039",
+    "src/memory/collaboration/roles.py": "23e8b7426b9be3bd717b5edb16f4137e8dc449388eac1154295b06b6f8336a5e",
+    "src/memory/task_state/repository.py": "69d25edc654d1c23e7f556ee26be2c7d29c4be0b9b96f7a7505d4f19df303985",
+    "src/memory/app/console.py": "6b378f86157532d7b074d4de8349bbf0e483d0c00dc58b76ff0d2b1126e0f753"
+  },
+  "first_turn": {
+    "status": "FAILED",
+    "answer": null,
+    "task_id": "task_1_1f063e",
+    "graph_model_calls": 13,
+    "error": {
+      "stage": "REASONING",
+      "category": "PROVIDER_ERROR",
+      "code": "PROVIDER_RESPONSE_ERROR",
+      "safe_message": "Provider returned invalid response for deepseek (chat.completions).",
+      "retryable": false,
+      "details": {
+        "provider": "deepseek",
+        "operation": "chat.completions",
+        "status_code": null
+      }
+    },
+    "lifecycle": [
+      {
+        "task_id": "task_1_1f063e",
+        "source_run_id": "ma_a0adb282d6cf6ddc73c01598",
+        "state": "FAILED",
+        "detail": {
+          "question": null,
+          "reason": "Execution did not produce an accepted successful result"
+        },
+        "usage": {
+          "model_calls": 13,
+          "charged_units": 39561
+        }
+      }
+    ]
+  },
+  "engineering_assertions_passed": false,
+  "error_type": "AssertionError"
+}

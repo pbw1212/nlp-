@@ -16,7 +16,7 @@ coordination 事务中处理。更早的源记忆或对话变化通过读前重�
 
 ## 准入与适用性
 
-显式 learn 操作先由 Experience Provider 提出候选或 ABSTAIN，再由独立
+任务完成作业或显式 learn 操作先由 Experience Provider 提出候选或 ABSTAIN，再由独立
 ExperienceReview Provider 根据真实成果及回执判断 ADMIT、QUARANTINE 或
 NEEDS_CONFIRMATION。只有 ADMIT 且来源、支持 ID 与快照均通过宿主校验才进入 ACTIVE。
 不确定候选保持待澄清，通过显式 review 提供确认说明后仍须重新审核，不直接改成成功。
@@ -59,10 +59,14 @@ experience/feedback（experienceId、runId、eventId）。可选 threadId 选择
 learn 来源和 feedback 消费运行必须属于当前会话。initialize 提供 proceduralExperiences 能力标志。
 
 提炼与复核使用独立的持久预算运行，筛选使用当前协作预算，反馈不调用模型。
-不启用后台自动提炼，不为每轮对话无条件存入经验。默认 single 模式的用户事实机制不变。
+整个任务通过验收并封存后自动处理提炼作业；不为每轮对话无条件存入经验。调度在轮次边界和会话恢复执行，没有常驻后台服务。默认 single 模式的用户事实机制不变。
 
 ## 验证
 
 `test_experience_lifecycle.py` 覆盖准入、弃权、待澄清、错误来源、重启、
 适用性不确定、来源撤销/变化、内容篡改、失败隔离、修订与 API。
 最新回归与真实联调见 [项目进展](../project-progress.md)。
+
+完成任务的来源资格由 [任务级完成记录](task-lifecycle.md) 保留，正常结束不再直接使经验失效；目标、证据、原始消息或封存记录变化仍受校验。
+
+经验提案和独立审核现在还获得来源绑定的原始 USER 请求及正常完成记录，避免仅凭同伴的“用户已批准”描述推断批准事实。无法提供原始请求身份的旧来源拒绝准入。

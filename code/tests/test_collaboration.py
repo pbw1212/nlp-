@@ -143,6 +143,7 @@ def make_app(tmp_path, monkeypatch, provider=None, limits=None):
         llm_client=provider or CollaborationProvider(),
         execution_mode="multi_fixed",
         collaboration_limits=limits,
+        task_lifecycle_enabled=False,
     )
 
 

@@ -183,6 +183,30 @@ VERIFY_SCHEMA = object_schema(
         "reason": TEXT,
     }
 )
+TASK_REVIEW_SCHEMA = object_schema(
+    {
+        "schema_version": VERSION,
+        "decision": {"type": "string", "enum": ["COMPLETE", "WAITING_USER"]},
+        "assessments": {
+            "type": "array",
+            "maxItems": 64,
+            "items": object_schema(
+                {
+                    "entry_id": TEXT,
+                    "status": {
+                        "type": "string",
+                        "enum": ["SATISFIED", "UNSATISFIED", "UNCERTAIN"],
+                    },
+                    "artifact_ids": IDS,
+                    "reason": TEXT,
+                }
+            ),
+        },
+        "remaining_requirements": IDS,
+        "question": {"type": ["string", "null"], "maxLength": 4000},
+        "reason": TEXT,
+    }
+)
 
 
 def validate(proposal: Any, schema: dict[str, Any]) -> dict[str, Any]:

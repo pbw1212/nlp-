@@ -47,3 +47,7 @@ CLI / JSONL
 **尚待实现并评测：** `EvidenceNeed` 驱动的原始来源升级检索、持久可重建的 dense 索引缓存、完整 `InputFrontier`、失效依赖传播与局部修复、程序性经验分区与写回、受限并行和正式外部基准对照。
 
 进一步的算法说明见 [Task 1](task1-memory-lifecycle.md)、[Task 2](task2-retrieval.md)、[Task 3](task3-working-state.md)、[多 Agent P1](multi-agent-foundation.md)、[运行时集成](system-integration.md) 和 [项目进展](../project-progress.md)。
+
+## 任务级自动闭环增量（2026-10-31）
+
+`multi_fixed` 默认在轮次边界和会话恢复时调度修复、TaskReview 整体验收、原子完成封存及经验作业。一次回答成功与任务完成分开；缺少必要信息或批准时等待用户，完成后经验可在后续任务使用。CLI 的 `/task-loop`、`/task-drain` 和 JSONL 的 `task/lifecycle/read`、`task/lifecycle/drain` 提供状态与恢复入口。实现、预算和封存来源边界见 [任务级自动闭环](task-lifecycle.md)。

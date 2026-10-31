@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import replace
-from typing import Any, Mapping, Optional
+from typing import Any
 
 from src.memory.core.config import MemoryConfig, ProviderMode
 from src.memory.llm.errors import ProviderConfigurationError, ProviderError
@@ -14,20 +15,19 @@ from src.memory.task_state.models import (
     Priority,
     ProposalAction,
     ProposalBasis,
+    RelationKind,
     SourceKind,
-    TaskStateScope,
-    TaskEvent,
     TaskAnalysis,
+    TaskEvent,
     TaskIntent,
     TaskRelation,
     TaskStateProposal,
     TaskStateProposalBatch,
-    RelationKind,
+    TaskStateScope,
 )
 from src.memory.task_state.updater import TaskStateInterpreterError
 
-
-TASK_STATE_INTERPRETER_VERSION = "task_state_interpretation_v2"
+TASK_STATE_INTERPRETER_VERSION = "task_state_interpretation_v3"
 
 
 def _proposal_schema(source_kind: SourceKind = SourceKind.USER) -> dict[str, Any]:
@@ -39,11 +39,17 @@ def _proposal_schema(source_kind: SourceKind = SourceKind.USER) -> dict[str, Any
             # a syntactically valid but unusable response is rejected by the
             # provider schema before it reaches durable-state processing.
             "task_stage": {"type": "string", "minLength": 1},
-            "query_intent": {"type": "string", "enum": [item.value for item in TaskIntent]},
+            "query_intent": {
+                "type": "string",
+                "enum": [item.value for item in TaskIntent],
+            },
             "memory_write_requested": {"type": "boolean"},
             "information_needs": {"type": "array", "items": {"type": "string"}},
             "retrieval_needed": {"type": "boolean"},
-            "important_kinds": {"type": "array", "items": {"type": "string", "enum": [item.value for item in EntryKind]}},
+            "important_kinds": {
+                "type": "array",
+                "items": {"type": "string", "enum": [item.value for item in EntryKind]},
+            },
             "focus_entry_ids": {"type": "array", "items": {"type": "string"}},
             "search_query": {"type": "string"},
             "warnings": {"type": "array", "items": {"type": "string"}},
@@ -51,9 +57,17 @@ def _proposal_schema(source_kind: SourceKind = SourceKind.USER) -> dict[str, Any
             "memory_support_span": {"type": ["string", "null"]},
         },
         "required": [
-            "task_stage", "query_intent", "memory_write_requested", "information_needs", "retrieval_needed",
-            "important_kinds", "focus_entry_ids", "search_query", "warnings",
-            "memory_content", "memory_support_span",
+            "task_stage",
+            "query_intent",
+            "memory_write_requested",
+            "information_needs",
+            "retrieval_needed",
+            "important_kinds",
+            "focus_entry_ids",
+            "search_query",
+            "warnings",
+            "memory_content",
+            "memory_support_span",
         ],
         "additionalProperties": False,
     }
@@ -89,8 +103,14 @@ def _proposal_schema(source_kind: SourceKind = SourceKind.USER) -> dict[str, Any
         "type": "object",
         "properties": {
             "proposal_id": {"type": "string"},
-            "action": {"type": "string", "enum": [item.value for item in ProposalAction]},
-            "entry_kind": {"type": ["string", "null"], "enum": [item.value for item in EntryKind] + [None]},
+            "action": {
+                "type": "string",
+                "enum": [item.value for item in ProposalAction],
+            },
+            "entry_kind": {
+                "type": ["string", "null"],
+                "enum": [item.value for item in EntryKind] + [None],
+            },
             "target_entry_id": {"type": ["string", "null"]},
             "content": {"type": ["string", "null"]},
             "replacement_content": {"type": ["string", "null"]},
@@ -100,12 +120,24 @@ def _proposal_schema(source_kind: SourceKind = SourceKind.USER) -> dict[str, Any
             "support_spans": {"type": "array", "items": {"type": "string"}},
             "basis": {"type": "string", "enum": [item.value for item in ProposalBasis]},
             "warnings": {"type": "array", "items": {"type": "string"}},
-            "scope": {"type": "string", "enum": [item.value for item in TaskStateScope]},
+            "scope": {
+                "type": "string",
+                "enum": [item.value for item in TaskStateScope],
+            },
         },
         "required": [
-            "proposal_id", "action", "entry_kind", "target_entry_id", "content",
-            "replacement_content", "priority", "relation", "evidence_refs",
-            "support_spans", "basis", "warnings",
+            "proposal_id",
+            "action",
+            "entry_kind",
+            "target_entry_id",
+            "content",
+            "replacement_content",
+            "priority",
+            "relation",
+            "evidence_refs",
+            "support_spans",
+            "basis",
+            "warnings",
             "scope",
         ],
         "additionalProperties": False,
@@ -158,6 +190,12 @@ The analysis.task_stage field is required and must be a concise, non-empty label
 current stage of the user's request. Use a neutral label such as "information_request"
 when no more specific stage applies.
 
+User approval and task-completion requests must still use the declared TaskIntent and
+ProposalAction enum values. Do not invent APPROVE_TASK, COMPLETE_TASK, FINISH_TASK or
+status-changing actions. A confirmation can be interpreted as CONTINUE_TASK or
+REPORT_PROGRESS with grounded explicit evidence. Whole-task completion is reviewed by
+the host separately; this interpreter proposes entries, never TaskStatus changes.
+
 If the user is explicitly asking the product to save, remember, correct, update, or remove
 a durable personal fact or an existing long-term memory, set memory_write_requested to true,
 set query_intent to EXPLICIT_MEMORY_WRITE, put only the user-grounded content to save in
@@ -184,12 +222,18 @@ class OpenAICompatibleTaskStateInterpreter:
     identity = "openai-compatible-task-state-interpreter"
     version = TASK_STATE_INTERPRETER_VERSION
 
-    def __init__(self, client: LLMClientBase, *, provider: str = "openai-compatible", model: str = "configured") -> None:
+    def __init__(
+        self,
+        client: LLMClientBase,
+        *,
+        provider: str = "openai-compatible",
+        model: str = "configured",
+    ) -> None:
         self._client = client
         self.identity = f"{provider}:{model}:task-state"
 
     @classmethod
-    def from_config(cls, config: MemoryConfig) -> "OpenAICompatibleTaskStateInterpreter":
+    def from_config(cls, config: MemoryConfig) -> OpenAICompatibleTaskStateInterpreter:
         if config.provider_mode is not ProviderMode.REQUIRED:
             raise ProviderConfigurationError(
                 "real task-state interpretation requires MEMORY_PROVIDER_MODE=REQUIRED",
@@ -204,7 +248,9 @@ class OpenAICompatibleTaskStateInterpreter:
             model=config.llm_model_name,
         )
 
-    def interpret(self, event: TaskEvent, context: Optional[ActiveWorkingContext]) -> TaskStateProposalBatch:
+    def interpret(
+        self, event: TaskEvent, context: ActiveWorkingContext | None
+    ) -> TaskStateProposalBatch:
         bounded_context = None if context is None else context.structured.to_dict()
         payload = {
             "task_id": event.task_id,
@@ -238,56 +284,76 @@ class OpenAICompatibleTaskStateInterpreter:
         event: TaskEvent,
         raw: Mapping[str, Any],
         *,
-        context: Optional[ActiveWorkingContext] = None,
+        context: ActiveWorkingContext | None = None,
     ) -> TaskStateProposalBatch:
         if not isinstance(raw, Mapping) or not isinstance(raw.get("proposals"), list):
-            raise TaskStateInterpreterError("task-state response requires proposals array")
+            raise TaskStateInterpreterError(
+                "task-state response requires proposals array"
+            )
         proposals = []
         batch_warnings = [str(warning) for warning in raw.get("warnings", [])]
-        analysis = OpenAICompatibleTaskStateInterpreter._parse_analysis(raw.get("analysis"))
+        analysis = OpenAICompatibleTaskStateInterpreter._parse_analysis(
+            raw.get("analysis")
+        )
         # Provider intent is authoritative for meaning, but extracted content
         # is still a proposal and must be grounded in this exact source event.
         # This prevents a stale/cached model response from turning the current
         # question into a write of a fact from an earlier turn.  It is a data
         # provenance invariant, not a semantic keyword rule.
-        if analysis is not None and analysis.query_intent is TaskIntent.EXPLICIT_MEMORY_WRITE:
-            if (
+        if (
+            analysis is not None
+            and analysis.query_intent is TaskIntent.EXPLICIT_MEMORY_WRITE
+            and (
                 not analysis.memory_write_requested
-                or
-                event.source_kind is not SourceKind.USER
+                or event.source_kind is not SourceKind.USER
                 or not analysis.memory_content
                 or not analysis.memory_support_span
                 or analysis.memory_support_span not in event.content
-            ):
-                batch_warnings.append(
-                    "explicit memory candidate rejected: support span is not grounded in the source event"
-                )
-                analysis = None
+            )
+        ):
+            batch_warnings.append(
+                "explicit memory candidate rejected: support span is not grounded in the source event"
+            )
+            analysis = None
         confirmation_required = False
         for item in raw["proposals"]:
             if not isinstance(item, Mapping):
                 raise TaskStateInterpreterError("proposal must be an object")
             try:
                 relation_data = item.get("relation")
-                relation = None if relation_data is None else TaskRelation(
-                    task_id=str(relation_data["task_id"]),
-                    from_entry_id=str(relation_data["from_entry_id"]),
-                    to_entry_id=str(relation_data["to_entry_id"]),
-                    kind=RelationKind(str(relation_data["kind"])),
+                relation = (
+                    None
+                    if relation_data is None
+                    else TaskRelation(
+                        task_id=str(relation_data["task_id"]),
+                        from_entry_id=str(relation_data["from_entry_id"]),
+                        to_entry_id=str(relation_data["to_entry_id"]),
+                        kind=RelationKind(str(relation_data["kind"])),
+                    )
                 )
                 refs = tuple(
                     EvidenceRef(
-                        bundle_id=str(ref["bundle_id"]), memory_id=str(ref["memory_id"]),
-                        revision_id=str(ref["revision_id"]), evidence_item_id=ref.get("evidence_item_id"),
+                        bundle_id=str(ref["bundle_id"]),
+                        memory_id=str(ref["memory_id"]),
+                        revision_id=str(ref["revision_id"]),
+                        evidence_item_id=ref.get("evidence_item_id"),
                     )
                     for ref in item.get("evidence_refs", [])
                 )
                 action = ProposalAction(str(item["action"]))
-                entry_kind = None if item.get("entry_kind") is None else EntryKind(str(item["entry_kind"]))
+                entry_kind = (
+                    None
+                    if item.get("entry_kind") is None
+                    else EntryKind(str(item["entry_kind"]))
+                )
                 target_entry_id = item.get("target_entry_id")
                 replacement_content = item.get("replacement_content")
-                proposal_warnings = [str(warning) for warning in item.get("warnings", [])]
-                scope = TaskStateScope(str(item.get("scope", TaskStateScope.TASK.value)))
+                proposal_warnings = [
+                    str(warning) for warning in item.get("warnings", [])
+                ]
+                scope = TaskStateScope(
+                    str(item.get("scope", TaskStateScope.TASK.value))
+                )
                 if action is ProposalAction.SUPERSEDE:
                     repaired = OpenAICompatibleTaskStateInterpreter._repair_supersede(
                         event,
@@ -306,25 +372,43 @@ class OpenAICompatibleTaskStateInterpreter:
                     target_entry_id, replacement_content, repair_warning = repaired
                     if repair_warning:
                         proposal_warnings.append(repair_warning)
-                proposals.append(TaskStateProposal(
-                    proposal_id=str(item["proposal_id"]), task_id=event.task_id,
-                    source_event_id=event.event_id, action=action,
-                    entry_kind=entry_kind,
-                    target_entry_id=target_entry_id, content=item.get("content"),
-                    replacement_content=replacement_content,
-                    priority=None if item.get("priority") is None else Priority(int(item["priority"])),
-                    relation=relation, evidence_refs=refs,
-                    support_spans=tuple(str(span) for span in item.get("support_spans", [])),
-                    basis=ProposalBasis(str(item.get("basis", ProposalBasis.EXPLICIT.value))),
-                    warnings=tuple(str(warning) for warning in item.get("warnings", [])),
-                    scope=scope,
-                ))
+                proposals.append(
+                    TaskStateProposal(
+                        proposal_id=str(item["proposal_id"]),
+                        task_id=event.task_id,
+                        source_event_id=event.event_id,
+                        action=action,
+                        entry_kind=entry_kind,
+                        target_entry_id=target_entry_id,
+                        content=item.get("content"),
+                        replacement_content=replacement_content,
+                        priority=(
+                            None
+                            if item.get("priority") is None
+                            else Priority(int(item["priority"]))
+                        ),
+                        relation=relation,
+                        evidence_refs=refs,
+                        support_spans=tuple(
+                            str(span) for span in item.get("support_spans", [])
+                        ),
+                        basis=ProposalBasis(
+                            str(item.get("basis", ProposalBasis.EXPLICIT.value))
+                        ),
+                        warnings=tuple(
+                            str(warning) for warning in item.get("warnings", [])
+                        ),
+                        scope=scope,
+                    )
+                )
             except (KeyError, TypeError, ValueError) as exc:
                 raise TaskStateInterpreterError(
                     f"task-state proposal decode failed ({type(exc).__name__})"
                 ) from exc
         return TaskStateProposalBatch(
-            task_id=event.task_id, event_id=event.event_id, proposals=tuple(proposals),
+            task_id=event.task_id,
+            event_id=event.event_id,
+            proposals=tuple(proposals),
             interpreter="openai-compatible-task-state-interpreter",
             interpreter_version=TASK_STATE_INTERPRETER_VERSION,
             warnings=tuple(batch_warnings),
@@ -333,11 +417,13 @@ class OpenAICompatibleTaskStateInterpreter:
         )
 
     @staticmethod
-    def _parse_analysis(raw: Any) -> Optional[TaskAnalysis]:
+    def _parse_analysis(raw: Any) -> TaskAnalysis | None:
         if raw is None:
             return None
         if not isinstance(raw, Mapping):
-            raise TaskStateInterpreterError("task-state analysis must be an object or null")
+            raise TaskStateInterpreterError(
+                "task-state analysis must be an object or null"
+            )
         try:
             task_stage = str(raw["task_stage"]).strip()
             if not task_stage:
@@ -353,16 +439,28 @@ class OpenAICompatibleTaskStateInterpreter:
             important_kinds = raw.get("important_kinds", [])
             focus_entry_ids = raw.get("focus_entry_ids", [])
             warnings = raw.get("warnings", [])
-            if not all(isinstance(value, list) for value in (information_needs, important_kinds, focus_entry_ids, warnings)):
+            if not all(
+                isinstance(value, list)
+                for value in (
+                    information_needs,
+                    important_kinds,
+                    focus_entry_ids,
+                    warnings,
+                )
+            ):
                 raise TypeError("analysis collection fields must be arrays")
             memory_content = raw.get("memory_content")
             if memory_content is not None and not isinstance(memory_content, str):
                 raise TypeError("memory_content must be string or null")
             memory_content = memory_content.strip() if memory_content else None
             memory_support_span = raw.get("memory_support_span")
-            if memory_support_span is not None and not isinstance(memory_support_span, str):
+            if memory_support_span is not None and not isinstance(
+                memory_support_span, str
+            ):
                 raise TypeError("memory_support_span must be string or null")
-            memory_support_span = memory_support_span.strip() if memory_support_span else None
+            memory_support_span = (
+                memory_support_span.strip() if memory_support_span else None
+            )
             if query_intent is not TaskIntent.EXPLICIT_MEMORY_WRITE:
                 memory_content = None
                 memory_support_span = None
@@ -387,18 +485,24 @@ class OpenAICompatibleTaskStateInterpreter:
     @staticmethod
     def _repair_supersede(
         event: TaskEvent,
-        context: Optional[ActiveWorkingContext],
+        context: ActiveWorkingContext | None,
         *,
-        analysis: Optional[TaskAnalysis],
-        entry_kind: Optional[EntryKind],
-        target_entry_id: Optional[str],
-        replacement_content: Optional[str],
-    ) -> Optional[tuple[str, str, Optional[str]]]:
+        analysis: TaskAnalysis | None,
+        entry_kind: EntryKind | None,
+        target_entry_id: str | None,
+        replacement_content: str | None,
+    ) -> tuple[str, str, str | None] | None:
         """Use only provider-supplied IDs/content or request explicit confirmation."""
-        replacement = replacement_content.strip() if isinstance(replacement_content, str) else ""
+        replacement = (
+            replacement_content.strip() if isinstance(replacement_content, str) else ""
+        )
         if target_entry_id and replacement:
             return str(target_entry_id), replacement, None
-        if event.source_kind is not SourceKind.USER or context is None or analysis is None:
+        if (
+            event.source_kind is not SourceKind.USER
+            or context is None
+            or analysis is None
+        ):
             return None
         if analysis.query_intent is not TaskIntent.MODIFY_EXISTING or not replacement:
             return None
@@ -421,8 +525,13 @@ class OpenAICompatibleTaskStateInterpreter:
         focused = [
             by_id[entry_id]
             for entry_id in analysis.focus_entry_ids
-            if entry_id in by_id and (entry_kind is None or by_id[entry_id].kind is entry_kind)
+            if entry_id in by_id
+            and (entry_kind is None or by_id[entry_id].kind is entry_kind)
         ]
         if len(focused) != 1:
             return None
-        return focused[0].entry_id, replacement, "supersede_target_recovered_from_provider_analysis"
+        return (
+            focused[0].entry_id,
+            replacement,
+            "supersede_target_recovered_from_provider_analysis",
+        )

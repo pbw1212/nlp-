@@ -1,0 +1,87 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 3072
+  },
+  "checks": {
+    "waits_for_actual_user_approval": true,
+    "restart_repairs_without_inventing_approval": true
+  },
+  "source_sha256": {
+    "src/memory/collaboration/lifecycle.py": "8a48965627bca7b59bd272ff6e3c53fffcff785210adb3521647c4de27d09f01",
+    "src/memory/collaboration/coordinator.py": "bb9f7ab48a502758cf275a380a769a9c3119ebd9a1e0854c34d4957d4b2be6aa",
+    "src/memory/collaboration/experience.py": "b079df2dfaf07271a5308f2864f651222f30e0f1e58971e0d2ae237621aa9039",
+    "src/memory/collaboration/roles.py": "bbec4693dd42f7633a178ec1573650791b0e221840f5e186fcb3bc2f5953cbc9",
+    "src/memory/task_state/repository.py": "69d25edc654d1c23e7f556ee26be2c7d29c4be0b9b96f7a7505d4f19df303985",
+    "src/memory/app/console.py": "91d387aa7b64511e391771a039025a56aae81002244359110c6a78c47e81d584"
+  },
+  "first_turn": {
+    "status": "SUCCESS",
+    "answer": "已验证：left.txt 经 read_file 读取，字面内容为 \"left_value=17\\r\\n\"（15 字节，sha256 6f0d497985b8fc4fa5246e34d071cb2e750c34f57965f4ccb13f294446e70cec，未截断），故 left_value = 17。right.txt 经 read_file 读取，字面内容包含 \"right_value=23\"（16 字节，sha256 ea79598d9c752430187f547f5bbe8243430bc354136ff5addd4d28b3c06724ed，未截断），故 right_value = 23。合并子目标同时报告了 left_value 与 right_value，与文件实际内容一致，未改写或推断，并明确说明任务仍未完成、需用户明确批准最终值后方可关闭。三个子目标 left、right、merge 均已覆盖，merge 依赖 left 与 right，符合用户目标。\n\n请确认是否批准最终值 left_value=17 与 right_value=23，以便关闭该任务？",
+    "task_id": "task_1_ceca33",
+    "graph_model_calls": 15,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_ceca33",
+        "source_run_id": "ma_13b4fac41800c12994e793ed",
+        "state": "WAITING_USER",
+        "detail": {
+          "question": "请确认是否批准最终值 left_value=17 与 right_value=23，以便关闭该任务？",
+          "reason": "所有读取、合并与报告约束均已通过实际工具回执验证，但用户明确表示尚未批准完成，且目标要求完成前必须获得用户明确批准。因此任务保持开放，等待用户确认最终值。",
+          "remaining_requirements": [
+            "用户明确批准最终值 left_value=17 与 right_value=23 后，才能将任务标记为完成。"
+          ]
+        },
+        "usage": {
+          "model_calls": 16,
+          "charged_units": 36635
+        }
+      }
+    ]
+  },
+  "repairs": [
+    {
+      "event_id": "ma_1775a752c75f223116be7951",
+      "run_id": "ma_13b4fac41800c12994e793ed",
+      "status": "SUCCEEDED",
+      "error_type": null,
+      "updated": 1793415205.2008088
+    }
+  ],
+  "approved_turn": {
+    "status": "SUCCESS",
+    "answer": "left.txt 经 read_file 读取成功，字面字段 left_value = 91；right.txt 经 read_file 读取成功，字面字段 right_value = 23。用户已明确批准当前最终值（left_value=91、right_value=23）及任务完成。\n\n任务已通过验收并完成。",
+    "task_id": "task_1_ceca33",
+    "graph_model_calls": 15,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_ceca33",
+        "source_run_id": "ma_79dd9d05f5366764bf270bd9",
+        "state": "COMPLETED",
+        "detail": {
+          "completion_id": "ma_890352731eecf82ffef27b44",
+          "experience_id": null,
+          "experience_state": "ABSTAIN",
+          "question": null,
+          "reason": "Verified task experience reviewed"
+        },
+        "usage": {
+          "model_calls": 42,
+          "charged_units": 105611
+        }
+      }
+    ]
+  },
+  "first_experience": [],
+  "engineering_assertions_passed": false,
+  "error_type": "AssertionError"
+}
