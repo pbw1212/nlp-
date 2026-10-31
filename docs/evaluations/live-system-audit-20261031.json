@@ -1,0 +1,191 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 4096
+  },
+  "checks": {
+    "waits_for_actual_user_approval": true,
+    "restart_repairs_without_inventing_approval": true,
+    "automatic_completion_seal_and_learning": true,
+    "repeated_drain_no_new_calls": true,
+    "sealed_experience_survives_restart_and_new_task_reuses_it": true,
+    "revoked_experience_blocks_old_consumer_answer": true
+  },
+  "structured_failures": [
+    {
+      "operation": "agent_action",
+      "error_type": "ProviderResponseError",
+      "cause_type": "ValidationError",
+      "schema_path": [
+        "required"
+      ],
+      "json_position": null,
+      "missing_required_fields": [
+        "tool_name",
+        "tool_arguments"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "src/memory/collaboration/lifecycle.py": "c162251b8cdd3d7699c3eab6e2b9e6e967e393287536f5a2a08eebab8f1251ae",
+    "src/memory/collaboration/repository.py": "77f2cb4fabd5b1907a1ffc6bcb8b7d46f8001f72545af3eafb3feff75303879c",
+    "src/memory/collaboration/budget.py": "9b8e3edda021a5a26f4057a3ad48d0f49b9a4f98c748db0c733a53ab9533644b",
+    "src/memory/collaboration/coordinator.py": "bb9f7ab48a502758cf275a380a769a9c3119ebd9a1e0854c34d4957d4b2be6aa",
+    "src/memory/collaboration/experience.py": "a616446db3aa641b4bb1de382676d2e4888b96faf1116cf5f77f99c29bda931d",
+    "src/memory/collaboration/roles.py": "0fd1ee081812a19b4f556ab29280507fa803c4e4803fa0524bf848d375ba9526",
+    "src/memory/task_state/repository.py": "69d25edc654d1c23e7f556ee26be2c7d29c4be0b9b96f7a7505d4f19df303985",
+    "src/memory/app/console.py": "e331613a0306959d5dd1308c8628b58c0b2943cad82c9d7af27c799ea650ed5c"
+  },
+  "first_turn": {
+    "status": "SUCCESS",
+    "answer": "三个子目标均已验证：left 通过 read_file 读取 left.txt，字面内容 \"left_value=17\"（sha256 6f0d497985b8fc4fa5246e34d071cb2e750c34f57965f4ccb13f294446e70cec，15 字节，未截断），left_value = 17；right 通过 read_file 读取 right.txt，字面内容 \"right_value=23\"（sha256 ea79598d9c752430187f547f5bbe8243430bc354136ff5addd4d28b3c06724ed，16 字节，未截断），right_value = 23；merge 依赖 left 与 right，同时报告 left_value = 17 与 right_value = 23，与两次读取一致，并明确说明任务尚未完成、保持开放，需用户明确批准最终值后才可关闭。用户目标的所有部分与约束均已覆盖。\n\n请确认是否批准最终值 left_value=17 与 right_value=23，以便关闭该任务？",
+    "task_id": "task_1_640e89",
+    "graph_model_calls": 15,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_640e89",
+        "source_run_id": "ma_5fab620d64b1cbe32188eb0e",
+        "state": "WAITING_USER",
+        "detail": {
+          "question": "请确认是否批准最终值 left_value=17 与 right_value=23，以便关闭该任务？",
+          "reason": "所有读取、合并与约束均已由实际工具回执验证，但用户明确声明尚未批准完成，且目标要求仅在明确批准后才可完成。因此任务保持开放，等待用户批准。",
+          "remaining_requirements": [
+            "用户明确批准最终值 left_value=17 与 right_value=23 后，方可关闭任务"
+          ]
+        },
+        "usage": {
+          "model_calls": 16,
+          "charged_units": 36997
+        },
+        "current_result_validity": "NOT_COMPLETED",
+        "current_experience_state": null
+      }
+    ]
+  },
+  "repairs": [
+    {
+      "event_id": "ma_58695b356a0dcaafdf02d866",
+      "run_id": "ma_5fab620d64b1cbe32188eb0e",
+      "status": "SUCCEEDED",
+      "error_type": null,
+      "updated": 1793418215.2183146
+    }
+  ],
+  "approved_turn": {
+    "status": "SUCCESS",
+    "answer": "已验证：left.txt 经 read_file 读取得到 left_value=91（sha256 7de3e49c7825a763fb952ea7d0e23ae7bae560e329b1e400ca719d16502c4a3f，15 字节，未截断）；right.txt 经 read_file 读取得到 right_value=23（sha256 ea79598d9c752430187f547f5bbe8243430bc354136ff5addd4d28b3c06724ed，16 字节，未截断）。合并报告同时包含两个字面值，并描述了可复用流程：重新观察可能变化的来源（不沿用旧读数，以 sha256/字节数/截断状态为凭据）、合并独立核验的值（各来源单独读取，不互相推断）、任务关闭与用户批准分离（核验只回答当前值，不自行宣称任务完成）。\n\n任务已通过验收并完成。",
+    "task_id": "task_1_640e89",
+    "graph_model_calls": 16,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_640e89",
+        "source_run_id": "ma_19b955796bffeddbc1dac6d8",
+        "state": "COMPLETED",
+        "detail": {
+          "completion_id": "ma_f9e8a0dbf2d0cb67ef8e66fc",
+          "experience_id": "ma_4c76b90d8749bb3363d4d925",
+          "experience_state": "ACTIVE",
+          "question": null,
+          "reason": "Verified task experience reviewed"
+        },
+        "usage": {
+          "model_calls": 44,
+          "charged_units": 139328
+        },
+        "current_result_validity": "VALID",
+        "current_experience_state": "ACTIVE"
+      }
+    ]
+  },
+  "first_experience": [
+    {
+      "experience_id": "ma_4c76b90d8749bb3363d4d925",
+      "state": "ACTIVE"
+    }
+  ],
+  "second_task": {
+    "status": "SUCCESS",
+    "answer": "已验证：left.txt 经 read_file 读取成功（tool_call_id call_a9b5d19ed29d，SUCCEEDED），left_value 的精确字面值为 91；来源元数据：路径 C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-task-cycle-is1fhhof\\workspace\\left.txt，sha256 7de3e49c7825a763fb952ea7d0e23ae7bae560e329b1e400ca719d16502c4a3f，字节数 15，truncated=false。right.txt 经 read_file 读取成功（tool_call_id call_066e08b075e4，SUCCEEDED），right_value 的精确字面值为 23；来源元数据：路径 C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-task-cycle-is1fhhof\\workspace\\right.txt，sha256 ea79598d9c752430187f547f5bbe8243430bc354136ff5addd4d28b3c06724ed，字节数 16，truncated=false。合并报告同时呈现两个值，各自可追溯到对应读取凭据，未互相推断，也未引入未核验的值。\n\n任务已通过验收并完成。",
+    "task_id": "task_2_260884",
+    "graph_model_calls": 16,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_2_260884",
+        "source_run_id": "ma_2304d4e4c8be5a14c29f4190",
+        "state": "COMPLETED",
+        "detail": {
+          "completion_id": "ma_8cf4cd83dfdccb7e0e970661",
+          "experience_id": "ma_67c80dc159639dd38b4b53dd",
+          "experience_state": "ACTIVE",
+          "question": null,
+          "reason": "Verified task experience reviewed"
+        },
+        "usage": {
+          "model_calls": 19,
+          "charged_units": 64476
+        },
+        "current_result_validity": "VALID",
+        "current_experience_state": "ACTIVE"
+      }
+    ]
+  },
+  "engineering_assertions_passed": true,
+  "learning_proposals": [
+    {
+      "run_id": "ma_3764d7fd76793899107a72b7",
+      "proposal": {
+        "action_summary": "Split the work into one read subgoal per source file plus a merge subgoal that depends on all read subgoals. In each read subgoal, call read_file on the target file and report the literal field value observed in that call, citing the tool_call_id receipt and provenance metadata (sha256, byte count, truncated flag) as the observation record. In the merge subgoal, combine only the independently verified literal values from the read subgoals, present both fields explicitly, and describe the reusable procedure: re-observe changing sources instead of reusing stale readings, combine independently verified values without inferring one source from another, and keep task closure separate from user approval.",
+        "applicability_scope": "Applies to tasks where multiple independent file sources must be re-read with a native read tool and their literal field values reported together, especially when sources may have changed since a prior reading and when the user expects verification to be reported without claiming task closure. Does not generalize to tasks lacking a read tool, to single-source tasks, or to cases where the user has not asked for re-observation or approval separation.",
+        "artifact_ids": [
+          "ma_0cd86453f4c6aa6e2091783c",
+          "ma_f0ac97ba04831fa1d2a7cf46",
+          "ma_10f11cb01d1f2ab5da016aa3"
+        ],
+        "decision": "PROPOSE",
+        "observed_outcome": "read_file succeeded on left.txt returning left_value=91 (sha256 7de3e49c7825a763fb952ea7d0e23ae7bae560e329b1e400ca719d16502c4a3f, 15 bytes, not truncated) and on right.txt returning right_value=23 (sha256 ea79598d9c752430187f547f5bbe8243430bc354136ff5addd4d28b3c06724ed, 16 bytes, not truncated). The merged report contained both literal values and the three-part reusable procedure, and did not self-declare task completion; the user message msg_52df9d32adc1 then explicitly approved the final values and task completion. All three subgoal verifications returned PASS and the task completion assessment returned COMPLETE with all entries SATISFIED.",
+        "preconditions": [
+          "Two or more independent source files exist in the workspace and each contains a distinct literal field to be reported.",
+          "A read_file tool is available and can return file content plus provenance metadata (path, sha256, byte length, truncation flag).",
+          "The user requires current values to be re-observed rather than reused from prior cached readings.",
+          "The user requires task closure to remain separate from user approval, so the report must not self-declare task completion."
+        ],
+        "reason": "The supplied artifacts contain actual tool receipts (call_c2f82db8654c, call_59659e0921c0) with SUCCEEDED status and literal file content, plus a merge verification that ties both values to those receipts and describes the reusable procedure. The task completion assessment confirms all requirements were satisfied and the user message explicitly approved completion, so the procedure is supported by verified execution rather than peer assertion alone. The lesson is stated as an advisory procedure with explicit preconditions and scope, and does not convert task-specific values into global facts.",
+        "schema_version": 1,
+        "task_type": "Multi-source literal value re-verification and merged reporting (read_file-based file reads with independent per-source verification)"
+      }
+    },
+    {
+      "run_id": "ma_06c0ab059bffecdb675ee2ac",
+      "proposal": {
+        "action_summary": "将任务拆为 left、right、merge 三个子目标：left 与 right 各自用 read_file 读取对应文件，报告字段精确字面值并附该次调用的 tool_call_id 与来源元数据（路径、sha256、字节数、truncated）；merge 依赖两者，仅并列呈现两个已独立核验的值，逐值标注其来源 tool_call_id，不互相推断、不引入未核验值，并说明完成以报告核验通过为准。",
+        "applicability_scope": "适用于需要从多个文件读取指定字段、分别核验后再合并报告的协作任务；不适用于字段值需计算推导、来源不可重读或缺少工具回执凭据的场景。",
+        "artifact_ids": [
+          "ma_88b327972fef114fa4eaa639",
+          "ma_6197e0d1657fc92035b9ba73",
+          "ma_e7b92c92c4ed8420286d0140"
+        ],
+        "decision": "PROPOSE",
+        "observed_outcome": "两次 read_file 调用均 SUCCEEDED（call_a9b5d19ed29d 得 left_value=91，call_066e08b075e4 得 right_value=23），三个子目标核验均为 PASS，任务完成评估为 COMPLETE，全部必需条目 SATISFIED。",
+        "preconditions": [
+          "任务提供可用的 read_file 工具，且目标文件路径可访问",
+          "每个读取子目标独立执行一次 read_file，并保留其 tool_call_id、状态、sha256、字节数与 truncated 标志",
+          "合并子目标显式声明依赖两个读取子目标，且其证据同时引用两次读取的 tool_call_id",
+          "报告核验通过作为完成条件，由用户请求明确给出"
+        ],
+        "reason": "提供的三个 artifact 均含实际工具回执或核验结论：两个读取子目标各有 SUCCEEDED 的 read_file 回执与来源元数据，合并子目标核验 PASS 且证据引用两次读取的 tool_call_id，任务完成评估为 COMPLETE。据此可提炼可复用的拆分与追溯流程；该流程为咨询性程序，不构成事实证据或记忆候选。",
+        "schema_version": 1,
+        "task_type": "多文件字段读取与合并报告（read_file 读取两个文件，分别报告精确字段值，再合并呈现并保持可追溯）"
+      }
+    }
+  ]
+}

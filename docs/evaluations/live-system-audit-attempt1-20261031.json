@@ -1,0 +1,119 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 4096
+  },
+  "checks": {
+    "waits_for_actual_user_approval": true,
+    "restart_repairs_without_inventing_approval": true
+  },
+  "structured_failures": [
+    {
+      "operation": "agent_action",
+      "error_type": "ProviderResponseError",
+      "cause_type": "ValidationError",
+      "schema_path": [
+        "required"
+      ],
+      "json_position": null
+    },
+    {
+      "operation": "agent_action",
+      "error_type": "ProviderResponseError",
+      "cause_type": "ValidationError",
+      "schema_path": [
+        "required"
+      ],
+      "json_position": null
+    }
+  ],
+  "source_sha256": {
+    "src/memory/collaboration/lifecycle.py": "c162251b8cdd3d7699c3eab6e2b9e6e967e393287536f5a2a08eebab8f1251ae",
+    "src/memory/collaboration/repository.py": "77f2cb4fabd5b1907a1ffc6bcb8b7d46f8001f72545af3eafb3feff75303879c",
+    "src/memory/collaboration/coordinator.py": "bb9f7ab48a502758cf275a380a769a9c3119ebd9a1e0854c34d4957d4b2be6aa",
+    "src/memory/collaboration/experience.py": "a616446db3aa641b4bb1de382676d2e4888b96faf1116cf5f77f99c29bda931d",
+    "src/memory/collaboration/roles.py": "bbec4693dd42f7633a178ec1573650791b0e221840f5e186fcb3bc2f5953cbc9",
+    "src/memory/task_state/repository.py": "69d25edc654d1c23e7f556ee26be2c7d29c4be0b9b96f7a7505d4f19df303985",
+    "src/memory/app/console.py": "e331613a0306959d5dd1308c8628b58c0b2943cad82c9d7af27c799ea650ed5c"
+  },
+  "first_turn": {
+    "status": "SUCCESS",
+    "answer": "已验证：left.txt 经 read_file 读取，left_value=17；right.txt 经 read_file 读取，right_value=23（文件内容为 \"right_value=23\\r\\n\"，16 字节，sha256 ea79598d9c752430187f547f5bbe8243430bc354136ff5addd4d28b3c06724ed）。merge 子目标同时报告了 left_value=17 与 right_value=23，并明确保持任务开放、等待用户明确批准最终值。三个子目标 left、right、merge（merge 依赖 left 与 right）均已覆盖，符合用户目标。\n\nDo you approve the final values left_value=17 and right_value=23 so the tracked task can be marked complete?",
+    "task_id": "task_1_6fffab",
+    "graph_model_calls": 15,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_6fffab",
+        "source_run_id": "ma_b3f22f6ad400043a663e8382",
+        "state": "WAITING_USER",
+        "detail": {
+          "question": "Do you approve the final values left_value=17 and right_value=23 so the tracked task can be marked complete?",
+          "reason": "All three subgoals (left, right, merge with correct dependency) are verified with actual read_file receipts, and the literal fields are reported. However, the goal and the user's explicit constraint require the user's explicit approval of the final values before completion, and the user stated they have not approved. The task therefore stays open pending that approval.",
+          "remaining_requirements": [
+            "Explicit user approval of the final values (left_value=17, right_value=23) before the task can be marked complete"
+          ]
+        },
+        "usage": {
+          "model_calls": 16,
+          "charged_units": 35687
+        },
+        "current_result_validity": "NOT_COMPLETED",
+        "current_experience_state": null
+      }
+    ]
+  },
+  "repairs": [
+    {
+      "event_id": "ma_a7d00f2a6126d1d4d4379f87",
+      "run_id": "ma_b3f22f6ad400043a663e8382",
+      "status": "SUCCEEDED",
+      "error_type": null,
+      "updated": 1793417916.8951912
+    }
+  ],
+  "approved_turn": {
+    "status": "FAILED",
+    "answer": null,
+    "task_id": "task_1_6fffab",
+    "graph_model_calls": 14,
+    "error": {
+      "stage": "REASONING",
+      "category": "PROVIDER_ERROR",
+      "code": "PROVIDER_RESPONSE_ERROR",
+      "safe_message": "Provider returned invalid response for deepseek (chat.completions).",
+      "retryable": false,
+      "details": {
+        "provider": "deepseek",
+        "operation": "chat.completions",
+        "status_code": null
+      }
+    },
+    "lifecycle": [
+      {
+        "task_id": "task_1_6fffab",
+        "source_run_id": "ma_940c58de247fb986afc3451f",
+        "state": "FAILED",
+        "detail": {
+          "question": null,
+          "reason": "Execution did not produce an accepted successful result"
+        },
+        "usage": {
+          "model_calls": 39,
+          "charged_units": 134878
+        },
+        "current_result_validity": "NOT_COMPLETED",
+        "current_experience_state": null
+      }
+    ]
+  },
+  "engineering_assertions_passed": false,
+  "error_type": "AssertionError"
+}

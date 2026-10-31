@@ -40,6 +40,9 @@ class TaskLifecycle:
                 CREATE INDEX IF NOT EXISTS lifecycle_pending ON lifecycle_jobs(session_id,state,created);
                 CREATE TABLE IF NOT EXISTS lifecycle_deliveries(
                     job_id TEXT PRIMARY KEY REFERENCES lifecycle_jobs(job_id),result_hash TEXT NOT NULL);
+                INSERT OR IGNORE INTO lifecycle_result_outbox(run_id,created)
+                    SELECT run_id,started FROM runs WHERE result_json IS NOT NULL
+                    AND json_type(result_json,'$.trace_metadata.task_frontier')='object';
             """
             )
 
@@ -125,7 +128,75 @@ class TaskLifecycle:
                     "model_calls": usage["model_calls"],
                     "charged_units": usage["charged_units"],
                 }
+        # Recorded completion is historical; current source validity is checked
+        # separately, without model calls or resuming the inspected session.
+        workspace = self.host.prompt_composer.workspace_manager
+        session = self.host.sources.conversations.get_session(session_id)
+        scope = workspace.snapshot() if workspace else None
+        same_workspace = not workspace or bool(
+            session
+            and tuple(scope["roots"]) == tuple(session.workspace_roots)
+            and scope["current_root"] == session.current_workspace_root
+        )
+        for cycle in cycles:
+            cycle["current_result_validity"] = "NOT_COMPLETED"
+            cycle["current_experience_state"] = cycle["detail"].get("experience_state")
+            if cycle["state"] == "COMPLETED":
+                if same_workspace:
+                    try:
+                        self.host.experiences.source(cycle["source_run_id"])
+                        cycle["current_result_validity"] = "VALID"
+                    except ValueError:
+                        cycle["current_result_validity"] = "STALE"
+                else:
+                    cycle["current_result_validity"] = "NOT_CHECKED_WORKSPACE"
+                experience_id = cycle["detail"].get("experience_id")
+                if experience_id:
+                    experience = self.host.experiences.get(experience_id)
+                    if same_workspace and experience["state"] == "ACTIVE":
+                        try:
+                            self.host.experiences.validate(experience)
+                        except ValueError:
+                            pass
+                    cycle["current_experience_state"] = self.host.experiences.get(
+                        experience_id
+                    )["state"]
         return {"tasks": cycles, "jobs": self.jobs(session_id)}
+
+    def recover_results(self, session_id: str) -> None:
+        """Drain the local transactional outbox; never revive an older result."""
+        with self.repository._connect() as db:
+            rows = db.execute(
+                "SELECT o.run_id,r.task_id FROM lifecycle_result_outbox o JOIN runs r USING(run_id) "
+                "WHERE r.session_id=? AND o.state='PENDING' ORDER BY o.created DESC,o.rowid DESC LIMIT 100",
+                (session_id,),
+            ).fetchall()
+        for row in rows:
+            with self.repository._connect() as db:
+                latest = db.execute(
+                    "SELECT o.run_id FROM lifecycle_result_outbox o JOIN runs r USING(run_id) "
+                    "WHERE r.task_id=? ORDER BY o.created DESC,o.rowid DESC LIMIT 1",
+                    (row["task_id"],),
+                ).fetchone()
+                existing = db.execute(
+                    "SELECT 1 FROM lifecycle_jobs WHERE job_id=?",
+                    (identity(row["run_id"], "automatic", "task-review-v1"),),
+                ).fetchone()
+            saved = json.loads(self.repository.get_run(row["run_id"])["result_json"])
+            unchanged = existing or (
+                row["task_id"]
+                and row["task_id"] != UNBOUND_TASK_ID
+                and saved["trace_metadata"].get("repair_task_state_hash")
+                == self.host._repair_task_state_hash(row["task_id"])
+            )
+            if latest[0] == row["run_id"] and unchanged:
+                self.enqueue_result(row["run_id"])
+            else:
+                with self.repository._write() as db:
+                    db.execute(
+                        "UPDATE lifecycle_result_outbox SET state='SUPERSEDED' WHERE run_id=?",
+                        (row["run_id"],),
+                    )
 
     def notifications(self, session_id: str) -> list[dict]:
         with self.repository._connect() as db:
@@ -240,10 +311,14 @@ class TaskLifecycle:
         if "task_frontier" not in trace:
             return None  # Explicit memory writes are not verified task graphs.
         job_id = identity(run_id, trigger, "task-review-v1")
-        with self.repository._connect() as db:
+        with self.repository._write() as db:
             if db.execute(
                 "SELECT 1 FROM lifecycle_jobs WHERE job_id=?", (job_id,)
             ).fetchone():
+                db.execute(
+                    "UPDATE lifecycle_result_outbox SET state='ENQUEUED' WHERE run_id=?",
+                    (run_id,),
+                )
                 return job_id
         ledger = self.tasks.get_ledger(run["task_id"])
         requirements = [
@@ -291,6 +366,12 @@ class TaskLifecycle:
             ).fetchone():
                 cycle = "REPAIR_PENDING"
         with self.repository._write() as db:
+            # Recheck inside the write transaction: a duplicate enqueue must
+            # not reset a completed/cancelled projection or supersede new work.
+            if db.execute(
+                "SELECT 1 FROM lifecycle_jobs WHERE job_id=?", (job_id,)
+            ).fetchone():
+                return job_id
             db.execute(
                 "UPDATE lifecycle_jobs SET state='SUPERSEDED',error_code='NEWER_TASK_RESULT' WHERE task_id=? AND kind='ASSESS' AND state='PENDING' AND source_run_id<>?",
                 (run["task_id"], run_id),
@@ -327,16 +408,22 @@ class TaskLifecycle:
                     ),
                 },
             )
+            db.execute(
+                "UPDATE lifecycle_result_outbox SET state='ENQUEUED' WHERE run_id=?",
+                (run_id,),
+            )
         return job_id
 
     def _finish(
         self, job: dict, state: str, result: dict, *, cycle_state: str | None = None
     ) -> None:
         with self.repository._write() as db:
-            db.execute(
+            changed = db.execute(
                 "UPDATE lifecycle_jobs SET state=?,result_json=?,result_hash=? WHERE job_id=? AND state='PENDING'",
                 (state, canonical(result), digest(result), job["job_id"]),
-            )
+            ).rowcount
+            if not changed:
+                return
             current = db.execute(
                 "SELECT source_run_id FROM task_cycles WHERE task_id=?",
                 (job["task_id"],),
@@ -420,10 +507,19 @@ class TaskLifecycle:
         }
         with self.repository._write() as db:
             current = db.execute(
-                "SELECT source_run_id FROM task_cycles WHERE task_id=?",
+                "SELECT source_run_id,state FROM task_cycles WHERE task_id=?",
                 (job["task_id"],),
             ).fetchone()
-            if current is None or current[0] != job["source_run_id"]:
+            pending = db.execute(
+                "SELECT state FROM lifecycle_jobs WHERE job_id=?", (job["job_id"],)
+            ).fetchone()
+            if (
+                current is None
+                or current[0] != job["source_run_id"]
+                or current[1] == "CANCELLED"
+                or pending is None
+                or pending[0] != "PENDING"
+            ):
                 raise CoordinationConflict(
                     "newer task result superseded completion review"
                 )
@@ -464,15 +560,15 @@ class TaskLifecycle:
             "question": None,
             "reason": seal["assessment"]["reason"],
         }
-        with self.repository._write() as db:
-            self._enqueue_learning(db, job, seal)
-        self._finish(job, "SUCCEEDED", detail, cycle_state="COMPLETED")
         model_run_id = identity(job["session_id"], job["job_id"])
         self.repository.finish(
             model_run_id,
             "SUCCEEDED",
             {"kind": "task_review", "decision": "COMPLETE", "job_id": job["job_id"]},
         )
+        with self.repository._write() as db:
+            self._enqueue_learning(db, job, seal)
+        self._finish(job, "SUCCEEDED", detail, cycle_state="COMPLETED")
         return detail
 
     def _assess(self, job: dict) -> dict:
@@ -543,7 +639,6 @@ class TaskLifecycle:
                     raise CoordinationConflict(
                         "task completion lacks full verified coverage"
                     )
-                detail = self._commit_completion(job, proposal)
             else:
                 if (
                     not proposal["question"]
@@ -553,12 +648,8 @@ class TaskLifecycle:
                     raise CoordinationConflict(
                         "unfinished task needs a grounded question and remaining requirements"
                     )
-                detail = {
-                    "question": proposal["question"],
-                    "remaining_requirements": proposal["remaining_requirements"],
-                    "reason": proposal["reason"],
-                }
-                self._finish(job, "WAITING_USER", detail, cycle_state="WAITING_USER")
+            # Persist the accepted judgement before publishing its job result.
+            # A crash here reuses the immutable stage, without another API call.
             self.repository.finish(
                 run_id,
                 "SUCCEEDED",
@@ -568,6 +659,15 @@ class TaskLifecycle:
                     "job_id": job["job_id"],
                 },
             )
+            if proposal["decision"] == "COMPLETE":
+                detail = self._commit_completion(job, proposal)
+            else:
+                detail = {
+                    "question": proposal["question"],
+                    "remaining_requirements": proposal["remaining_requirements"],
+                    "reason": proposal["reason"],
+                }
+                self._finish(job, "WAITING_USER", detail, cycle_state="WAITING_USER")
             return detail
 
     def _learn(self, job: dict) -> dict:
@@ -601,8 +701,14 @@ class TaskLifecycle:
         if type(limit) is not int or not 1 <= limit <= 20:
             raise ValueError("invalid lifecycle drain limit")
         outcomes = []
+        self.recover_results(session_id)
+        deferred_tasks = set()
         for _ in range(limit):
-            pending = self.jobs(session_id, pending=True, limit=100)
+            pending = [
+                job
+                for job in self.jobs(session_id, pending=True, limit=100)
+                if job["task_id"] not in deferred_tasks
+            ]
             if not pending:
                 break
             job = pending[0]
@@ -648,8 +754,30 @@ class TaskLifecycle:
                         {"job_id": job["job_id"], "kind": job["kind"], "result": result}
                     )
             except RepairBusy:
-                break
+                deferred_tasks.add(job["task_id"])
             except Exception as exc:  # noqa: BLE001 - durable scheduler boundary
+                # Task 3 may already have committed while the coordination
+                # transaction rolled back. Its verified seal is the recovery
+                # authority; retain the pending job for the next drain.
+                try:
+                    seal = self.tasks.get_completion_receipt(job["task_id"])
+                except ValueError:
+                    seal = None  # A corrupt seal is never a recovery authority.
+                if (
+                    job["kind"] == "ASSESS"
+                    and seal
+                    and seal["job_id"] == job["job_id"]
+                    and seal["source_run_id"] == job["source_run_id"]
+                ):
+                    deferred_tasks.add(job["task_id"])
+                    outcomes.append(
+                        {
+                            "job_id": job["job_id"],
+                            "kind": job["kind"],
+                            "error_code": "COMPLETION_RECOVERY_PENDING",
+                        }
+                    )
+                    continue
                 code = getattr(exc, "invariant_code", type(exc).__name__)
                 detail = {
                     "reason": "Task automation stopped; source and budget must remain valid",
@@ -662,6 +790,26 @@ class TaskLifecycle:
                             "completion_id": job["input"]["completion_id"],
                             "experience_state": "FAILED",
                         }
+                    )
+                turn_id = (
+                    job["job_id"]
+                    if job["kind"] == "ASSESS"
+                    else "learn:" + identity(job["source_run_id"], "", "experience-v1")
+                )
+                model_run_id = identity(job["session_id"], turn_id)
+                with self.repository._connect() as db:
+                    model_run = db.execute(
+                        "SELECT status FROM runs WHERE run_id=?", (model_run_id,)
+                    ).fetchone()
+                if model_run and model_run[0] == "RUNNING":
+                    self.repository.finish(
+                        model_run_id,
+                        "FAILED",
+                        {
+                            "kind": "task_automation_failure",
+                            "job_id": job["job_id"],
+                            "result": {"decision": "FAILED", "error_code": code},
+                        },
                     )
                 self._finish(
                     job,

@@ -1,0 +1,94 @@
+{
+  "kind": "engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 4096
+  },
+  "checks": {
+    "waits_for_actual_user_approval": true,
+    "restart_repairs_without_inventing_approval": true
+  },
+  "structured_failures": [],
+  "source_sha256": {
+    "src/memory/collaboration/lifecycle.py": "c162251b8cdd3d7699c3eab6e2b9e6e967e393287536f5a2a08eebab8f1251ae",
+    "src/memory/collaboration/repository.py": "77f2cb4fabd5b1907a1ffc6bcb8b7d46f8001f72545af3eafb3feff75303879c",
+    "src/memory/collaboration/budget.py": "9b8e3edda021a5a26f4057a3ad48d0f49b9a4f98c748db0c733a53ab9533644b",
+    "src/memory/collaboration/coordinator.py": "bb9f7ab48a502758cf275a380a769a9c3119ebd9a1e0854c34d4957d4b2be6aa",
+    "src/memory/collaboration/experience.py": "a616446db3aa641b4bb1de382676d2e4888b96faf1116cf5f77f99c29bda931d",
+    "src/memory/collaboration/roles.py": "bbec4693dd42f7633a178ec1573650791b0e221840f5e186fcb3bc2f5953cbc9",
+    "src/memory/task_state/repository.py": "69d25edc654d1c23e7f556ee26be2c7d29c4be0b9b96f7a7505d4f19df303985",
+    "src/memory/app/console.py": "e331613a0306959d5dd1308c8628b58c0b2943cad82c9d7af27c799ea650ed5c"
+  },
+  "first_turn": {
+    "status": "SUCCESS",
+    "answer": "All three subgoals are verified. left: read_file returned left.txt literal content \"left_value=17\" (receipt call_c93d4e47c9eb). right: read_file returned right.txt literal content \"right_value=23\" (receipt call_ad95bb1b48d7). merge: output reports literal fields left_value=17 and right_value=23, matching the actual file reads, and explicitly states the task remains open pending the user's explicit approval, without marking it complete. The user's constraint to keep the task open until explicit approval is respected.\n\nDo you approve the final values left_value=17 and right_value=23 so the task can be marked complete?",
+    "task_id": "task_1_9caf11",
+    "graph_model_calls": 15,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_9caf11",
+        "source_run_id": "ma_3c651600b2a70f17c687344b",
+        "state": "WAITING_USER",
+        "detail": {
+          "question": "Do you approve the final values left_value=17 and right_value=23 so the task can be marked complete?",
+          "reason": "All three subgoals (left, right, merge) are verified with actual read_file receipts, and the literal fields left_value=17 and right_value=23 are reported. However, the user explicitly stated they have not approved completion and required the task stay open until explicit approval. That approval is absent, so the tracked goal remains unmet and the task cannot be COMPLETE.",
+          "remaining_requirements": [
+            "Explicit user approval of the final values (left_value=17, right_value=23) before the task can be marked complete"
+          ]
+        },
+        "usage": {
+          "model_calls": 16,
+          "charged_units": 35924
+        },
+        "current_result_validity": "NOT_COMPLETED",
+        "current_experience_state": null
+      }
+    ]
+  },
+  "repairs": [
+    {
+      "event_id": "ma_40024db88390c91bcd1ade9c",
+      "run_id": "ma_3c651600b2a70f17c687344b",
+      "status": "SUCCEEDED",
+      "error_type": null,
+      "updated": 1793418066.3975499
+    }
+  ],
+  "approved_turn": {
+    "status": "SUCCESS",
+    "answer": "本次重新读取结果：left_value=91（left.txt，sha256 7de3e49c7825a763fb952ea7d0e23ae7bae560e329b1e400ca719d16502c4a3f，未截断）；right_value=23（right.txt，sha256 ea79598d9c752430187f547f5bbe8243430bc354136ff5addd4d28b3c06724ed，16 字节，未截断）。可复用流程：每次合并前重新观察可能变化的来源（重新读取源文件，不依赖历史缓存）；合并独立核验的值（保留路径、hash、截断信息以便追溯）；将任务关闭与用户批准分开（报告只反映当前已核验事实，不宣称 tracked task 状态已变更）。\n\n任务已通过验收并完成。",
+    "task_id": "task_1_9caf11",
+    "graph_model_calls": 15,
+    "error": null,
+    "lifecycle": [
+      {
+        "task_id": "task_1_9caf11",
+        "source_run_id": "ma_630ab6ac248b16de5bb6589f",
+        "state": "COMPLETED",
+        "detail": {
+          "completion_id": "ma_c9357d208999baec84503e6f",
+          "error_code": "COORDINATION_5738f1c7e36ce721",
+          "experience_state": "FAILED",
+          "question": null,
+          "reason": "Task automation stopped; source and budget must remain valid"
+        },
+        "usage": {
+          "model_calls": 42,
+          "charged_units": 108761
+        },
+        "current_result_validity": "VALID",
+        "current_experience_state": "FAILED"
+      }
+    ]
+  },
+  "first_experience": [],
+  "engineering_assertions_passed": false,
+  "error_type": "AssertionError"
+}

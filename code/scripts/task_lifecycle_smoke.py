@@ -47,6 +47,8 @@ def main():
     }
     source_names = [
         "src/memory/collaboration/lifecycle.py",
+        "src/memory/collaboration/repository.py",
+        "src/memory/collaboration/budget.py",
         "src/memory/collaboration/coordinator.py",
         "src/memory/collaboration/experience.py",
         "src/memory/collaboration/roles.py",
@@ -89,6 +91,16 @@ def main():
                                     getattr(cause, "absolute_schema_path", [])
                                 ),
                                 "json_position": getattr(cause, "pos", None),
+                                "missing_required_fields": (
+                                    [
+                                        key
+                                        for key in cause.validator_value
+                                        if key not in cause.instance
+                                    ]
+                                    if getattr(cause, "validator", None) == "required"
+                                    and isinstance(cause.instance, dict)
+                                    else []
+                                ),
                             }
                         )
                         raise
@@ -221,6 +233,18 @@ def main():
             report["error_type"] = type(exc).__name__
             raise
         finally:
+            # Synthetic fixtures only. Keep the exact model proposal on failure
+            # so an ID/coverage rejection can be diagnosed without guessing.
+            with app.coordination_repository._connect() as db:
+                report["learning_proposals"] = [
+                    {
+                        "run_id": row["run_id"],
+                        "proposal": json.loads(row["payload_json"]),
+                    }
+                    for row in db.execute(
+                        "SELECT run_id,payload_json FROM handoffs WHERE stage_key='experience:propose' ORDER BY rowid"
+                    )
+                ]
             app.close()
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(

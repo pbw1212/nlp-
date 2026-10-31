@@ -39,6 +39,9 @@ class CoordinationRepository:
                     input_hash TEXT NOT NULL, started REAL NOT NULL, limits_json TEXT NOT NULL,
                     task_id TEXT, version INTEGER NOT NULL DEFAULT 0,
                     status TEXT NOT NULL DEFAULT 'RUNNING', result_json TEXT);
+                CREATE TABLE IF NOT EXISTS lifecycle_result_outbox(
+                    run_id TEXT PRIMARY KEY REFERENCES runs(run_id),
+                    created REAL NOT NULL, state TEXT NOT NULL DEFAULT 'PENDING');
                 CREATE TABLE IF NOT EXISTS role_tasks(
                     run_id TEXT NOT NULL REFERENCES runs(run_id), stage_key TEXT NOT NULL,
                     role TEXT NOT NULL, input_hash TEXT NOT NULL, status TEXT NOT NULL,
@@ -1127,13 +1130,20 @@ class CoordinationRepository:
             ).fetchone()
             text = canonical(result)
             if row is None or (
-                row["status"] != "RUNNING" and row["result_json"] != text
+                row["status"] != "RUNNING"
+                and (row["result_json"] != text or row["status"] != status)
             ):
                 raise CoordinationConflict("cannot replace a terminal result")
             db.execute(
                 "UPDATE runs SET status=?,result_json=? WHERE run_id=?",
                 (status, text, run_id),
             )
+            # The result and its lifecycle wake-up must survive the same commit.
+            if isinstance(result.get("trace_metadata", {}).get("task_frontier"), dict):
+                db.execute(
+                    "INSERT OR IGNORE INTO lifecycle_result_outbox(run_id,created) VALUES(?,?)",
+                    (run_id, time.time()),
+                )
             if status == "FAILED":
                 graph_id = identity(run_id, "graph")
                 db.execute(

@@ -1,0 +1,100 @@
+{
+  "kind": "system_runtime_and_scheduler_audit",
+  "date": "2026-10-31",
+  "base_commit": "15012d7c25b394a42730b67a24e3fa997b31fdde",
+  "source_sha256": {
+    "code/src/memory/collaboration/lifecycle.py": "c162251b8cdd3d7699c3eab6e2b9e6e967e393287536f5a2a08eebab8f1251ae",
+    "code/src/memory/collaboration/repository.py": "77f2cb4fabd5b1907a1ffc6bcb8b7d46f8001f72545af3eafb3feff75303879c",
+    "code/src/memory/collaboration/budget.py": "9b8e3edda021a5a26f4057a3ad48d0f49b9a4f98c748db0c733a53ab9533644b",
+    "code/src/memory/collaboration/coordinator.py": "bb9f7ab48a502758cf275a380a769a9c3119ebd9a1e0854c34d4957d4b2be6aa",
+    "code/src/memory/collaboration/experience.py": "a616446db3aa641b4bb1de382676d2e4888b96faf1116cf5f77f99c29bda931d",
+    "code/src/memory/collaboration/roles.py": "0fd1ee081812a19b4f556ab29280507fa803c4e4803fa0524bf848d375ba9526",
+    "code/src/memory/task_state/repository.py": "69d25edc654d1c23e7f556ee26be2c7d29c4be0b9b96f7a7505d4f19df303985",
+    "code/src/memory/app/console.py": "e331613a0306959d5dd1308c8628b58c0b2943cad82c9d7af27c799ea650ed5c",
+    "code/scripts/task_lifecycle_smoke.py": "2e764dc720e6a962d0abe5acdb8289b000f3426abcd88cf02d45c72477496d6c",
+    "code/scripts/personal_agent_app_server.py": "ef019155d75e32dce609c6d7e2332474ecdc7518cb910098794a5b6696344e00",
+    "code/tests/test_system_audit.py": "24209ae36f9485d31a247e0459f2363bff9a923fe746a608be9a5b3f71889bf4"
+  },
+  "baseline": {
+    "tests": 543,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 1,
+    "passed": 542,
+    "elapsed_seconds": 152.85,
+    "junit_path": "docs/evaluations/system-audit-baseline-20261031.xml"
+  },
+  "offline_regression": {
+    "command": "python -m pytest -q --junitxml=docs/evaluations/system-audit-20261031.xml",
+    "tests": 561,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 1,
+    "passed": 560,
+    "elapsed_seconds": 190.217,
+    "junit_path": "docs/evaluations/system-audit-20261031.xml"
+  },
+  "new_fault_injection_and_boundary_cases": 18,
+  "product_trial": {
+    "path": "docs/evaluations/product-trial-system-audit-20261031.json",
+    "total": 14,
+    "pass": 14,
+    "fail": 0,
+    "uncertain": 0,
+    "fuzz_passed": true,
+    "fuzz_violations": [],
+    "seeded_fuzz_steps": 50
+  },
+  "live": {
+    "path": "docs/evaluations/live-system-audit-20261031.json",
+    "engineering_assertions_passed": true,
+    "checks": {
+      "waits_for_actual_user_approval": true,
+      "restart_repairs_without_inventing_approval": true,
+      "automatic_completion_seal_and_learning": true,
+      "repeated_drain_no_new_calls": true,
+      "sealed_experience_survives_restart_and_new_task_reuses_it": true,
+      "revoked_experience_blocks_old_consumer_answer": true
+    },
+    "requested_model": "deepseek-v4-flash",
+    "server_model_identity_retained": false,
+    "observed_structured_response_failures": [
+      {
+        "operation": "agent_action",
+        "error_type": "ProviderResponseError",
+        "cause_type": "ValidationError",
+        "schema_path": [
+          "required"
+        ],
+        "json_position": null,
+        "missing_required_fields": [
+          "tool_name",
+          "tool_arguments"
+        ]
+      }
+    ],
+    "failed_attempts_retained": [
+      "docs/evaluations/live-system-audit-attempt1-20261031.json",
+      "docs/evaluations/live-system-audit-attempt2-20261031.json"
+    ],
+    "final_source_snapshot_matches": true
+  },
+  "checks": {
+    "ruff_changed_python_files": "passed",
+    "ruff_full_tree_E9_F821_F822_F823": "passed",
+    "full_tree_compileall": "passed",
+    "git_diff_check": "passed",
+    "cli_help": "passed",
+    "credential_pattern_scan": "no candidates; heuristic scan only",
+    "full_tree_all_ruff_rules": "1190 existing lint findings; not a clean full-lint claim"
+  },
+  "scope_limits": [
+    "Windows local engineering validation, not proof of zero bugs",
+    "Serial read-only collaboration with at most three subtasks",
+    "Scheduling at turn boundaries, session restore or explicit drain; no background daemon",
+    "No distributed atomicity between Task 3 and coordination databases",
+    "External freshness requires a registered adapter; historical receipts are insufficient for unknown tools",
+    "Real provider semantic reliability is not established by one successful run"
+  ],
+  "report": "docs/maintenance/system-audit-20261031.md"
+}

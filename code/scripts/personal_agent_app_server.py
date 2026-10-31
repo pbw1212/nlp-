@@ -258,6 +258,15 @@ class JsonlAppServer:
             }
         if method in {"task/lifecycle/read", "task/lifecycle/drain"}:
             thread_id = str(params.get("threadId") or self.app.active_session_id)
+            if method == "task/lifecycle/read":
+                if (
+                    thread_id != self.app.active_session_id
+                    and not self.app.conversation_repo.get_session(thread_id)
+                ):
+                    raise ValueError("thread not found")
+                return self.app.get_task_lifecycle_status(
+                    params.get("taskId"), session_id=thread_id
+                )
             if thread_id != self.app.active_session_id and not self.app.resume_session(
                 thread_id
             ):
@@ -267,6 +276,13 @@ class JsonlAppServer:
             return self.app.get_task_lifecycle_status(params.get("taskId"))
         if method.startswith("experience/"):
             thread_id = str(params.get("threadId") or self.app.active_session_id)
+            if method == "experience/list":
+                if (
+                    thread_id != self.app.active_session_id
+                    and not self.app.conversation_repo.get_session(thread_id)
+                ):
+                    raise ValueError("thread not found")
+                return {"experiences": self.app.list_experiences()}
             if thread_id != self.app.active_session_id and not self.app.resume_session(
                 thread_id
             ):
@@ -318,10 +334,12 @@ class JsonlAppServer:
             "repair/drain",
         }:
             thread_id = str(params.get("threadId") or self.app.active_session_id)
-            if thread_id != self.app.active_session_id and not self.app.resume_session(
-                thread_id
-            ):
-                raise ValueError("thread not found")
+            if thread_id != self.app.active_session_id:
+                if method in {"repair/list", "repair/graphs"}:
+                    if not self.app.conversation_repo.get_session(thread_id):
+                        raise ValueError("thread not found")
+                elif not self.app.resume_session(thread_id):
+                    raise ValueError("thread not found")
             if self.app.collaboration is None:
                 raise ValueError("collaboration mode is not enabled")
             if method == "repair/list":

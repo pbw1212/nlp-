@@ -85,6 +85,8 @@ python code/scripts/personal_agent_trial.py --output-json artifacts/product_tria
 ```
 
 全量回归、产品场景与有限真实 API 的最终结果见维护报告和 JSON 证据。真实 API 脚本 `code/scripts/maintenance_live_smoke.py` 使用隔离临时目录、最多 30 次请求；运行会消耗 API，离线 pytest 不需要真实密钥。
+最新的运行、调度与故障恢复检查见 [2026-10-31 系统审计](docs/maintenance/system-audit-20261031.md)，
+包含崩溃窗口、取消、抢锁、跨会话查询、全量回归和真实闭环的通过及失败证据。
 
 ## 当前限制
 

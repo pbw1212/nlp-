@@ -1767,12 +1767,16 @@ class PersonalAgentApp:
             raise ValueError("未完成 turn 没有可恢复的用户输入")
         return self._process_chat_turn_with_id(message.content, turn_id, resume=True)
 
-    def get_task_lifecycle_status(self, task_id: str | None = None) -> dict[str, Any]:
+    def get_task_lifecycle_status(
+        self, task_id: str | None = None, *, session_id: str | None = None
+    ) -> dict[str, Any]:
         if self.collaboration is None or self.collaboration.lifecycle is None:
             return {"enabled": False, "tasks": [], "jobs": []}
         return {
             "enabled": True,
-            **self.collaboration.lifecycle.status(self.active_session_id, task_id),
+            **self.collaboration.lifecycle.status(
+                session_id or self.active_session_id, task_id
+            ),
         }
 
     def drain_task_lifecycle(self, *, limit: int = 4) -> dict[str, Any]:

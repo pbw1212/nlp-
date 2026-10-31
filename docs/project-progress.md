@@ -18,6 +18,7 @@
 | 任务级闭环 | TaskReview 全目标覆盖、原子完成封存、正常结束后的来源资格、持久经验 outbox 与恢复投递 |
 | 程序性经验 | 与用户事实分区；候选、独立审核、适用性筛选、反馈、隔离、撤销与新修订；来源失效时停止复用 |
 | 产品入口 | CLI 和 JSONL 的修复及经验操作，保留真实回执和状态 |
+| 运行与调度审计 | 来源结果与验收入队标记原子提交、完成后普通异常恢复、锁冲突跳过、取消保护、终态不可变、跨会话查询隔离与当前有效性诊断 |
 
 ## 当前验收
 
@@ -25,7 +26,11 @@
 覆盖绑定任务的双文件读取与合并、修改一个文件后关闭/重开应用、只重做受影响分支、
 第二次修改另一文件、重复恢复幂等、同时变更的事件合并、来源删除/权限收回、
 长原文窗口补查、按需求扩大召回、经验准入/不确定性/撤销/反馈和修订。
-任务级自动闭环最终全量回归为 **542 passed、1 skipped**，见 [验收记录](evaluations/task-lifecycle-20261031.json)。跳过项为 Windows 可选 readline。前一功能版本为 520 passed、1 skipped。
+任务级自动闭环的审计前基线为 **542 passed、1 skipped**，见 [基线验收记录](evaluations/task-lifecycle-20261031.json)。跳过项为 Windows 可选 readline。前一功能版本为 520 passed、1 skipped。
+最新全系统检查、故障修复及最终结果见 [审计报告](maintenance/system-audit-20261031.md) 与
+[审计验收记录](evaluations/system-audit-20261031.json)；原有数字不覆盖本次增量。
+最终代码全量回归为 **560 passed、1 skipped**；新增 18 项故障注入与边界检查。
+产品场景 14/14、50 步扰动及最终真实 Provider 六项闭环断言均通过。
 前一功能版本的代码快照保留在 [功能验收记录](evaluations/functional-closeout-20261031.json)，不覆盖本次增量。
 
 真实 Provider 联调与离线回归分开保存。新的双文件/修复/经验联调见
@@ -40,6 +45,9 @@
 
 任务级闭环实现与恢复边界见 [任务级自动闭环](architecture/task-lifecycle.md)。
 真实连续任务联调见 [记录](evaluations/live-task-lifecycle-20261031.json)，六项闭环断言均通过：等待真实批准、重启修复、自动封存与经验审核、重复处理无新调用、新任务复用，以及撤销后阻断旧答案。未通过的尝试单独保留；后续任务的新经验提案被门禁拒绝时，不会伪造保存成功。
+系统审计后的最终代码再次通过同六项真实闭环断言，见
+[审计真实联调](evaluations/live-system-audit-20261031.json)。此次两次失败尝试单列保存；
+最终一次结构化响应缺字段在原预算内纠正，未增加重试次数或放宽来源门禁。
 
 ## 明确边界
 
@@ -59,6 +67,7 @@
 - [来源版本与修复](architecture/repair-execution.md)
 - [程序性经验生命周期](architecture/procedural-experience.md)
 - [任务级自动闭环](architecture/task-lifecycle.md)
+- [系统运行与调度审计](maintenance/system-audit-20261031.md)
 - [CLI/JSONL 使用说明](cli-user-guide.md)
 
 更早的进度保留在 [2026-09-05 历史快照](history/project-progress-2026-09-05.md)。

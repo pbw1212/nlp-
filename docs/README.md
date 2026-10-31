@@ -5,6 +5,7 @@
 当前 Git 远端和同步前核验要求以[仓库绑定规则](repository-policy.md)为准。带日期的维护、评测和发布材料保留当时的仓库字段，仅供历史追溯，不作为当前 Git 操作的远端指引。
 
 核心算法、论文联系、阶段边界与研究方案见 [MAPAS 核心算法与技术方案](research/mapas-core-algorithms.md)；当前架构及协作范围见 [系统架构](architecture/overview.md) 与 [多 Agent P1](architecture/multi-agent-foundation.md)。阶段测试证据见 [P0–P1 报告](phases/multi-agent-p0-p1-20261014.md)。
+最新运行、调度、恢复与同步前验收见 [2026-10-31 系统审计](maintenance/system-audit-20261031.md)。
 
 本目录是项目可维护知识的 source of truth。Protected-local 原始材料不属于 canonical Git，也不是正式规格；所需设计知识必须整理进本目录。
 

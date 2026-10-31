@@ -37,13 +37,19 @@ Task 3 的 task_completion_receipts 在同一个 SQLite 事务中比较完整 Le
 
 ## 持久化调度与恢复
 
-coordination.db 保存 task_cycles、lifecycle_jobs、lifecycle_deliveries。
+coordination.db 保存 task_cycles、lifecycle_jobs、lifecycle_deliveries，以及 lifecycle_result_outbox。
+来源运行的终态结果与待入队标记在同一事务提交；结果落库后、验收入队前崩溃，
+下次 drain 会恢复最新且完整任务快照未变化的来源。旧来源和变化的台账不会被重新解释为当前要求。
 ASSESS 和 LEARN 是独立、可恢复作业，输入身份与内容有哈希校验；同一来源/触发身份幂等。
 新结果会淘汰同任务旧的待验收作业，调度优先处理新的待处理记录。
 同一任务的调度通过进程间文件锁互斥。
+遇到占锁任务会跳过该任务，在本次有界额度内继续其他任务。重复入队不重置现有投影；
+晚到的失败结果不能覆盖已取消作业，终态运行即使结果内容相同也不能被改为其他状态。
 
 完成封存与 coordination 作业更新跨数据库，不宣称分布式原子性：如果 Task 3 已提交、
 经验 outbox 尚未提交就中断，恢复时读取已核验的完成记录，继续原作业，补齐经验作业。
+该恢复同时覆盖进程中断与 Task 3 提交后的普通异常。已接受的 TaskReview 判断先写入运行终态，
+再发布任务结果；未完成作业重用持久阶段输出，终止的失败作业同步关闭其未结束模型运行。
 模型提案、审核阶段和预算复用既有持久缓存，绝不以重启重置调用额度。
 
 待问问题也会加入当前返回给用户的回答；整体验收通过后明确显示完成状态。
@@ -72,6 +78,12 @@ CLI：`/task-loop` 查看状态；`/task-drain` 继续待处理作业；`/comple
 完整验收才能封存；`/cancel` 同时停止待处理作业。通常只需正常提出任务和补充必要输入。
 JSONL：`task/lifecycle/read`（可选 taskId）、`task/lifecycle/drain`，均可指定 threadId。
 `status/read` 和返回结果的 trace_metadata.task_lifecycle 也包含状态，initialize 声明 taskLifecycle。
+`task/lifecycle/read`、`repair/list`、`repair/graphs`、`experience/list` 不恢复目标会话，
+不切换活动会话、不触发模型调用或待办调度。来源核验仍可能记录已发现的本地证据失效。
+完成项保留历史 `state=COMPLETED`，另给出 `current_result_validity`（VALID、STALE，
+或当前工作目录不同而未核验的 NOT_CHECKED_WORKSPACE）与 `current_experience_state`。
+VALID 表示现有来源适配器与记录核验通过，不证明未知外部工具的数据仍新鲜。
+跨工作目录查询不借用当前目录权限核验旧来源，也不据此误标旧经验失效。
 
 离线：`code/tests/test_task_lifecycle.py`。覆盖两个连续任务、正常完成后的来源资格、
 输入变化修复、中断窗口、通知去重、取消、伪造覆盖、封存/作业篡改与并发条目变化。
@@ -81,3 +93,6 @@ JSONL：`task/lifecycle/read`（可选 taskId）、`task/lifecycle/drain`，均�
 真实连续任务用例通过六项断言。第二个任务的新经验提案因来源门禁不通过而被拒绝，任务本身仍正常完成；未把拒绝当成写入成功。最终又补充了学习失败时保留 completion_id 和显式 FAILED 经验状态的回归。
 
 待澄清经验可通过 `/experience review` 明确确认，或通过 `/experience revoke` 拒绝。系统追加独立的解决记录，保留原始问答和投递历史，清除待办；后续 drain 不会重发已解决的问题。该分支由闭环专项回归覆盖。
+
+2026-10-31 全系统审计新增 `code/tests/test_system_audit.py`，故障注入与联合验收见
+[审计报告](../maintenance/system-audit-20261031.md)。

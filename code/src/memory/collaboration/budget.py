@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass
 from threading import RLock
 from typing import Any
 
+from jsonschema import ValidationError
 from src.memory.collaboration.models import canonical
 from src.memory.collaboration.repository import (
     CoordinationConflict,
@@ -197,7 +198,7 @@ class BudgetedLLMClient(LLMClientBase):
     ) -> dict[str, Any]:
         try:
             return self._call(method, system_prompt, user_prompt, **kwargs)
-        except ProviderResponseError:
+        except ProviderResponseError as exc:
             if (
                 not self.structured_recovery
                 or self.active_run_id is None
@@ -208,6 +209,23 @@ class BudgetedLLMClient(LLMClientBase):
             # attempt makes its own durable reservation in the SAME run. No
             # malformed proposal can dispatch a tool or mutate durable state.
             correction = "\nYour previous attempt was not a valid JSON response for the supplied schema. Return exactly one JSON object conforming to every declared field/type/nullability, with no additional keys or prose. Preserve all original evidence, task constraints and capability limits."
+            cause = exc.__cause__
+            if isinstance(cause, ValidationError):
+                # Only trusted schema structure is fed back. Never copy model
+                # values or the error message into the system instruction.
+                diagnostic = {
+                    "schema_path": list(cause.absolute_schema_path),
+                    "validator": cause.validator,
+                }
+                if cause.validator == "required" and isinstance(cause.instance, dict):
+                    diagnostic["missing_required_fields"] = [
+                        key
+                        for key in cause.validator_value
+                        if key not in cause.instance
+                    ]
+                correction += "\nStructural validation feedback: " + canonical(
+                    diagnostic
+                )
             return self._call(method, system_prompt + correction, user_prompt, **kwargs)
 
     def generate_reasoned_json(
