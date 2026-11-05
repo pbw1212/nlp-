@@ -80,6 +80,7 @@ def test_whole_task_auto_completion_learning_restart_and_next_task_reuse(
     app = loop_app(tmp_path, monkeypatch, provider)
     first = app.process_chat_turn("Read both independent files and combine values")
     assert first.status is AgentResultStatus.SUCCESS, first.error_info
+    assert first.final_response == "alpha=10 | beta=20"
     assert (
         app.runtime.task_service.get_task(first.task_id).status is TaskStatus.COMPLETED
     )

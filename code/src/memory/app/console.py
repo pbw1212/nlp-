@@ -2071,12 +2071,6 @@ class PersonalAgentApp:
                             + "\n\n"
                             + question,
                         )
-                    elif cycle["state"] == "COMPLETED":
-                        result = replace(
-                            result,
-                            final_response=(result.final_response or "")
-                            + "\n\n任务已通过验收并完成。",
-                        )
         return result
 
     def _execute_chat_turn_with_id(

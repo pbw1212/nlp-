@@ -179,8 +179,14 @@ VERIFY_SCHEMA = object_schema(
         "schema_version": VERSION,
         "verdict": {"type": "string", "enum": ["PASS", "BLOCKED"]},
         "evidence_ids": IDS,
-        "answer": TEXT,
-        "reason": TEXT,
+        "answer": {
+            **TEXT,
+            "description": "The verified deliverable itself or a direct reply about a blocker. At whole-user-goal scope this is the next message to the user.",
+        },
+        "reason": {
+            **TEXT,
+            "description": "Internal rationale for the verdict and evidence selection.",
+        },
     }
 )
 TASK_REVIEW_SCHEMA = object_schema(

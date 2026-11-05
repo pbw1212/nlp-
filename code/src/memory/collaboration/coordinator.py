@@ -1323,8 +1323,25 @@ class CollaborationCoordinator:
                 }
                 for row in experiences
             )
+            # Use the same bounded conversation window as the Executor. The
+            # conversation frontier above tracks the source of this projection.
+            conversation = request.conversation_context
+            messages = getattr(conversation, "recent_messages", None)
+            dialogue_context = {
+                "summary": getattr(conversation, "summary", None),
+                "recent_messages": [
+                    {
+                        "role": getattr(item.role, "value", item.role),
+                        "content": item.content,
+                    }
+                    for item in (
+                        messages if messages is not None else request.recent_history
+                    )
+                ],
+            }
             base = {
                 "user_goal": request.turn_request.user_input,
+                "dialogue_context": dialogue_context,
                 "task_id": context.task_id,
                 "memories": memories,
                 "working_context": asdict(context.working_context),
@@ -1362,6 +1379,7 @@ class CollaborationCoordinator:
                 },
             )
             verified: dict[str, dict[str, Any]] = {}
+            executor_replies: dict[str, str | None] = {}
             for subtask in subtasks:
                 if repair:
                     self.get_validated_repair_plan(repair["repair_id"])
@@ -1416,6 +1434,9 @@ class CollaborationCoordinator:
                         "input_hash": reused["input_hash"],
                         "supporting_evidence": support,
                     }
+                    executor_replies[subtask.key] = reused["execution"].get(
+                        "final_response"
+                    )
                     continue
                 role_context = RoleContext(
                     run_id,
@@ -1715,6 +1736,7 @@ class CollaborationCoordinator:
                     evidence_ids.update(dependency["evidence_ids"])
                 verify_input = {
                     **inputs,
+                    "dialogue_context": dialogue_context,
                     "memories": [
                         item
                         for item in inputs["memories"]
@@ -1738,33 +1760,30 @@ class CollaborationCoordinator:
                 )
                 if not set(verdict["evidence_ids"]) <= evidence_ids:
                     raise CoordinationConflict("verifier invented evidence")
-                if (
+                unsupported_pass = (
                     verdict["verdict"] == "PASS"
-                    and receipts
+                    and bool(receipts)
                     and not any(
                         item["status"] == "SUCCEEDED"
                         and item["evidence_id"] in verdict["evidence_ids"]
                         for item in receipts
                     )
-                ):
-                    raise CoordinationConflict(
-                        "passing tool result has no successful supporting receipt"
-                    )
-                if verdict["verdict"] != "PASS":
+                )
+                if verdict["verdict"] != "PASS" or unsupported_pass:
                     final = AgentResult(
                         context.turn_id,
                         context.task_id,
                         run_id,
                         AgentResultStatus.FAILED,
                         request_turn_id=context.turn_id,
-                        final_response=verdict["answer"],
+                        final_response=None if unsupported_pass else verdict["answer"],
                         executed_tool_call_ids=tuple(executed),
                         step_count=step_count,
                         error_info=AgentErrorInfo(
                             "VERIFICATION",
                             "EVIDENCE_ERROR",
                             "COLLABORATION_VERIFICATION_BLOCKED",
-                            "子任务缺少可靠证据，未被标记为完成。",
+                            "我没能核实这次请求所需的信息。请检查输入，或补充相关信息后再试。",
                         ),
                     )
                     return finish(final)
@@ -1783,11 +1802,16 @@ class CollaborationCoordinator:
                     "input_hash": digest(executor_input),
                     "supporting_evidence": support,
                 }
+                executor_replies[subtask.key] = result.final_response
             final_inputs = {
                 "verification_scope": "whole_user_goal",
                 "user_goal": request.turn_request.user_input,
+                "dialogue_context": dialogue_context,
                 "plan": plan,
-                "verified_subtasks": verified,
+                "verified_subtasks": {
+                    key: {**item, "executor_reply": executor_replies[key]}
+                    for key, item in verified.items()
+                },
                 "supporting_evidence": self._supporting_evidence(
                     *(row["supporting_evidence"] for row in verified.values())
                 ),

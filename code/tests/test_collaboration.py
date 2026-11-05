@@ -12,6 +12,7 @@ import pytest
 from conftest import TestProviderClient
 from src.memory.agent.models import AgentRequest, AgentResult, AgentResultStatus
 from src.memory.app.console import PersonalAgentApp
+from src.memory.app.serialization import _serialize_result
 from src.memory.collaboration.budget import (
     BudgetedLLMClient,
     CollaborationBudgetError,
@@ -22,6 +23,7 @@ from src.memory.collaboration.repository import (
     CoordinationConflict,
     CoordinationRepository,
 )
+from src.memory.conversation.models import ConversationRole
 from src.memory.core.config import MemoryConfig
 from src.memory.core.schema import RetentionDisposition, SemanticValidity
 from src.memory.llm.errors import ProviderRequestError
@@ -93,6 +95,10 @@ class CollaborationProvider(TestProviderClient):
                     for row in data["receipts"]
                     if row["status"] == "SUCCEEDED"
                 ]
+                if self.fault == "tool_failed":
+                    assert (
+                        response_schema["properties"]["verdict"]["const"] == "BLOCKED"
+                    )
             else:
                 refs = [
                     row["artifact_id"] for row in data["verified_subtasks"].values()
@@ -119,7 +125,13 @@ class CollaborationProvider(TestProviderClient):
                     "action_kind": "TOOL_CALL",
                     "content": None,
                     "tool_name": "calculator",
-                    "tool_arguments": json.dumps({"expression": "17*23"}),
+                    "tool_arguments": json.dumps(
+                        {
+                            "expression": (
+                                "1/0" if self.fault == "tool_failed" else "17*23"
+                            )
+                        }
+                    ),
                 }
             return {
                 "action_kind": "FINAL_RESPONSE",
@@ -145,6 +157,95 @@ def make_app(tmp_path, monkeypatch, provider=None, limits=None):
         collaboration_limits=limits,
         task_lifecycle_enabled=False,
     )
+
+
+def test_dialogue_history_reaches_verifiers_and_only_reply_reaches_chat(
+    tmp_path, monkeypatch
+):
+    provider = CollaborationProvider()
+    original = provider.generate_json
+    first_message = "请记住本轮暗号是蓝鲸，但只回复你好"
+    first_reply = "你好！"
+    follow_up = "刚才的暗号是什么？只输出暗号"
+    assessment = "内部验收通过，无需工具。"
+
+    def respond(system_prompt, user_prompt, *, response_schema, schema_name):
+        if schema_name == "collaboration_planner_v1":
+            data = json.loads(user_prompt)
+            if data["user_goal"] == follow_up:
+                assert {"role": "USER", "content": first_message} in data[
+                    "dialogue_context"
+                ]["recent_messages"]
+            return {
+                "schema_version": 1,
+                "subtasks": [
+                    {
+                        "key": "reply",
+                        "objective": "Answer the user",
+                        "dependencies": [],
+                        "tool_names": [],
+                        "completion_criteria": "Give the requested literal reply",
+                    }
+                ],
+            }
+        if schema_name == "agent_action":
+            return {
+                "action_kind": "FINAL_RESPONSE",
+                "content": "蓝鲸" if follow_up in user_prompt else first_reply,
+                "tool_name": None,
+                "tool_arguments": None,
+            }
+        if schema_name == "collaboration_verifier_v1":
+            data = json.loads(user_prompt)
+            expected = "蓝鲸" if data["user_goal"] == follow_up else first_reply
+            if data["user_goal"] == follow_up:
+                assert {"role": "USER", "content": first_message} in data[
+                    "dialogue_context"
+                ]["recent_messages"]
+            if data.get("verification_scope") == "whole_user_goal":
+                assert data["verified_subtasks"]["reply"]["executor_reply"] == expected
+                assert data["verified_subtasks"]["reply"]["answer"] == expected
+                assert assessment not in user_prompt
+            else:
+                assert data["executor_artifact"]["final_response"] == expected
+            return {
+                "schema_version": 1,
+                "verdict": "PASS",
+                "evidence_ids": [],
+                "answer": expected,
+                "reason": assessment,
+            }
+        return original(
+            system_prompt,
+            user_prompt,
+            response_schema=response_schema,
+            schema_name=schema_name,
+        )
+
+    monkeypatch.setattr(provider, "generate_json", respond)
+    app = make_app(tmp_path, monkeypatch, provider)
+    try:
+        for index, (message, expected) in enumerate(
+            ((first_message, first_reply), (follow_up, "蓝鲸"))
+        ):
+            turn_id = f"dialogue-{index}"
+            result = app._process_chat_turn_with_id(message, turn_id, resume=False)
+            assert result.status is AgentResultStatus.SUCCESS
+            assert (
+                result.final_response
+                == _serialize_result(result)["user_response"]
+                == expected
+            )
+            assert not result.executed_tool_call_ids
+            assert not result.warnings
+            saved = app.conversation_repo.get_message_by_turn(
+                app.active_session_id, turn_id, ConversationRole.ASSISTANT
+            )
+            assert saved.content == expected
+        replay = app._process_chat_turn_with_id(follow_up, "dialogue-1", resume=True)
+        assert replay.final_response == "蓝鲸"
+    finally:
+        app.close()
 
 
 def test_four_roles_execute_real_calculator_and_replay_without_duplicate_ingestion(
@@ -217,7 +318,16 @@ def test_four_roles_execute_real_calculator_and_replay_without_duplicate_ingesti
 
 
 @pytest.mark.parametrize(
-    "fault", ["unauthorized", "memory", "forged", "verify", "overall", "provider"]
+    "fault",
+    [
+        "unauthorized",
+        "memory",
+        "forged",
+        "verify",
+        "overall",
+        "provider",
+        "tool_failed",
+    ],
 )
 def test_invalid_handoff_or_provider_failure_never_reports_success(
     tmp_path, monkeypatch, fault
@@ -229,6 +339,10 @@ def test_invalid_handoff_or_provider_failure_never_reports_success(
         assert result.status is AgentResultStatus.FAILED
         assert result.error_info is not None
         assert "not-for-public-output" not in json.dumps(asdict(result))
+        if fault == "tool_failed":
+            assert result.executed_tool_call_ids
+            assert result.error_info.code == "COLLABORATION_VERIFICATION_BLOCKED"
+            assert "没能核实" in _serialize_result(result)["user_response"]
         assert not (tmp_path / "test.txt").exists()
         if fault in {"unauthorized", "memory", "provider"}:
             assert provider.executor_calls == 0

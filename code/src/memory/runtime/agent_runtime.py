@@ -145,18 +145,17 @@ class AgentRuntime:
         warnings: tuple[str, ...] = (),
         evidence_bundle: Optional[EvidenceBundle] = None,
     ) -> AgentTurnContext:
-        context_warnings = ("This turn has no Task 3 binding.", *warnings)
         structured = StructuredTaskContext(
             task_id=UNBOUND_TASK_ID,
             current_turn=request.user_input,
             external_observations=request.external_observations,
             policy_version="unbound-turn-v1",
-            warnings=context_warnings,
+            warnings=warnings,
         )
         working = ActiveWorkingContext(
             task_id=UNBOUND_TASK_ID,
             structured=structured,
-            warnings=context_warnings,
+            warnings=warnings,
         )
         traces.append(
             TurnStageTrace(
@@ -173,7 +172,7 @@ class AgentRuntime:
             working_context=working,
             structured_task_context=structured,
             task_analysis=analysis,
-            warnings=context_warnings,
+            warnings=warnings,
             stage_traces=tuple(traces),
         )
 
@@ -248,11 +247,11 @@ class AgentRuntime:
             TurnStageTrace(
                 stage=TurnStage.TASK_UPDATE,
                 status=TurnStageStatus.SKIPPED,
-                warnings=("unbound turn; semantic analysis only",),
+                warnings=tuple(batch.warnings),
                 duration_seconds=time.time() - started,
             )
         )
-        return batch.analysis, tuple(batch.warnings)
+        return batch.analysis, ()
 
     def process_user_turn(self, request: TurnRequest) -> TurnExecutionResult:
         """Executes a user turn through the orchestration lifecycle:
@@ -356,15 +355,12 @@ class AgentRuntime:
             return TurnExecutionResult(turn_id=request.turn_id, task_id=request.task_id, context=None, stage_traces=tuple(traces), error_info=err_info)
 
         if task_id == UNBOUND_TASK_ID:
-            warning = "turn is not bound to a Task"
             analysis, analysis_warnings = self._analyze_unbound_turn(request, traces)
-            warnings.extend(analysis_warnings)
             if not any(trace.stage is TurnStage.TASK_UPDATE for trace in traces):
                 traces.append(
                     TurnStageTrace(
                         stage=TurnStage.TASK_UPDATE,
                         status=TurnStageStatus.SKIPPED,
-                        warnings=(warning,),
                     )
                 )
             for stage in (TurnStage.MAINTENANCE,):
@@ -372,7 +368,6 @@ class AgentRuntime:
                     TurnStageTrace(
                         stage=stage,
                         status=TurnStageStatus.SKIPPED,
-                        warnings=(warning,),
                     )
                 )
             evidence_bundle = None
@@ -420,7 +415,7 @@ class AgentRuntime:
                 task_id=UNBOUND_TASK_ID,
                 context=context,
                 stage_traces=tuple(traces),
-                warnings=(warning,),
+                warnings=analysis_warnings,
             )
 
         # STAGE 2: TASK 3 UPDATE

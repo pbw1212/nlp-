@@ -98,6 +98,10 @@ class AgentLoopController:
     @staticmethod
     def _truthful_final_response(content: str, turn_context: AgentTurnContext) -> str:
         """Prevent optimistic model wording from hiding a rejected Task 3 write."""
+        if turn_context.task_id == UNBOUND_TASK_ID:
+            # Unbound turns cannot update Task 3. Auxiliary analysis warnings
+            # belong in diagnostics and must not change the requested reply.
+            return content
         task_trace = next(
             (
                 trace

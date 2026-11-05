@@ -41,6 +41,7 @@ from src.memory.runtime.models import (
     TurnStageStatus,
     TurnStageTrace,
 )
+from src.memory.runtime.task_router import UNBOUND_TASK_ID
 from src.memory.task_state.models import TaskStateProposalBatch
 from src.memory.task_state.repository import TaskStateRepository
 from src.memory.task_state.service import TaskStateService
@@ -199,6 +200,7 @@ def test_context_overflow_compacts_and_retries_once(tmp_dbs):
 
 def test_task_update_warning_makes_final_response_truthful():
     context = SimpleNamespace(
+        task_id="trip",
         stage_traces=(
             TurnStageTrace(
                 stage=TurnStage.TASK_UPDATE,
@@ -210,6 +212,8 @@ def test_task_update_warning_makes_final_response_truthful():
     response = AgentLoopController._truthful_final_response("已更新行程。", context)
     assert "已更新行程。" in response
     assert "任务状态未写入" in response
+    context.task_id = UNBOUND_TASK_ID
+    assert AgentLoopController._truthful_final_response("好", context) == "好"
 
 
 def test_reasoner_provider_failure_is_safely_logged(tmp_dbs, caplog):
