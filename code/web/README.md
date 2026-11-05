@@ -45,6 +45,13 @@ pnpm install                          # 前端依赖
 pnpm dev                              # 打开 http://localhost:5173
 ```
 
+Windows 用户如果遇到「`pnpm` 无法识别」或「禁止运行脚本」（PowerShell 执行策略），
+在 `code\web` 下直接运行一键脚本即可（自动装依赖 + 启动，绕过脚本执行策略）：
+
+```powershell
+.\dev.cmd
+```
+
 另开一个终端启动桥接：
 
 ```powershell
@@ -113,6 +120,10 @@ code/web/
 │  ├─ session_transfer.py  # 会话导出/导入（后端暂无对应 API，桥接受控读写）
 │  └─ record_fixtures.py   # 录制真实响应到 fixtures/
 ├─ docs/                   # 见 §11 文档索引
+├─ scripts/                # dev.ps1 / build.ps1（供下面的一键脚本调用）
+├─ dev.cmd                 # Windows 一键启动（自动装依赖 + 起开发服务器）
+├─ build.cmd               # Windows 一键构建（typecheck + build）
+├─ dev.sh                  # macOS / Linux 一键启动
 ├─ index.html             # Vite 入口 HTML
 ├─ README.md               # 本文件
 └─ CHANGELOG-web.md        # 逐版本开发记录（v0.1 → 当前）
@@ -315,7 +326,16 @@ cd code\web
 pnpm install
 ```
 
-没装 pnpm 的话：`corepack enable`（Node 自带），或 `npm i -g pnpm`。
+没装 pnpm 的话：`corepack enable`（Node 自带），或 `npm.cmd i -g pnpm`。
+
+**Windows PowerShell 报「无法加载文件 …pnpm.ps1，因为在此系统上禁止运行脚本」时**，
+这是 PowerShell 的执行策略（系统默认 Restricted）拦住了 `.ps1` 包装脚本，不是项目问题。任选一种：
+
+```powershell
+.\dev.cmd                             # 推荐：内部用 -ExecutionPolicy Bypass，不改系统设置
+pnpm.cmd install; pnpm.cmd dev        # 显式用 .cmd，绕开 .ps1
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned   # 一次性放开（重开窗口后 pnpm/npm 可直接用）
+```
 
 #### 3. 准备 API Key（二选一，推荐 A）
 
@@ -369,6 +389,10 @@ python code\web\bridge\web_bridge.py --execution-mode single --port 8787
 
 #### 5. 启动前端（终端 B）
 
+**快捷启动：**
+Windows 可以直接双击 `dev.cmd`，或在 PowerShell 里执行 `.\dev.cmd`（等价于安装依赖 + 启动）。
+
+旧启动方法（可能存在依赖问题）：
 ```powershell
 cd <你的仓库路径>\nlp-\code\web
 pnpm dev
@@ -467,6 +491,7 @@ API Key 显示 🟡 未填入 | 还没配置 | 同上，填一个 `sk-` 开头�
 `pnpm dev` 报端口被占用 | 5173 被占用（`strictPort`） | 关掉占用进程；端口写死在配置里，不建议改 |
 `pnpm install` 很慢/失败 | 网络或 registry | 换镜像 `pnpm config set registry https://registry.npmmirror.com` |
 Node 版本报错 | 低于 Vite 8 要求 | 升级到 Node 20.19+ / 22.12+ |
+`pnpm : 无法加载文件 …pnpm.ps1，因为在此系统上禁止运行脚本` | PowerShell 执行策略为 Restricted（系统默认） | 用 `.\dev.cmd`（自动绕过）；或 `pnpm.cmd install`；或 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` 后重开窗口 |
 `pip install -e .` 后仍报 `jsonschema` 缺失 | 装到了别的 Python | 用同一个 Python 解释器启动桥接（`where python` 确认） |
 
 ### 六、无需 Key 的离线演示（答辩/没额度时）

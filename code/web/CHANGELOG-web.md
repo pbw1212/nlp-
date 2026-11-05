@@ -1,3 +1,38 @@
+## v0.44 — 2026-11-06 · 一键启动脚本（规避 Windows PowerShell 执行策略）
+
+**背景**
+
+组员在 Windows PowerShell 里首次运行前端时会连续踩两个坑：
+
+1. `pnpm` 未安装 → `pnpm : 无法将"pnpm"项识别为…`；
+2. 装好后 `pnpm`/`npm` 又报 `无法加载文件 …pnpm.ps1，因为在此系统上禁止运行脚本`
+   —— PowerShell 默认执行策略是 `Restricted`，会拦截所有 `.ps1` 包装脚本。
+
+这是**机器策略**问题，项目侧不可能改用户系统设置，只能提供不受策略限制的入口。
+
+**改了什么（纯新增）**
+
+- `code/web/dev.cmd`：Windows 一键启动。内部用 `powershell -NoProfile -ExecutionPolicy Bypass`
+  调起 `scripts/dev.ps1`（只对这一次调用生效，不改系统策略）；自动检测 pnpm/npm，首次自动装依赖；
+- `code/web/build.cmd`：一键 typecheck + 生产构建，同上机制；
+- `code/web/scripts/dev.ps1` / `scripts/build.ps1`：实际逻辑（UTF-8 BOM，保证 PowerShell 5.1 中文正常）；
+- `code/web/dev.sh`：macOS / Linux 一键启动；
+- README 更新：快速开始、第 14 部分第 2/5 步、常见问题表都补了 `.\dev.cmd` 与
+  「`pnpm.cmd` / `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`」三种解法；目录结构补 `scripts/`。
+
+**为什么这样做（而不是改 package.json）**
+
+`.ps1` 拦截发生在 PowerShell 调命令这一步，与包管理器无关（npm 同样会被拦），
+所以 `corepack`、`packageManager` 字段都救不了；`.cmd` 不受执行策略限制，是最小成本的正解。
+
+**验收（本机实测）**
+
+- `dev.cmd --check` → `[OK] 找到 pnpm（将使用 pnpm 安装依赖与启动）`，exit 0；
+- `build.cmd` 全流程 → `tsc --noEmit` 通过 + `vite build` 成功（CSS 38.87 kB / JS 468.49 kB），exit 0；
+- 未修改任何系统策略；中文输出正常（BOM + chcp 65001）。
+
+---
+
 ## v0.43 — 2026-11-06 · 撤回过度精简，恢复完整步骤版
 
 **改了什么**
