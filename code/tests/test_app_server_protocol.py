@@ -2,10 +2,16 @@ from __future__ import annotations
 
 import io
 import json
+from dataclasses import asdict
 
+import pytest
+
+from src.memory.agent.models import PendingAction
 from src.memory.app.console import PersonalAgentApp
+from src.memory.collaboration.budget import CollaborationLimits
 from src.memory.conversation import ConversationRole
 from src.memory.core.config import MemoryConfig, ProviderMode
+from src.memory.runtime.task_router import UNBOUND_TASK_ID
 from scripts.personal_agent_app_server import JsonlAppServer
 
 
@@ -45,12 +51,98 @@ class ProtocolProvider:
         return None
 
 
-def _app(tmp_path):
+def _app(tmp_path, execution_mode="single"):
     config = MemoryConfig(
         sqlite_db_path=str(tmp_path / "memory.db"),
         provider_mode=ProviderMode.REQUIRED,
     )
-    return PersonalAgentApp(data_dir=str(tmp_path / "agent"), config=config, llm_client=ProtocolProvider())
+    return PersonalAgentApp(
+        data_dir=str(tmp_path / "agent"), config=config, llm_client=ProtocolProvider(),
+        execution_mode=execution_mode,
+    )
+
+
+def test_thread_create_rename_and_delete_survive_reconnect(tmp_path):
+    app = _app(tmp_path)
+    server = JsonlAppServer(app, io.StringIO())
+    server._handle("initialize", {})
+    draft = server._handle("thread/start", {})["thread"]
+    assert draft["status"] == "PENDING"
+    assert server._handle("thread/list", {})["threads"] == []
+    created = server._handle("thread/create", {"title": "First"})["thread"]
+    thread_id = created["threadId"]
+    assert created["status"] == "ACTIVE"
+    app.close()
+
+    app = _app(tmp_path)
+    server = JsonlAppServer(app, io.StringIO())
+    server._handle("initialize", {})
+    args = {"threadId": thread_id}
+    assert server._handle("thread/read", args)["thread"]["messages"] == []
+    renamed = server._handle("thread/rename", {**args, "title": "Renamed"})
+    assert renamed["thread"]["title"] == "Renamed"
+    server._handle("thread/resume", args)
+    app.conversation_repo.append_message(thread_id, "old-turn", ConversationRole.USER, "evidence")
+    assert server._handle("thread/delete", args)["deleted"] is True
+    assert app.active_session_id != thread_id
+    assert server._handle("thread/list", {})["threads"] == []
+    with pytest.raises(ValueError, match="thread not found"):
+        server._handle("thread/read", args)
+    assert app.conversation_repo.get_message_by_turn(
+        thread_id, "old-turn", ConversationRole.USER
+    ).content == "evidence"
+    app.close()
+
+
+def test_unbound_approvals_are_scoped_to_original_thread_after_restart(tmp_path):
+    app = _app(tmp_path)
+    owner = app.create_new_session(persist=True)
+    other = app.create_new_session(persist=True)
+    turn_id = "approval-turn"
+    app.conversation_repo.append_message(owner, turn_id, ConversationRole.USER, "Create a file")
+    app.journal.register_run("approval-run", turn_id, UNBOUND_TASK_ID)
+    app.journal.add_pending_action(PendingAction(
+        pending_action_id="pending", agent_run_id="approval-run", task_id=UNBOUND_TASK_ID,
+        agent_step_id="step", tool_call_id="call", tool_name="create_file",
+        validated_arguments={"filename": "test.txt"}, arguments_hash="hash",
+        idempotency_key="key", effect="SIDE_EFFECT",
+    ))
+    app.close()
+
+    app = _app(tmp_path)
+    server = JsonlAppServer(app, io.StringIO())
+    server._handle("initialize", {})
+    server._handle("thread/resume", {"threadId": other})
+    assert server._handle("approvals/list", {})["approvals"] == []
+    assert app.pending_confirmation_id is None
+    result = server._handle("approvals/list", {"threadId": owner})
+    assert [row["pending_action_id"] for row in result["approvals"]] == ["pending"]
+    assert app.active_session_id == other
+    with pytest.raises(ValueError, match="pending approvals"):
+        server._handle("thread/delete", {"threadId": owner})
+    server._handle("thread/resume", {"threadId": owner})
+    assert app.active_task_id is None and app.pending_confirmation_id == "pending"
+    app.close()
+
+
+def test_collaboration_run_details_expose_metadata_only_for_owner(tmp_path):
+    app = _app(tmp_path, execution_mode="multi_fixed")
+    owner = app.create_new_session(persist=True)
+    other = app.create_new_session(persist=True)
+    repo = app.coordination_repository
+    run_id = repo.begin(owner, "turn", "private request", asdict(CollaborationLimits()))
+    repo.accept(run_id, "plan", "Planner", "Coordinator", {}, {"private": "private payload"}, 0)
+    repo.reserve_call(run_id, "Planner", "plan", 400)
+    server = JsonlAppServer(app, io.StringIO())
+    server._handle("initialize", {})
+    with pytest.raises(ValueError, match="unknown run for this thread"):
+        server._handle("collaboration/run/read", {"threadId": other, "runId": run_id})
+    run = server._handle("collaboration/run/read", {"threadId": owner, "runId": run_id})["run"]
+    assert run["stages"][0]["stage_key"] == "plan"
+    assert run["usage"]["estimated_token_units"] == 400
+    assert "private" not in json.dumps(run)
+    assert app.active_session_id == other
+    app.close()
 
 
 def test_jsonl_protocol_initializes_starts_turn_and_replays_events(tmp_path):

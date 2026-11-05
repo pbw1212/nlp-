@@ -355,6 +355,7 @@ class DeterministicEvidencePipeline:
             for item in eligible
             if item.conflict.status is ConflictStatus.UNRESOLVED and item.conflict.conflict_key
         ))))
+        selected_ids = {(item.memory_id, item.revision_id) for item in distilled}
         return EvidenceBundle(
             schema_version=self.config.schema_version,
             request_id=request_id,
@@ -370,6 +371,24 @@ class DeterministicEvidencePipeline:
                     "rejected_count": len(applicability.rejected_candidates),
                     "warning_count": len(applicability.warnings),
                 },
+                "evidence_candidate_count": len(candidates),
+                "evidence_candidates": [
+                    {
+                        "memory_id": item.memory_id,
+                        "revision_id": item.revision_id,
+                        "rank": item.original_rank,
+                        "score": item.original_score,
+                        "score_breakdown": dict(item.score_breakdown),
+                        "applicability_status": item.applicability_status.value,
+                        "applicability_decision": item.applicability_decision.value,
+                        "conflict_status": item.conflict.status.value,
+                        "conflict_key": item.conflict.conflict_key,
+                        "conflict_loser": item.conflict.is_loser,
+                        "current_safe": item.current_safe,
+                        "selected": (item.memory_id, item.revision_id) in selected_ids,
+                    }
+                    for item in candidates[:100]
+                ],
             },
             max_items=self.config.max_items,
             max_chars_per_item=self.config.max_chars_per_item,

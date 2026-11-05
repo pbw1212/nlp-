@@ -236,6 +236,28 @@ class OpenAILLMClient(LLMClientBase):
     def clear_last_reasoning_content(self) -> None:
         self._last_reasoning_content = ""
 
+    def _record_response_usage(self, usage: Any) -> None:
+        if not isinstance(usage, dict):
+            return
+        fields = {
+            "input_tokens": usage.get("prompt_tokens", usage.get("input_tokens")),
+            "output_tokens": usage.get("completion_tokens", usage.get("output_tokens")),
+            "total_tokens": usage.get("total_tokens"),
+            "prompt_cache_hit_tokens": usage.get("prompt_cache_hit_tokens"),
+            "prompt_cache_miss_tokens": usage.get("prompt_cache_miss_tokens"),
+        }
+        details = usage.get("completion_tokens_details")
+        if isinstance(details, dict):
+            fields["reasoning_tokens"] = details.get("reasoning_tokens")
+        self._last_usage = {
+            key: value for key, value in fields.items() if type(value) is int and value >= 0
+        }
+        self._input_tokens += self._last_usage.get("input_tokens", 0)
+        self._output_tokens += self._last_usage.get("output_tokens", 0)
+        self._prompt_cache_hit_tokens += self._last_usage.get("prompt_cache_hit_tokens", 0)
+        self._prompt_cache_miss_tokens += self._last_usage.get("prompt_cache_miss_tokens", 0)
+        self._reasoning_tokens += self._last_usage.get("reasoning_tokens", 0)
+
     def _read_response_with_deadline(self, req: urllib.request.Request) -> bytes:
         """Open and read one response under a hard wall-clock deadline.
 
@@ -396,6 +418,7 @@ class OpenAILLMClient(LLMClientBase):
         while attempt < attempt_budget:
             failure_cause: Exception
             retry_delay = self.retry_delay_seconds
+            self._last_usage = {}
             try:
                 self._report_progress(schema_name, attempt + 1, attempt_budget)
                 headers["Authorization"] = f"Bearer {self.api_key}"
@@ -426,6 +449,8 @@ class OpenAILLMClient(LLMClientBase):
                             operation="chat.completions",
                         )
                     result = json.loads(raw_response.decode("utf-8"))
+                    if isinstance(result, dict):
+                        self._record_response_usage(result.get("usage"))
                     msg_obj = result["choices"][0]["message"]
                 except (UnicodeDecodeError, json.JSONDecodeError, KeyError, IndexError, TypeError) as exc:
                     raise ProviderResponseError(
@@ -495,35 +520,10 @@ class OpenAILLMClient(LLMClientBase):
                             provider=self.provider_name,
                             operation="chat.completions",
                         ) from exc
-                usage = result.get("usage", {})
-                request_usage: Dict[str, int] = {}
-                if isinstance(usage, dict):
-                    input_tokens = usage.get("prompt_tokens", usage.get("input_tokens", 0))
-                    output_tokens = usage.get("completion_tokens", usage.get("output_tokens", 0))
-                    usage_fields = {
-                        "input_tokens": input_tokens,
-                        "output_tokens": output_tokens,
-                        "prompt_cache_hit_tokens": usage.get("prompt_cache_hit_tokens"),
-                        "prompt_cache_miss_tokens": usage.get("prompt_cache_miss_tokens"),
-                    }
-                    completion_details = usage.get("completion_tokens_details")
-                    if isinstance(completion_details, dict):
-                        usage_fields["reasoning_tokens"] = completion_details.get("reasoning_tokens")
-                    for field, value in usage_fields.items():
-                        if isinstance(value, int) and value >= 0:
-                            request_usage[field] = value
-                    if isinstance(input_tokens, int) and input_tokens >= 0:
-                        self._input_tokens += input_tokens
-                    if isinstance(output_tokens, int) and output_tokens >= 0:
-                        self._output_tokens += output_tokens
-                    self._prompt_cache_hit_tokens += request_usage.get("prompt_cache_hit_tokens", 0)
-                    self._prompt_cache_miss_tokens += request_usage.get("prompt_cache_miss_tokens", 0)
-                    self._reasoning_tokens += request_usage.get("reasoning_tokens", 0)
-                self._last_usage = request_usage
                 logger.info(
                     "provider_request_completed operation=%s attempt=%d input_tokens=%d output_tokens=%d",
                     schema_name, attempt + 1,
-                    request_usage.get("input_tokens", 0), request_usage.get("output_tokens", 0),
+                    self._last_usage.get("input_tokens", 0), self._last_usage.get("output_tokens", 0),
                 )
                 return parsed
             except _ProviderDeadlineExceeded as exc:
@@ -535,6 +535,7 @@ class OpenAILLMClient(LLMClientBase):
                     operation="chat.completions",
                 ) from exc
             except ProviderResponseError as exc:
+                exc.usage = self.last_usage
                 log_boundary_failure(logger, "provider_response_invalid", exc,
                                      schema_name=schema_name, attempt=attempt + 1)
                 if attempt < attempt_budget - 1:

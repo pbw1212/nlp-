@@ -223,7 +223,7 @@ class ConversationRepository:
             row = conn.execute(
                 """SELECT session_id, title, active_task_id, created_at, updated_at, status,
                           workspace_roots_json, current_workspace_root
-                   FROM conversation_sessions WHERE session_id = ?""",
+                   FROM conversation_sessions WHERE session_id = ? AND status <> 'DELETED'""",
                 (session_id,),
             ).fetchone()
             if not row:
@@ -259,7 +259,7 @@ class ConversationRepository:
             rows = conn.execute(
                 """SELECT session_id, title, active_task_id, created_at, updated_at, status,
                           workspace_roots_json, current_workspace_root
-                   FROM conversation_sessions ORDER BY updated_at DESC"""
+                   FROM conversation_sessions WHERE status <> 'DELETED' ORDER BY updated_at DESC"""
             ).fetchall()
             return [
                 ConversationSession(
@@ -282,6 +282,24 @@ class ConversationRepository:
         return sessions[0] if sessions else None
 
     _UNSET_TASK_BINDING = object()
+
+    def rename_session(self, session_id: str, title: str) -> bool:
+        with self._connection() as conn:
+            cursor = conn.execute(
+                "UPDATE conversation_sessions SET title=? WHERE session_id=? AND status<>'DELETED'",
+                (title, session_id),
+            )
+            return cursor.rowcount == 1
+
+    def delete_session(self, session_id: str, *, expected_updated_at: float) -> bool:
+        # Retain original messages for existing evidence references and audit.
+        with self._connection() as conn:
+            cursor = conn.execute(
+                """UPDATE conversation_sessions SET status='DELETED', updated_at=?
+                   WHERE session_id=? AND status<>'DELETED' AND updated_at=?""",
+                (time.time(), session_id, expected_updated_at),
+            )
+            return cursor.rowcount == 1
 
     def touch_session(
         self,
@@ -399,7 +417,7 @@ class ConversationRepository:
                 ),
             )
             cursor = conn.execute(
-                "UPDATE conversation_sessions SET updated_at = ? WHERE session_id = ?",
+                "UPDATE conversation_sessions SET updated_at = ? WHERE session_id = ? AND status <> 'DELETED'",
                 (now, session_id),
             )
             if cursor.rowcount != 1:

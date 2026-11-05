@@ -61,6 +61,12 @@ def test_mismatch_rejected_and_uncertain_retained(tmp_path):
     assert "mismatch:a" in bundle.rejected_or_omitted
     assert any(item.memory_id == "b" for item in bundle.selected)
     assert bundle.sufficiency.status is EvidenceSufficiencyStatus.PARTIAL
+    rows = {row["memory_id"]: row for row in bundle.retrieval_trace["evidence_candidates"]}
+    assert rows["a"]["applicability_status"] == "MISMATCH"
+    assert rows["a"]["selected"] is False
+    assert rows["b"]["selected"] is True
+    assert rows["b"]["rank"] > 0 and isinstance(rows["b"]["score"], float)
+    assert "content" not in rows["b"] and "text" not in rows["b"]
 
 
 def test_conflict_resolution_keeps_loser_trace_and_unresolved_retains_both(tmp_path):
@@ -80,6 +86,8 @@ def test_conflict_resolution_keeps_loser_trace_and_unresolved_retains_both(tmp_p
     assert {item.memory_id for item in unresolved.selected} == {"a", "b"}
     assert unresolved.sufficiency.status is EvidenceSufficiencyStatus.PARTIAL
     assert "unresolved_conflict:flight-time" in unresolved.warnings
+    rows = {row["memory_id"]: row for row in resolved.retrieval_trace["evidence_candidates"]}
+    assert rows["b"]["conflict_status"] == "RESOLVED" and rows["b"]["conflict_loser"]
 
 
 def test_dedup_diversity_and_bounded_distillation_are_deterministic(tmp_path):

@@ -124,3 +124,7 @@ class ContextWindowOverflowError(ProviderRequestError):
 
 class ProviderResponseError(ProviderError):
     """Provider 响应不符合约定的结构。"""
+
+    def __init__(self, message: str, **kwargs):
+        super().__init__(message, **kwargs)
+        self.usage: dict[str, int] = {}

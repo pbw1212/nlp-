@@ -119,6 +119,20 @@ host。客户端先发送 `initialize`，随后可使用 `thread/start|resume|li
 立即 flush；事件由 `execution/agent_events.db` 持久化，客户端可用 sequence 游标
 断线续读。当前 host 是同步适配器，`turn/interrupt` 明确返回不支持。
 
+- `thread/start` 继续创建待首轮输入的临时会话。`thread/create` 可带 `title`，立即保存并返回空会话。
+  `thread/rename` 接收 `threadId` 和 `title`。`thread/delete` 接收 `threadId`，
+  将会话从普通列表、读取和恢复入口移除，同时保留来源证据和审计记录。
+  有待审批操作或未结束轮次的会话须先处理这些操作。
+- `approvals/list` 可传 `threadId`，默认查询当前会话。审批归属由执行记录的原始轮次和用户消息确定，
+  包括未绑定 Task 3 的轮次。
+- `collaboration/run/read` 在协作模式下接收 `runId` 和可选的 `threadId`，
+  返回同会话的运行、阶段、协作图节点、成果和模型调用统计。响应只包含诊断元数据。
+  `provider_reported_token_units` 为 Provider 返回的用量，`estimated_token_units` 为缺失用量时
+  保留的本地预算预留，两者与供应商账单独立。
+- 新写入的 `retrieval-traces.jsonl` 使用版本 2。原有聚合统计和选中 ID 继续保留，
+  `trace.evidence_candidates` 记录候选排名、分数、适用性、冲突和选中状态，
+  `sufficiency` 记录本次证据包的充分性。候选明细最多 100 条，记录中不复制记忆正文。
+
 事件流不是新的事实源：工具执行事实仍由 Journal，任务状态由 Task 3，长期记忆
 由 Task 1，会话原文由 Conversation Repository 分别负责。事件用于客户端观察、
 重放和验收。

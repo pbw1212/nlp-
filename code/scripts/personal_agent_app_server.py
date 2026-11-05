@@ -111,9 +111,11 @@ class JsonlAppServer:
                 "serverInfo": {"name": "mapas-agent", "version": "1"},
                 "capabilities": {
                     "threads": True,
+                    "threadManagement": True,
                     "turns": True,
                     "turnResume": True,
                     "collaborationRepair": self.app.collaboration is not None,
+                    "collaborationRunDetails": self.app.collaboration is not None,
                     "proceduralExperiences": self.app.collaboration is not None,
                     "taskLifecycle": self.app.collaboration is not None
                     and self.app.collaboration.lifecycle is not None,
@@ -128,11 +130,37 @@ class JsonlAppServer:
             }
         if not self.initialized:
             raise RuntimeError("initialize must be called before other requests")
-        if method in {"thread/start", "session/start"}:
+        if method in {
+            "thread/start",
+            "session/start",
+            "thread/create",
+            "session/create",
+        }:
+            title = params.get("title")
+            if title is not None and (
+                not isinstance(title, str) or len(title.strip()) > 256
+            ):
+                raise ValueError(
+                    "thread title must be a string of up to 256 characters"
+                )
             session_id = self.app.create_new_session(
-                str(params.get("title")) if params.get("title") else None
+                title, persist=method.endswith("/create")
             )
             return {"thread": self._thread(session_id)}
+        if method in {
+            "thread/rename",
+            "session/rename",
+            "thread/delete",
+            "session/delete",
+        }:
+            session_id = params.get("threadId") or params.get("sessionId")
+            if not isinstance(session_id, str) or not session_id.strip():
+                raise ValueError("thread operation requires threadId")
+            if method.endswith("/rename"):
+                self.app.rename_session(session_id, params.get("title"))
+                return {"thread": self._thread(session_id)}
+            self.app.delete_session(session_id)
+            return {"threadId": session_id, "deleted": True}
         if method in {"thread/resume", "session/resume"}:
             session_id = str(params.get("threadId") or params.get("sessionId") or "")
             if not session_id or not self.app.resume_session(session_id):
@@ -199,7 +227,29 @@ class JsonlAppServer:
         if method in {"mcp/status", "mcp/read"}:
             return {"mcp": self.app.get_mcp_status()}
         if method in {"approvals/list", "approval/list"}:
-            return {"approvals": self.app.list_pending_approvals()}
+            thread_id = params.get("threadId") or params.get("sessionId")
+            if thread_id is not None and not isinstance(thread_id, str):
+                raise ValueError("threadId must be a string")
+            return {"approvals": self.app.list_pending_approvals(thread_id)}
+        if method == "collaboration/run/read":
+            if self.app.collaboration is None:
+                raise ValueError("collaboration mode is not enabled")
+            thread_id = params.get("threadId") or self.app.active_session_id
+            run_id = params.get("runId")
+            if (
+                not isinstance(thread_id, str)
+                or not isinstance(run_id, str)
+                or not run_id.strip()
+            ):
+                raise ValueError(
+                    "collaboration/run/read requires runId and a valid threadId"
+                )
+            self._thread(thread_id)
+            return {
+                "run": self.app.coordination_repository.get_run_details(
+                    thread_id, run_id
+                )
+            }
         if method == "context/read":
             return {"context": self.app.get_conversation_context_status()}
         if method == "turn/start":

@@ -557,7 +557,12 @@ def test_normal_chat_turn(app_env):
     assert res.status == AgentResultStatus.SUCCESS
     assert res.final_response == "你好！我是你的个人助理。"
     with open(app.retrieval_trace_path, encoding="utf-8") as handle:
-        assert '"turn_id": "turn_' in handle.read()
+        trace = json.loads(handle.readlines()[-1])
+    assert trace["turn_id"] == res.request_turn_id
+    assert trace["session_id"] == app.active_session_id
+    assert trace["schema_version"] == 2
+    assert "evidence_candidates" in trace["trace"]
+    assert trace["sufficiency"]["status"] in {"SUFFICIENT", "PARTIAL", "INSUFFICIENT"}
 
 
 def test_api_request_failure_is_explicit_and_sanitized(tmp_path, capsys):

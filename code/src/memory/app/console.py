@@ -27,6 +27,7 @@ from src.memory.agent.models import (
     AgentResult,
     AgentResultStatus,
     ConfirmationDecision,
+    PendingAction,
     TurnRequest,
 )
 from src.memory.agent.prompt_composer import PromptComposer
@@ -474,9 +475,9 @@ class PersonalAgentApp:
 
     def _restore_pending_confirmation(self) -> None:
         """Restore the newest durable confirmation after a process restart."""
-        if not self.active_task_id:
+        if not self._session_persisted:
             return
-        pending = self.journal.list_pending_actions(task_id=self.active_task_id)
+        pending = self._session_pending_actions(self.active_session_id)
         if pending:
             self.pending_confirmation_id = pending[0].pending_action_id
 
@@ -667,9 +668,17 @@ class PersonalAgentApp:
             return True
         return False
 
-    def create_new_session(self, title: str | None = None) -> str:
-        """Starts a fresh lazy conversation session without inheriting a Task."""
+    def create_new_session(
+        self, title: str | None = None, *, persist: bool = False
+    ) -> str:
+        """Start a conversation without inheriting a Task."""
         self._require_no_pending_confirmation()
+        self._reset_session(title)
+        if persist:
+            self._ensure_persisted_session()
+        return self.active_session_id
+
+    def _reset_session(self, title: str | None = None) -> None:
         self.active_session_id = f"session_{uuid.uuid4().hex[:12]}"
         self.active_task_id = None
         self._session_persisted = False
@@ -678,7 +687,35 @@ class PersonalAgentApp:
         self.pending_turn_id = None
         self._last_result = None
         self.agent.last_turn_context = None
-        return self.active_session_id
+
+    def rename_session(self, session_id: str, title: str) -> None:
+        if not isinstance(title, str) or not 1 <= len(title.strip()) <= 256:
+            raise ValueError("thread title must contain 1 to 256 characters")
+        if session_id == self.active_session_id and not self._session_persisted:
+            self._pending_session_title = title.strip()
+        elif not self.conversation_repo.rename_session(session_id, title.strip()):
+            raise ValueError("thread not found")
+
+    def delete_session(self, session_id: str) -> None:
+        if session_id == self.active_session_id and not self._session_persisted:
+            self.create_new_session()
+            return
+        session = self.conversation_repo.get_session(session_id)
+        if session is None:
+            raise ValueError("thread not found")
+        if self.event_store.list_unfinished_turns(
+            session_id=session_id
+        ) or self._session_pending_actions(session_id):
+            raise ValueError(
+                "resolve pending approvals or unfinished turns before deleting this thread"
+            )
+        if not self.conversation_repo.delete_session(
+            session_id, expected_updated_at=session.updated_at
+        ):
+            raise ValueError("thread changed before deletion")
+        self._emit_event("thread.deleted", session_id=session_id)
+        if session_id == self.active_session_id:
+            self._reset_session()
 
     def list_sessions(self) -> list[dict[str, Any]]:
         """Lists conversation sessions with active marker."""
@@ -761,9 +798,7 @@ class PersonalAgentApp:
             self.active_task_id = sess.active_task_id
         else:
             self.active_task_id = None
-        # Pending actions are Task-owned durable state. A fresh process must
-        # not restore them implicitly, but an explicit /resume of the owning
-        # Session must make the same safety gate visible again.
+        # Restore approvals only in the conversation that initiated the action.
         self.pending_confirmation_id = None
         self._restore_pending_confirmation()
         self._emit_event(
@@ -1265,10 +1300,29 @@ class PersonalAgentApp:
         """Return MCP discovery status without exposing environment values."""
         return self.mcp_manager.describe()
 
-    def list_pending_approvals(self) -> list[dict[str, Any]]:
+    def _session_pending_actions(self, session_id: str) -> list[PendingAction]:
+        pending = []
+        for action in self.journal.list_pending_actions():
+            run = self.journal.get_run(action.agent_run_id)
+            if (
+                run is not None
+                and run["task_id"] == action.task_id
+                and self.conversation_repo.get_message_by_turn(
+                    session_id, run["root_turn_id"], ConversationRole.USER
+                )
+            ):
+                pending.append(action)
+        return pending
+
+    def list_pending_approvals(
+        self, session_id: str | None = None
+    ) -> list[dict[str, Any]]:
         """Return durable pending approvals for reconnecting frontends."""
-        if not self.active_task_id:
-            return []
+        target = session_id or self.active_session_id
+        if target != self.active_session_id and not self.conversation_repo.get_session(
+            target
+        ):
+            raise ValueError("thread not found")
         return [
             {
                 "pending_action_id": action.pending_action_id,
@@ -1283,7 +1337,7 @@ class PersonalAgentApp:
                 "effect": action.effect,
                 "created_at": action.created_at,
             }
-            for action in self.journal.list_pending_actions(task_id=self.active_task_id)
+            for action in self._session_pending_actions(target)
         ]
 
     def subscribe_events(
@@ -2309,11 +2363,22 @@ class PersonalAgentApp:
         if bundle is None:
             return
         record = {
+            "schema_version": 2,
+            "session_id": self.active_session_id,
             "turn_id": turn_id,
             "task_id": getattr(context, "task_id", None),
             "request_id": bundle.request_id,
             "trace": bundle.retrieval_trace,
             "selected_memory_ids": [item.memory_id for item in bundle.selected],
+            "sufficiency": {
+                "status": bundle.sufficiency.status.value,
+                "reason_codes": list(bundle.sufficiency.reason_codes),
+                "missing_aspect_count": len(bundle.sufficiency.missing_aspects),
+                "uncertain_memory_ids": list(bundle.sufficiency.uncertainties),
+                "unresolved_conflict_memory_ids": list(
+                    bundle.sufficiency.unresolved_conflicts
+                ),
+            },
             "warnings": list(bundle.warnings),
         }
         try:

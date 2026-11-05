@@ -163,6 +163,50 @@ class CoordinationRepository:
                 raise CoordinationConflict("unknown run")
             return dict(row)
 
+    def get_run_details(self, session_id: str, run_id: str) -> dict[str, Any]:
+        """Read the public run projection without exposing handoff payloads."""
+        with self._connect() as db:
+            row = db.execute(
+                """SELECT run_id,session_id,turn_id,task_id,started,status,limits_json
+                   FROM runs WHERE run_id=? AND session_id=?""",
+                (run_id, session_id),
+            ).fetchone()
+            if row is None:
+                raise CoordinationConflict("unknown run for this thread")
+            details = dict(row)
+            details["limits"] = json.loads(details.pop("limits_json"))
+            details["stages"] = [
+                dict(stage)
+                for stage in db.execute(
+                    """SELECT t.stage_key,t.role,t.status,h.message_id,h.receiver,
+                              a.artifact_id,a.verification_status
+                       FROM role_tasks t
+                       LEFT JOIN handoffs h USING(run_id,stage_key)
+                       LEFT JOIN artifacts a USING(run_id,stage_key)
+                       WHERE t.run_id=? ORDER BY t.rowid""",
+                    (run_id,),
+                )
+            ]
+            details["graph"] = None
+            graph = db.execute(
+                "SELECT graph_id FROM task_graphs WHERE run_id=?", (run_id,)
+            ).fetchone()
+            if graph is not None:
+                details["graph"] = {
+                    "graph_id": graph["graph_id"],
+                    "nodes": [
+                        dict(node)
+                        for node in db.execute(
+                            """SELECT n.node_key,n.status,a.attempt_id,a.artifact_id
+                               FROM task_nodes n LEFT JOIN task_attempts a
+                               ON a.node_id=n.node_id AND a.run_id=?
+                               WHERE n.graph_id=? ORDER BY n.rowid""",
+                            (run_id, graph["graph_id"]),
+                        )
+                    ],
+                }
+            return {**details, "usage": self.usage(run_id)}
+
     def bind_task(self, run_id: str, task_id: str) -> None:
         with self._write() as db:
             row = db.execute(
@@ -1219,9 +1263,7 @@ class CoordinationRepository:
     def settle_call(
         self, call_id: str, usage: dict[str, int], elapsed: float, status: str
     ) -> None:
-        actual = usage.get("input_tokens", usage.get("prompt_tokens", 0)) + usage.get(
-            "output_tokens", usage.get("completion_tokens", 0)
-        )
+        actual = self._reported_token_total(usage)
         with self._write() as db:
             row = db.execute(
                 "SELECT charged_units,status FROM model_calls WHERE call_id=?",
@@ -1234,12 +1276,23 @@ class CoordinationRepository:
                 "UPDATE model_calls SET status=?,charged_units=?,usage_json=?,elapsed=? WHERE call_id=?",
                 (
                     status,
-                    actual if actual > 0 else row[0],
+                    row[0] if actual is None else actual,
                     canonical(usage),
                     elapsed,
                     call_id,
                 ),
             )
+
+    @staticmethod
+    def _reported_token_total(usage: dict[str, int]) -> int | None:
+        total = usage.get("total_tokens")
+        if total is not None:
+            return total
+        input_tokens = usage.get("input_tokens", usage.get("prompt_tokens"))
+        output_tokens = usage.get("output_tokens", usage.get("completion_tokens"))
+        if input_tokens is None or output_tokens is None:
+            return None
+        return input_tokens + output_tokens
 
     def usage(self, run_id: str) -> dict[str, Any]:
         with self._connect() as db:
@@ -1247,10 +1300,29 @@ class CoordinationRepository:
                 "SELECT role,operation,status,charged_units,usage_json,elapsed FROM model_calls WHERE run_id=? ORDER BY rowid",
                 (run_id,),
             ).fetchall()
+        calls = []
+        reported_units = estimated_units = 0
+        for row in rows:
+            usage = json.loads(row["usage_json"])
+            total = self._reported_token_total(usage)
+            # Old transports synthesized two zeros when usage was absent.
+            if total == 0 and row["charged_units"] > 0:
+                total = None
+            if total is None:
+                estimated_units += row["charged_units"]
+            else:
+                reported_units += total
+            calls.append(
+                {
+                    **dict(row),
+                    "usage": usage,
+                    "usage_source": "reservation" if total is None else "provider",
+                }
+            )
         return {
             "model_calls": len(rows),
             "charged_token_units": sum(row["charged_units"] for row in rows),
-            "calls": [
-                {**dict(row), "usage": json.loads(row["usage_json"])} for row in rows
-            ],
+            "provider_reported_token_units": reported_units,
+            "estimated_token_units": estimated_units,
+            "calls": calls,
         }

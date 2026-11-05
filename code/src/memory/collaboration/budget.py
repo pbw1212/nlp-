@@ -179,6 +179,13 @@ class BudgetedLLMClient(LLMClientBase):
                     raise CollaborationBudgetError()
                 status = "SUCCEEDED"
                 return result
+            except ProviderResponseError as exc:
+                usage = {
+                    key: value
+                    for key, value in exc.usage.items()
+                    if type(value) is int and value >= 0
+                }
+                raise
             finally:
                 if old_timeout is not None:
                     self.client.request_timeout_seconds = old_timeout

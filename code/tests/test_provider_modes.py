@@ -5,6 +5,8 @@ import urllib.error
 
 import pytest
 
+from src.memory.collaboration.budget import BudgetedLLMClient, CollaborationLimits
+from src.memory.collaboration.repository import CoordinationRepository
 from src.memory.core.config import MemoryConfig, ProviderMode
 from src.memory.llm.errors import (
     ContextWindowOverflowError,
@@ -86,6 +88,40 @@ def test_required_structured_response_is_validated(monkeypatch):
 
     with pytest.raises(ProviderResponseError):
         client.generate_json("system", "user")
+
+
+def test_invalid_provider_output_settles_reported_usage_before_recovery(tmp_path, monkeypatch):
+    responses = iter(
+        [
+            {"choices": [{"message": {"content": "{}"}}],
+             "usage": {"prompt_tokens": 11, "completion_tokens": 7}},
+            {"choices": [{"message": {"content": '{"answer":"ok"}'}}]},
+        ]
+    )
+    monkeypatch.setattr(
+        "urllib.request.urlopen",
+        lambda *args, **kwargs: FakeResponse(json.dumps(next(responses)).encode()),
+    )
+    repo = CoordinationRepository(str(tmp_path / "coordination.db"))
+    transport = OpenAILLMClient("test-only-key", max_retries=1, max_completion_tokens=128)
+    client = BudgetedLLMClient(
+        transport, repo, CollaborationLimits(max_completion_tokens=128),
+        structured_recovery=True,
+    )
+    with client.turn("thread", "turn", "question") as run_id:
+        assert client.generate_json(
+            "system", "question",
+            response_schema={"type": "object", "required": ["answer"]},
+        ) == {"answer": "ok"}
+    ledger = repo.usage(run_id)
+    failed, corrected = ledger["calls"]
+    assert (failed["status"], failed["usage_source"], failed["charged_units"]) == (
+        "FAILED", "provider", 18
+    )
+    assert corrected["usage"] == {} and corrected["usage_source"] == "reservation"
+    assert ledger["provider_reported_token_units"] == 18
+    assert ledger["estimated_token_units"] == corrected["charged_units"]
+    assert transport.usage["input_tokens"] == 11
 
 
 def test_oversized_provider_response_is_rejected_before_json_parse(monkeypatch):
