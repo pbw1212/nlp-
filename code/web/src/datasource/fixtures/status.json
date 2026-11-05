@@ -1,0 +1,38 @@
+{
+  "memory": {
+    "mode": "agent_tool",
+    "pending_events": 0,
+    "threshold_trigger_enabled": false,
+    "time_trigger_enabled": false,
+    "tool_name": "update_long_term_memory",
+    "update_is_agent_selected": true
+  },
+  "pendingApprovals": [],
+  "status": {
+    "checkpoint": null,
+    "constraints": [],
+    "decisions": [],
+    "goals": [],
+    "open_questions": [],
+    "progress": [],
+    "status": "UNBOUND",
+    "summary": "当前会话未绑定 Task",
+    "task_id": null,
+    "workspace": {
+      "current_root": "D:\\projects",
+      "roots": [
+        {
+          "current": true,
+          "exists": true,
+          "path": "D:\\projects"
+        }
+      ]
+    }
+  },
+  "taskLifecycle": {
+    "enabled": true,
+    "jobs": [],
+    "tasks": []
+  },
+  "unfinishedTurns": []
+}

@@ -1,0 +1,27 @@
+{
+  "request_id": "turn_a88d5d8e9f9e",
+  "selected_memory_ids": [],
+  "task_id": "__unbound__",
+  "trace": {
+    "applicability": {
+      "assessment_count": 0,
+      "rejected_count": 0,
+      "warning_count": 0
+    },
+    "recall": {
+      "candidate_counts": {},
+      "query_variants": [
+        "?????? D:\\projects\\nlp-\\code\\web ??????(? list_directory),???????????????????"
+      ],
+      "stages": [
+        "lexical_bm25",
+        "graph_skipped"
+      ],
+      "warnings": [
+        "empty_current_corpus"
+      ]
+    }
+  },
+  "turn_id": "turn_a88d5d8e9f9e",
+  "warnings": []
+}

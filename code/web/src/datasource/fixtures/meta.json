@@ -1,0 +1,15 @@
+{
+  "agentHome": "C:\\Users\\ZhuanZ1\\.agent_data",
+  "capabilities": {
+    "approvals": true,
+    "collaborationRepair": true,
+    "contextDiagnostics": true,
+    "eventReplay": true,
+    "interrupt": false,
+    "proceduralExperiences": true,
+    "taskLifecycle": true,
+    "toolCatalog": true
+  },
+  "executionMode": "multi_fixed",
+  "protocolVersion": "mapas-web-bridge/1"
+}

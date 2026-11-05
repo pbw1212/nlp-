@@ -1,0 +1,18 @@
+{
+  "compaction_degraded": false,
+  "compaction_degraded_reason": null,
+  "compaction_id": null,
+  "compaction_ratio": 0.78,
+  "compaction_source": "NONE",
+  "context_window_source": "model-capability:deepseek-v4-flash",
+  "context_window_tokens": 1000000,
+  "estimated_projected_tokens": 0,
+  "keep_recent_tokens": 20000,
+  "model": "deepseek-v4-flash",
+  "projected_tail_message_count": 0,
+  "provider_last_usage": {},
+  "reserve_tokens": 8192,
+  "summarized_message_count": 0,
+  "transcript_message_count": 0,
+  "usable_tokens": 771808
+}

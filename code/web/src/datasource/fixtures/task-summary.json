@@ -1,0 +1,21 @@
+{
+  "checkpoint": null,
+  "constraints": [],
+  "decisions": [],
+  "goals": [],
+  "open_questions": [],
+  "progress": [],
+  "status": "UNBOUND",
+  "summary": "当前会话未绑定 Task",
+  "task_id": null,
+  "workspace": {
+    "current_root": "D:\\projects",
+    "roots": [
+      {
+        "current": true,
+        "exists": true,
+        "path": "D:\\projects"
+      }
+    ]
+  }
+}

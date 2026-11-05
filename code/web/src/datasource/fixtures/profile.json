@@ -1,0 +1,36 @@
+{
+  "counts": {
+    "active": 1,
+    "inferred": 0,
+    "protected": 0,
+    "recycled": 0
+  },
+  "memory_update": {
+    "mode": "agent_tool",
+    "pending_events": 0,
+    "threshold_trigger_enabled": false,
+    "time_trigger_enabled": false,
+    "tool_name": "update_long_term_memory",
+    "update_is_agent_selected": true
+  },
+  "preferences": [
+    {
+      "auto_managed": true,
+      "confidence": 0.95,
+      "content": "????? 3 ?????,???????????",
+      "granularity": "SEMANTIC_INSIGHT",
+      "importance_score": 0.5,
+      "is_pinned": false,
+      "memory_id": "mem_9d4bdad9dfbb",
+      "retention": "ACTIVE",
+      "semantic_validity": "CURRENT",
+      "source": "MANUAL",
+      "source_authorities": [
+        "EXPLICIT_USER"
+      ],
+      "type": "CORE_PROFILE",
+      "updated_at": 1793805385.164038
+    }
+  ],
+  "recycled": []
+}

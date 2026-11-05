@@ -1,0 +1,264 @@
+[
+  {
+    "description": "在用户配置的 Agent 工作区内应用 Codex 风格的多文件文本 patch；该操作会修改文件，必须先经过用户确认。",
+    "effect": "SIDE_EFFECT",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "patch": {
+          "maxLength": 200000,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "patch"
+      ],
+      "type": "object"
+    },
+    "name": "apply_patch",
+    "returnsUserFacingResult": false
+  },
+  {
+    "description": "计算算术表达式。参数：expression (str, 必需)。例如：'12.5 * 4 + 100'。",
+    "effect": "READ_ONLY",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "properties": {
+        "expression": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "expression"
+      ],
+      "type": "object"
+    },
+    "name": "calculator",
+    "returnsUserFacingResult": true
+  },
+  {
+    "description": "在用户配置的 Agent 工作区范围内创建或覆盖一个文本文件。此工具具有副作用，必须先经过用户确认；filename 可以是当前工作区内的相对路径。仅当用户明确要求创建、写入或导出外部工作区文件时使用；内部 Task 状态、任务历史和 checkpoint 由应用的结构化 Task State 管理，不要用文件模拟。",
+    "effect": "SIDE_EFFECT",
+    "idempotencySupport": "SUPPORTED",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "maxLength": 1000000,
+          "type": "string"
+        },
+        "filename": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "filename",
+        "content"
+      ],
+      "type": "object"
+    },
+    "name": "create_file",
+    "returnsUserFacingResult": false
+  },
+  {
+    "description": "获取当前系统本地日期与时间。无参数。",
+    "effect": "READ_ONLY",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "properties": {},
+      "type": "object"
+    },
+    "name": "get_current_time",
+    "returnsUserFacingResult": true
+  },
+  {
+    "description": "列出用户配置的 Agent 工作区范围内的目录内容；path 省略时列出当前工作区。",
+    "effect": "READ_ONLY",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "maxLength": 4096,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "name": "list_directory",
+    "returnsUserFacingResult": true
+  },
+  {
+    "description": "读取用户配置的 Agent 工作区范围内的 UTF-8 文本文件；filename 可为相对路径或范围内绝对路径。",
+    "effect": "READ_ONLY",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "filename": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "filename"
+      ],
+      "type": "object"
+    },
+    "name": "read_file",
+    "returnsUserFacingResult": true
+  },
+  {
+    "description": "在用户配置的 Agent 工作区内运行本地 bash 终端命令；默认 cwd 是当前工作区，可用 cwd 选择另一个已授权工作区。该工具有副作用，必须先经过用户确认。",
+    "effect": "SIDE_EFFECT",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "maxLength": 10000,
+          "minLength": 1,
+          "type": "string"
+        },
+        "cwd": {
+          "maxLength": 4096,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timeout_seconds": {
+          "maximum": 120,
+          "minimum": 1,
+          "type": "number"
+        }
+      },
+      "required": [
+        "command",
+        "cwd",
+        "timeout_seconds"
+      ],
+      "type": "object"
+    },
+    "name": "run_terminal_command",
+    "returnsUserFacingResult": false
+  },
+  {
+    "description": "在用户配置的 Agent 工作区内搜索文件中的文字，返回文件路径、行号和匹配行；只读，不修改文件。",
+    "effect": "READ_ONLY",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "case_sensitive": {
+          "type": "boolean"
+        },
+        "max_results": {
+          "maximum": 200,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "path": {
+          "maxLength": 4096,
+          "type": "string"
+        },
+        "query": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object"
+    },
+    "name": "search_files",
+    "returnsUserFacingResult": false
+  },
+  {
+    "description": "评估当前用户 turn 是否包含应跨会话保留的事实、偏好、身份、关系、习惯、项目背景或更正；需要持久化时调用此工具。工具会把当前用户原文交给长期记忆Provider 做分段和生命周期判断，不要在参数中复述或改写记忆内容。对于纯问题、临时闲聊、助手建议或外部工具结果，不要调用。每个 turn 最多调用一次。",
+    "effect": "INTERNAL",
+    "idempotencySupport": "SUPPORTED",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "name": "update_long_term_memory",
+    "returnsUserFacingResult": false
+  },
+  {
+    "description": "查询指定地点的当前天气和按实际日期排列的预报；daily 数据通常包含今天，需要未来日期时至少请求 2 天；结果包含数据来源与抓取时间。",
+    "effect": "READ_ONLY",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "forecast_days": {
+          "maximum": 7,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "location": {
+          "maxLength": 120,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "location"
+      ],
+      "type": "object"
+    },
+    "name": "weather",
+    "returnsUserFacingResult": false
+  },
+  {
+    "description": "抓取一个公开 http/https 网页并提取有界可读文本；应在搜索结果需要核验或用户给出 URL 时使用。",
+    "effect": "READ_ONLY",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "format": "uri",
+          "maxLength": 2000,
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "type": "object"
+    },
+    "name": "web_fetch",
+    "returnsUserFacingResult": false
+  },
+  {
+    "description": "联网搜索公开网页并返回少量标题、链接和摘要；用于新闻、资料、实时信息等需要外部证据的问题。",
+    "effect": "READ_ONLY",
+    "idempotencySupport": "NONE",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object"
+    },
+    "name": "web_search",
+    "returnsUserFacingResult": false
+  }
+]

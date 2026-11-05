@@ -1,0 +1,240 @@
+/* =============================================================================
+ * MAPAS 设计令牌（Design Tokens）
+ *
+ * 这一层的职责：把系统里的语义状态"翻译"成固定的视觉语言。
+ * 为什么必须集中在这里：MAPAS 有 7 套状态枚举（适用性四态、节点 7 态、经验 7 态、
+ * 任务闭环 6 态、结果有效性 4 态、充分性 3 态、来源权威 4 级）。如果每个页面各写
+ * 一套颜色，答辩时会出现"同一个 UNKNOWN 在两张图上颜色不同"的尴尬。
+ *
+ * 颜色只允许从这里取；组件里禁止写字面色值（#fff / rgb(...)）。
+ * ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* ---- 基础层 ---- */
+  --bg: #0b0f14;
+  --menu-surface: #121821;
+  --bg-elev: #121821;
+  --bg-elev-2: #18202b;
+  --bg-sunken: #070a0e;
+  --border: #223040;
+  --border-strong: #31465c;
+  --fg: #e6edf5;
+  --fg-muted: #9fb0c2;
+  --fg-subtle: #6b7d90;
+  --accent: #4fd1c5;
+  --accent-strong: #2fb3a8;
+  --accent-fg: #04201d;
+
+  /* ---- 语义：Task 2 适用性四态（核心卖点，禁止合并） ---- */
+  --sem-match: #34d399;      /* MATCH：明确适用 */
+  --sem-mismatch: #f87171;   /* MISMATCH：明确不适用 */
+  --sem-unknown: #fbbf24;    /* UNKNOWN：信息不足（不是"不适用"） */
+  --sem-ambiguous: #c084fc;  /* AMBIGUOUS：存在歧义 */
+
+  /* ---- 语义：协作节点 / 核验状态 ---- */
+  --sem-pending: #7f8ea3;
+  --sem-running: #60a5fa;
+  --sem-produced: #38bdf8;
+  --sem-verified: #34d399;
+  --sem-failed: #f87171;
+  --sem-blocked: #fb923c;
+  --sem-stale: #94a3b8;
+
+  /* ---- 语义：任务闭环 / 结果有效性 ---- */
+  --sem-waiting: #fbbf24;
+  --sem-assess: #60a5fa;
+  --sem-repair: #fb923c;
+  --sem-completed: #34d399;
+  --sem-cancelled: #7f8ea3;
+
+  /* ---- 语义：来源权威（越往上越可信） ---- */
+  --auth-explicit: #34d399;
+  --auth-inferred: #fbbf24;
+  --auth-tool: #38bdf8;
+  --auth-unknown: #7f8ea3;
+
+  /* ---- 角色（Planner/Memory/Executor/Verifier/Coordinator） ---- */
+  --role-planner: #a78bfa;
+  --role-memory: #4fd1c5;
+  --role-executor: #38bdf8;
+  --role-verifier: #34d399;
+  --role-coordinator: #f0abfc;
+
+  /* ---- 尺寸 ---- */
+  --topbar-h: 52px;
+  --sidebar-w: 236px;
+  --inspector-w: 372px;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+
+  /* ---- 字体 ---- */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
+    'Noto Sans SC', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Mono', Consolas, 'Courier New', monospace;
+}
+
+/* 浅色主题：同一套语义变量，只换基础层与明度 */
+html[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f7f7f8;
+  --menu-surface: #ffffff;
+  --bg-elev: #ffffff;
+  --bg-elev-2: #f1f1f2;
+  --bg-sunken: #ebebed;
+  --border: #e2e2e4;
+  --border-strong: #c6c6ca;
+  --fg: #17181a;
+  --fg-muted: #55575c;
+  --fg-subtle: #85878d;
+  --accent: #0f9b8e;
+  --accent-strong: #0b7d72;
+  --accent-fg: #ffffff;
+
+  --sem-match: #178f5c;
+  --sem-mismatch: #c94a4a;
+  --sem-unknown: #a86b00;
+  --sem-ambiguous: #7c3aed;
+
+  --sem-pending: #5f7186;
+  --sem-running: #1d6fd8;
+  --sem-produced: #0a7ea4;
+  --sem-verified: #178f5c;
+  --sem-failed: #c94a4a;
+  --sem-blocked: #b4560c;
+  --sem-stale: #62748a;
+
+  --sem-waiting: #a86b00;
+  --sem-assess: #1d6fd8;
+  --sem-repair: #b4560c;
+  --sem-completed: #178f5c;
+  --sem-cancelled: #5f7186;
+
+  --auth-explicit: #178f5c;
+  --auth-inferred: #a86b00;
+  --auth-tool: #0a7ea4;
+  --auth-unknown: #5f7186;
+
+  --role-planner: #6d28d9;
+  --role-memory: #0f9b8e;
+  --role-executor: #0a7ea4;
+  --role-verifier: #178f5c;
+  --role-coordinator: #a21caf;
+}
+
+/* 主题氛围：深/浅色保持纯色；晨光/夕阳走渐变 */
+:root {
+  --app-bg: none;
+  --ambient: none;
+}
+
+/* 晨光：极浅冷调，只留一层"晨雾"氛围（饱和度低，不抢内容） */
+html[data-theme='dawn'] {
+  color-scheme: light;
+
+  --bg: rgba(240, 246, 253, 0.55);
+  --menu-surface: #f8fbff;
+  --bg-elev: rgba(250, 253, 255, 0.82);
+  --bg-elev-2: rgba(238, 245, 253, 0.88);
+  --bg-sunken: rgba(230, 240, 251, 0.72);
+  --border: #d8e4f2;
+  --border-strong: #b7c9de;
+  --fg: #12212f;
+  --fg-muted: #45586c;
+  --fg-subtle: #7a8da3;
+  --accent: #3b7dd8;
+  --accent-strong: #2a63b8;
+  --accent-fg: #ffffff;
+
+  --sem-match: #1f7a58;
+  --sem-mismatch: #b64b49;
+  --sem-unknown: #9a6a12;
+  --sem-ambiguous: #6b52b8;
+
+  --sem-pending: #63758a;
+  --sem-running: #2f74c9;
+  --sem-produced: #1c7fa0;
+  --sem-verified: #1f7a58;
+  --sem-failed: #b64b49;
+  --sem-blocked: #a4641c;
+  --sem-stale: #6a7c90;
+
+  --sem-waiting: #9a6a12;
+  --sem-assess: #2f74c9;
+  --sem-repair: #a4641c;
+  --sem-completed: #1f7a58;
+  --sem-cancelled: #63758a;
+
+  --auth-explicit: #1f7a58;
+  --auth-inferred: #9a6a12;
+  --auth-tool: #1c7fa0;
+  --auth-unknown: #63758a;
+
+  --role-planner: #6450b4;
+  --role-memory: #3b7dd8;
+  --role-executor: #1c7fa0;
+  --role-verifier: #1f7a58;
+  --role-coordinator: #9a4f9e;
+
+  --app-bg: linear-gradient(168deg, #e6f0fc 0%, #f0f7fe 40%, #f8fbff 72%, #fdfeff 100%);
+  --ambient: radial-gradient(56% 46% at 10% 0%, rgba(140, 180, 235, 0.2), transparent 70%),
+    radial-gradient(46% 40% at 88% 8%, rgba(255, 255, 255, 0.55), transparent 68%),
+    radial-gradient(50% 46% at 60% 100%, rgba(170, 200, 235, 0.15), transparent 72%);
+}
+
+/* 夕阳：极浅暖调，只留一层"晚霞"氛围（低饱和，避免直白的大橙块） */
+html[data-theme='sunset'] {
+  color-scheme: light;
+
+  --bg: rgba(253, 246, 238, 0.55);
+  --menu-surface: #fffaf4;
+  --bg-elev: rgba(255, 252, 247, 0.84);
+  --bg-elev-2: rgba(252, 240, 229, 0.88);
+  --bg-sunken: rgba(249, 234, 219, 0.72);
+  --border: #ecdccb;
+  --border-strong: #d8bfa6;
+  --fg: #2b1c11;
+  --fg-muted: #6a4c37;
+  --fg-subtle: #97785c;
+  --accent: #c9802f;
+  --accent-strong: #a9661d;
+  --accent-fg: #ffffff;
+
+  --sem-match: #24794f;
+  --sem-mismatch: #b04a3c;
+  --sem-unknown: #96621a;
+  --sem-ambiguous: #77508f;
+
+  --sem-pending: #6d5641;
+  --sem-running: #b4651f;
+  --sem-produced: #9a5a1b;
+  --sem-verified: #24794f;
+  --sem-failed: #b04a3c;
+  --sem-blocked: #a25a10;
+  --sem-stale: #75634f;
+
+  --sem-waiting: #96621a;
+  --sem-assess: #b4651f;
+  --sem-repair: #a25a10;
+  --sem-completed: #24794f;
+  --sem-cancelled: #6d5641;
+
+  --auth-explicit: #24794f;
+  --auth-inferred: #96621a;
+  --auth-tool: #9a5a1b;
+  --auth-unknown: #6d5641;
+
+  --role-planner: #6f4f9c;
+  --role-memory: #c9802f;
+  --role-executor: #9a5a1b;
+  --role-verifier: #24794f;
+  --role-coordinator: #9a4a6a;
+
+  --app-bg: linear-gradient(170deg, #fcefe0 0%, #fdf6ed 42%, #fcefe9 72%, #fbf5f3 100%);
+  --ambient: radial-gradient(54% 44% at 8% 4%, rgba(240, 180, 120, 0.22), transparent 70%),
+    radial-gradient(48% 42% at 88% 6%, rgba(240, 160, 150, 0.15), transparent 68%),
+    radial-gradient(56% 50% at 46% 100%, rgba(245, 205, 160, 0.17), transparent 72%);
+}

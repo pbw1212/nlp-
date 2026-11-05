@@ -1,0 +1,1302 @@
+/* =============================================================================
+ * 语义组件样式：把 tokens.css 的语义色变成可复用的"状态外观"
+ *
+ * 约定：组件只写 class，不写颜色；颜色一律用 var(--sem-*) / var(--tone-*)。
+ * data-tone 的取值 = 语义枚举的直译，方便对照 Python 侧枚举。
+ * ========================================================================== */
+
+/* ---------- 基础容器 ---------- */
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.card--flat {
+  background: transparent;
+  border-style: dashed;
+}
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.card__body {
+  padding: 16px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  border: 0;
+  margin: 0;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.muted {
+  color: var(--fg-muted);
+}
+.subtle {
+  color: var(--fg-subtle);
+}
+
+
+/* ---------- 反馈类：横幅 / 灰字说明 / 更多信息 ---------- */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.banner[data-tone='error'] {
+  --banner-color: var(--sem-failed);
+  border: 1px solid color-mix(in oklab, var(--banner-color) 40%, transparent);
+  background: color-mix(in oklab, var(--banner-color) 10%, transparent);
+  color: var(--banner-color);
+}
+.banner[data-tone='info'] {
+  --banner-color: var(--sem-running);
+  border: 1px solid color-mix(in oklab, var(--banner-color) 35%, transparent);
+  background: color-mix(in oklab, var(--banner-color) 8%, transparent);
+  color: var(--banner-color);
+}
+.banner[data-tone='success'] {
+  --banner-color: var(--sem-verified);
+  border: 1px solid color-mix(in oklab, var(--banner-color) 35%, transparent);
+  background: color-mix(in oklab, var(--banner-color) 8%, transparent);
+  color: var(--banner-color);
+}
+
+.hint {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.75;
+  color: var(--fg-subtle);
+}
+
+.moreinfo {
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  margin-top: 10px;
+}
+.moreinfo > summary {
+  cursor: pointer;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+  letter-spacing: 0.02em;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+.moreinfo > summary::-webkit-details-marker {
+  display: none;
+}
+.moreinfo > summary::before {
+  content: '▸';
+  font-size: 10px;
+  color: var(--border-strong);
+  transition: transform 140ms ease;
+}
+.moreinfo[open] > summary::before {
+  transform: rotate(90deg);
+}
+.moreinfo > summary:hover {
+  color: var(--fg-muted);
+}
+.moreinfo__body {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+
+/* ---------- 卡片内的「更多信息」折叠 ---------- */
+.card__fold > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 8px 16px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+.card__fold > summary::-webkit-details-marker {
+  display: none;
+}
+.card__fold > summary::before {
+  content: '▸';
+  font-size: 10px;
+  color: var(--border-strong);
+  transition: transform 140ms ease;
+}
+.card__fold[open] > summary::before {
+  transform: rotate(90deg);
+}
+.card__fold > summary:hover {
+  color: var(--fg-muted);
+}
+.card__fold > .card__body {
+  padding-top: 4px;
+}
+
+
+/* ---------- token 燃烧中：线条 emoji 动效（分层火焰 + 火星） ---------- */
+.flame {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--sem-blocked);
+  /* 暖光晕：让线条像真的在发光，而不是一根静态线 */
+  filter: drop-shadow(0 0 2px color-mix(in oklab, var(--sem-blocked) 55%, transparent));
+  animation: flame-glow 1.1s ease-in-out infinite;
+}
+.flame svg {
+  display: block;
+  overflow: visible;
+}
+
+/* 主焰：不规则抖动（用多段关键帧制造"随机"感，而不是平滑正弦） */
+.flame__body {
+  transform-box: view-box;
+  transform-origin: 36px 66px;
+  animation: flame-flicker 0.72s ease-in-out infinite;
+}
+
+/* 底部余光：跟着主焰一起呼吸 */
+.flame__base {
+  transform-box: view-box;
+  transform-origin: 36px 66px;
+  animation: flame-base 0.72s ease-in-out infinite;
+  opacity: 0.55;
+}
+
+/* 顶端小火苗：比主体快一倍，制造"舔舐"感 */
+.flame__tip {
+  transform-box: view-box;
+  transform-origin: 24px 23px;
+  animation: flame-tip 0.46s ease-in-out infinite;
+}
+
+/* 火星：三颗错峰上升、淡出 */
+.flame__spark--a { animation: flame-spark 1.05s ease-out infinite; }
+.flame__spark--b { animation: flame-spark 1.4s ease-out 0.35s infinite; }
+.flame__spark--c { animation: flame-spark 1.25s ease-out 0.7s infinite; }
+
+@keyframes flame-glow {
+  0%, 100% { filter: drop-shadow(0 0 1.5px color-mix(in oklab, var(--sem-blocked) 45%, transparent)); }
+  50% { filter: drop-shadow(0 0 3px color-mix(in oklab, var(--sem-blocked) 70%, transparent)); }
+}
+@keyframes flame-flicker {
+  0%   { transform: rotate(-2.4deg) scaleY(0.99) scaleX(1.02); }
+  14%  { transform: rotate(1.6deg) scaleY(1.04) scaleX(0.98); }
+  29%  { transform: rotate(-1.1deg) scaleY(0.98) scaleX(1.03); }
+  43%  { transform: rotate(2.2deg) scaleY(1.05) scaleX(0.97); }
+  58%  { transform: rotate(-2.8deg) scaleY(1.01) scaleX(1.01); }
+  72%  { transform: rotate(1.2deg) scaleY(1.03) scaleX(0.99); }
+  86%  { transform: rotate(-0.6deg) scaleY(0.99) scaleX(1.02); }
+  100% { transform: rotate(-2.4deg) scaleY(0.99) scaleX(1.02); }
+}
+@keyframes flame-base {
+  0%, 100% { opacity: 0.45; transform: scaleX(1); }
+  35% { opacity: 0.8; transform: scaleX(1.03); }
+  70% { opacity: 0.55; transform: scaleX(0.98); }
+}
+@keyframes flame-tip {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.95; }
+  35%  { transform: translate(-0.6px, -1.2px) scale(1.12); opacity: 0.55; }
+  60%  { transform: translate(0.5px, -0.4px) scale(1.04); opacity: 0.85; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.95; }
+}
+@keyframes flame-spark {
+  0%   { opacity: 0; transform: translateY(2px) scale(0.6); }
+  25%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-7px) scale(1.15); }
+}
+
+/* 生成中一行（占据回答将要出现的位置） */
+.generating {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 2px;
+  color: var(--fg-muted);
+}
+.generating__text {
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  color: var(--fg-subtle);
+}
+.dots {
+  display: inline-flex;
+  gap: 1px;
+  margin-left: 2px;
+}
+.dots i {
+  font-style: normal;
+  animation: dots-fade 1.3s ease-in-out infinite;
+}
+.dots i:nth-child(2) { animation-delay: 0.18s; }
+.dots i:nth-child(3) { animation-delay: 0.36s; }
+@keyframes dots-fade {
+  0%, 60%, 100% { opacity: 0.2; }
+  30% { opacity: 1; }
+}
+
+/* 左下角北京时间 */
+.clock {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 1px;
+  user-select: none;
+}
+.clock__time {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.clock__meta {
+  font-size: 10.5px;
+  color: var(--fg-subtle);
+  letter-spacing: 0.04em;
+}
+.clock__zone {
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 9.5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flame,
+  .flame__body,
+  .flame__base,
+  .flame__tip,
+  .flame__spark,
+  .dots i { animation: none !important; }
+}
+
+
+/* ---------- 回到底部悬浮按钮 ---------- */
+.to-bottom {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elev);
+  color: var(--fg-muted);
+  font-size: 11.5px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  z-index: 10;
+}
+.to-bottom:hover {
+  color: var(--fg);
+  border-color: var(--accent);
+}
+
+
+/* ---------- 弹窗（API Key 管理） ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(6, 9, 13, 0.55);
+  backdrop-filter: blur(2px);
+  animation: modal-fade 140ms ease-out;
+}
+.modal {
+  width: min(460px, calc(100vw - 32px));
+  max-height: min(78vh, 720px);
+  overflow-y: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  color: var(--fg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  animation: modal-rise 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.modal__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-elev);
+  z-index: 1;
+}
+.modal__close {
+  width: 24px;
+  height: 24px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-subtle);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.modal__close:hover {
+  background: var(--bg-elev-2);
+  color: var(--fg);
+  border-color: var(--border);
+}
+.modal__body {
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.modal__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.modal__label {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+  letter-spacing: 0.02em;
+  min-width: 64px;
+}
+.modal__input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-sunken);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.modal__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 25%, transparent);
+}
+.modal__sep {
+  border: 0;
+  border-top: 1px dashed var(--border);
+  margin: 4px 0;
+}
+@keyframes modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modal-rise {
+  from { opacity: 0; transform: translateY(6px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal { animation: none; }
+}
+
+
+/* ---------- 未配置密钥引导面板 ---------- */
+.locked-panel {
+  width: min(440px, 100%);
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 26px 22px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  text-align: center;
+}
+.locked-panel__icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+
+/* ---------- 顶栏 API Key 状态三色 ---------- */
+.chip--ok {
+  color: var(--sem-verified);
+  border-color: color-mix(in oklab, var(--sem-verified) 45%, var(--border));
+  background: color-mix(in oklab, var(--sem-verified) 10%, transparent);
+}
+.chip--ok .dot {
+  background: var(--sem-verified);
+}
+.chip--bad {
+  color: var(--sem-failed);
+  border-color: color-mix(in oklab, var(--sem-failed) 45%, var(--border));
+  background: color-mix(in oklab, var(--sem-failed) 10%, transparent);
+}
+.chip--bad .dot {
+  background: var(--sem-failed);
+}
+.chip--warn {
+  color: var(--sem-unknown);
+  border-color: color-mix(in oklab, var(--sem-unknown) 45%, var(--border));
+  background: color-mix(in oklab, var(--sem-unknown) 10%, transparent);
+}
+.chip--warn .dot {
+  background: var(--sem-unknown);
+}
+
+
+/* ---------- 协作拓扑 DAG ---------- */
+.dag {
+  position: relative;
+  margin-top: 18px;
+  margin-left: 4px;
+}
+.dag__colheads {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.dag__colhead {
+  position: absolute;
+  top: -16px;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--fg-subtle);
+  text-align: center;
+}
+.dag__edges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.dag__edge {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.4;
+}
+.dag__edge--dependency {
+  stroke: var(--sem-ambiguous);
+  stroke-dasharray: 4 4;
+  opacity: 0.75;
+}
+.dag__node {
+  position: absolute;
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  padding: 6px 8px 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  background: var(--bg-elev);
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.dag__node:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-elev-2);
+}
+.dag__node[data-active='1'] {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+}
+.dag__node[data-tone='verified'] { border-left-color: var(--sem-verified); }
+.dag__node[data-tone='produced'] { border-left-color: var(--sem-produced); }
+.dag__node[data-tone='running'] { border-left-color: var(--sem-running); }
+.dag__node[data-tone='failed'] { border-left-color: var(--sem-failed); }
+.dag__node[data-tone='blocked'] { border-left-color: var(--sem-blocked); }
+.dag__node[data-tone='pending'] { border-left-color: var(--sem-pending); }
+.dag__node[data-tone='stale'] { border-left-color: var(--sem-stale); }
+.dag__node-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.dag__node-sub {
+  font-size: 10px;
+  color: var(--fg-subtle);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dag__node-status {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  color: var(--fg-subtle);
+}
+.dag__node-status[data-tone='verified'] { color: var(--sem-verified); }
+.dag__node-status[data-tone='failed'] { color: var(--sem-failed); }
+.dag__node-status[data-tone='blocked'] { color: var(--sem-blocked); }
+
+
+/* ---------- 顶栏主题下拉 ---------- */
+.theme-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 236px;
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--menu-surface);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+  z-index: 40;
+}
+.theme-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+.theme-menu__item:hover {
+  background: var(--bg-elev-2);
+  color: var(--fg);
+}
+.theme-menu__item[data-active='1'] {
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  border-color: color-mix(in oklab, var(--accent) 38%, transparent);
+  color: var(--fg);
+}
+.theme-menu__label {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+.theme-menu__now {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--fg-subtle);
+}
+.theme-menu__check {
+  color: var(--accent);
+  font-size: 11px;
+}
+.theme-menu__hint {
+  margin-top: 4px;
+  padding: 6px 8px 2px;
+  border-top: 1px dashed var(--border);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--fg-subtle);
+}
+
+
+/* ---------- 主题切换过渡（渐变而不是突变） ---------- */
+/* 支持 View Transitions 的浏览器会整页交叉淡入淡出 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 460ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 回退：所有元素统一做颜色过渡，避免局部硬切 */
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 420ms ease, color 320ms ease, border-color 320ms ease,
+    box-shadow 320ms ease, opacity 420ms ease, fill 320ms ease, stroke 320ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* ---------- 徽章（状态胶囊） ---------- */
+.badge {
+  --tone-fg: var(--fg-muted);
+  --tone-bg: transparent;
+  --tone-border: var(--border-strong);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--tone-border);
+  color: var(--tone-fg);
+  background: var(--tone-bg);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--tone-fg);
+  opacity: 0.9;
+}
+.badge--plain::before {
+  display: none;
+}
+
+/* 适用性四态 —— 这是全项目最重要的四色，禁止合并 */
+.badge[data-tone='match'] {
+  --tone-fg: var(--sem-match);
+}
+.badge[data-tone='mismatch'] {
+  --tone-fg: var(--sem-mismatch);
+}
+.badge[data-tone='unknown'] {
+  --tone-fg: var(--sem-unknown);
+}
+.badge[data-tone='ambiguous'] {
+  --tone-fg: var(--sem-ambiguous);
+}
+
+/* 协作节点 / 核验 */
+.badge[data-tone='pending'],
+.badge[data-tone='cancelled'] {
+  --tone-fg: var(--sem-pending);
+}
+.badge[data-tone='running'],
+.badge[data-tone='assess'] {
+  --tone-fg: var(--sem-running);
+}
+.badge[data-tone='produced'] {
+  --tone-fg: var(--sem-produced);
+}
+.badge[data-tone='verified'],
+.badge[data-tone='completed'],
+.badge[data-tone='valid'] {
+  --tone-fg: var(--sem-verified);
+}
+.badge[data-tone='failed'] {
+  --tone-fg: var(--sem-failed);
+}
+.badge[data-tone='blocked'],
+.badge[data-tone='repair'] {
+  --tone-fg: var(--sem-blocked);
+}
+.badge[data-tone='stale'] {
+  --tone-fg: var(--sem-stale);
+}
+.badge[data-tone='waiting'],
+.badge[data-tone='notchecked'] {
+  --tone-fg: var(--sem-waiting);
+}
+.badge[data-tone='accent'] {
+  --tone-fg: var(--accent);
+}
+
+/* 带底色的徽章（用于"当前有效版本"这类需要强调的标记） */
+.badge--filled {
+  --tone-bg: color-mix(in oklab, var(--tone-fg) 16%, transparent);
+  --tone-border: color-mix(in oklab, var(--tone-fg) 40%, transparent);
+}
+
+/* ---------- 状态点（紧凑列表用） ---------- */
+.dot {
+  --tone-fg: var(--fg-muted);
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--tone-fg);
+  flex: none;
+}
+.dot[data-tone='match'],
+.dot[data-tone='verified'],
+.dot[data-tone='completed'],
+.dot[data-tone='valid'] {
+  --tone-fg: var(--sem-verified);
+}
+.dot[data-tone='mismatch'],
+.dot[data-tone='failed'] {
+  --tone-fg: var(--sem-mismatch);
+}
+.dot[data-tone='unknown'],
+.dot[data-tone='waiting'] {
+  --tone-fg: var(--sem-unknown);
+}
+.dot[data-tone='ambiguous'] {
+  --tone-fg: var(--sem-ambiguous);
+}
+.dot[data-tone='pending'] {
+  --tone-fg: var(--sem-pending);
+}
+.dot[data-tone='running'] {
+  --tone-fg: var(--sem-running);
+}
+.dot[data-tone='produced'] {
+  --tone-fg: var(--sem-produced);
+}
+.dot[data-tone='blocked'] {
+  --tone-fg: var(--sem-blocked);
+}
+.dot[data-tone='stale'] {
+  --tone-fg: var(--sem-stale);
+}
+
+/* ---------- 空态：必须"说清楚为什么没数据"，不许留白糊弄 ---------- */
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px 24px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--bg-sunken) 60%, transparent);
+}
+.empty__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.empty__desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--fg-muted);
+  max-width: 68ch;
+}
+.empty__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.empty__item {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.empty__item::before {
+  content: '○';
+  color: var(--accent);
+  flex: none;
+}
+
+/* ---------- 键值信息行 ---------- */
+.kv {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 6px 14px;
+  font-size: 13px;
+}
+.kv__k {
+  color: var(--fg-subtle);
+}
+.kv__v {
+  color: var(--fg);
+  word-break: break-all;
+}
+
+/* ---------- 顶栏/侧栏通用 ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+.chip--button {
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.chip--button:hover {
+  border-color: var(--border-strong);
+  color: var(--fg);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.nav-item:hover {
+  background: var(--bg-elev);
+  color: var(--fg);
+}
+.nav-item[aria-current='page'] {
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  border-color: color-mix(in oklab, var(--accent) 34%, transparent);
+  color: var(--fg);
+}
+
+/* 滚动条（三栏布局里不可避免） */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+
+/* ---------- 产品标识（左上角） ---------- */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 4px 5px;
+  margin-left: -5px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.brand:hover {
+  background: var(--bg-elev-2);
+  border-color: var(--border);
+}
+.brand:active {
+  transform: translateY(1px);
+}
+.brand:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.brand__mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.brand:hover .brand__mark {
+  transform: translateY(-1px) scale(1.03);
+}
+.brand__glyph {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 400ms ease;
+}
+.brand:hover .brand__glyph {
+  animation: brand-draw 700ms ease forwards;
+}
+.brand__horizon {
+  transition: opacity 160ms ease;
+}
+.brand:hover .brand__horizon {
+  opacity: 1;
+}
+.brand__text {
+  display: grid;
+  gap: 2px;
+  line-height: 1.05;
+}
+.brand__word {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--fg);
+  background: linear-gradient(
+    92deg,
+    var(--fg) 0%,
+    color-mix(in oklab, var(--fg) 72%, var(--accent)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.brand__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+}
+.brand__tick {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 6px color-mix(in oklab, var(--accent) 70%, transparent);
+}
+
+@keyframes brand-draw {
+  0% { stroke-dashoffset: 30; }
+  100% { stroke-dashoffset: 0; }
+}
+/* ---------- 对话时间线：紧凑日志 ---------- */
+.logline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 1px 0 1px 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.75;
+  color: var(--fg-subtle);
+  min-width: 0;
+}
+.logline__glyph {
+  flex: none;
+  width: 10px;
+  color: var(--border-strong);
+}
+.logline__name {
+  color: var(--fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 42%;
+}
+.logline__meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.logline--fail .logline__name,
+.logline--fail .logline__meta {
+  color: var(--sem-failed);
+}
+.logline--warn .logline__meta {
+  color: var(--sem-warning, var(--sem-waiting));
+}
+.logline--dim {
+  opacity: 0.7;
+}
+
+/* 过程折叠条 */
+.processbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 3px 8px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-subtle);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+}
+.processbar:hover {
+  border-color: var(--border-strong);
+  color: var(--fg-muted);
+  background: color-mix(in oklab, var(--bg-elev) 60%, transparent);
+}
+.processbar__chev {
+  transition: transform 160ms ease;
+  flex: none;
+}
+.processbar[aria-expanded='true'] .processbar__chev {
+  transform: rotate(90deg);
+}
+.processbar__spacer {
+  flex: 1;
+}
+
+/* ---------- 对话页：会话列表项 ---------- */
+.thread-item {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.thread-item:hover {
+  background: var(--bg-elev);
+}
+.thread-item[aria-current='true'] {
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  border-color: color-mix(in oklab, var(--accent) 30%, transparent);
+}
+.thread-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+
+
+/* ---------- 会话列表头部（两行，避免窄栏挤成竖排） ---------- */
+.thread-head {
+  padding: 9px 10px 8px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 3px;
+  flex: none;
+}
+.thread-head__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.thread-head__title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--fg);
+  white-space: nowrap;
+}
+.thread-head__count {
+  flex: none;
+  font-size: 10px;
+  line-height: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 5px;
+}
+.thread-head__spacer {
+  flex: 1;
+  min-width: 0;
+}
+.thread-head__hint {
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--fg-subtle);
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.icon-btn {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+.icon-btn:hover:not(:disabled) {
+  background: var(--bg-elev-2);
+  border-color: var(--border-strong);
+  color: var(--fg);
+}
+.icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.icon-btn--accent {
+  color: var(--accent);
+  border-color: color-mix(in oklab, var(--accent) 38%, var(--border));
+}
+.icon-btn--accent:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- 会话列表：行 + 更多操作菜单 ---------- */
+.thread-row {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+}
+.thread-row .thread-item {
+  flex: 1;
+  min-width: 0;
+}
+.thread-more {
+  flex: none;
+  width: 24px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.thread-more:hover:not(:disabled) {
+  background: var(--bg-elev-2);
+  border-color: var(--border);
+  color: var(--fg);
+}
+.thread-more:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.thread-menu.thread-menu--fixed {
+  position: fixed;
+  right: auto;
+  top: auto;
+  max-height: min(320px, 70vh);
+  overflow-y: auto;
+  z-index: 60;
+}
+.thread-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 30;
+  width: 184px;
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
+}
+.thread-menu button {
+  text-align: left;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.thread-menu button:hover:not(:disabled) {
+  background: var(--bg-elev-2);
+  color: var(--fg);
+}
+.thread-menu button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.thread-menu input {
+  width: 100%;
+  padding: 5px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 12px;
+}
+.thread-menu__danger {
+  color: var(--sem-failed) !important;
+}
+.thread-menu__hint {
+  font-size: 10.5px;
+  color: var(--fg-subtle);
+  line-height: 1.55;
+  padding: 2px 8px 4px;
+}
+
+/* ---------- 对话页：过程项（工具/阶段/审批/压缩） ---------- */
+.event-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+  min-width: 0;
+}
+.event-row > .dot {
+  margin-top: 6px;
+}
+
+/* ---------- 三栏骨架 ---------- */
+.app-grid {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--inspector-w);
+  /* 单行必须占满可用高度，否则栏内列表会"有几个内容就显示多长" */
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+  flex: 1;
+}
+
+.app-main {
+  min-width: 0;
+  overflow-y: auto;
+  padding: 20px 22px 40px;
+}
+
+/* 对话页需要整块高度并自己管滚动（时间线滚动、输入框固定在底部） */
+.app-main--flush {
+  padding: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 窄屏：先收检查器，再收侧栏（保证主工作区永远可用） */
+@media (max-width: 1240px) {
+  .app-grid {
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  }
+  .app-inspector {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-side {
+    display: none;
+  }
+}
+

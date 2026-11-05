@@ -1,0 +1,141 @@
+[
+  {
+    "request_id": "turn_bf7a61d21ca9",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "????????:? read_file ?? D:\\projects\\nlp-\\README.md,??????????????????(?????????),???????????????": 0
+        },
+        "query_variants": [
+          "????????:? read_file ?? D:\\projects\\nlp-\\README.md,??????????????????(?????????),???????????????"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_bf7a61d21ca9",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_97c981cc1b78",
+    "selected_memory_ids": [
+      "mem_9d4bdad9dfbb"
+    ],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 1,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "????????????:???,? read_file ? D:\\projects\\nlp-\\README.md ?? 40 ?;???,??????? Task ???(Task 1/2/3 ??????);???,??????????????": 1
+        },
+        "query_variants": [
+          "????????????:???,? read_file ? D:\\projects\\nlp-\\README.md ?? 40 ?;???,??????? Task ???(Task 1/2/3 ??????);???,??????????????"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_no_edges"
+        ],
+        "warnings": []
+      }
+    },
+    "turn_id": "turn_97c981cc1b78",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_4e9828853136",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {},
+        "query_variants": [
+          "???? create_file ??,??? list_directory???:path=D:\\projects\\nlp-\\code\\web\\.verify_probe.txt,content=ok??????,?????,????"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "empty_current_corpus"
+        ]
+      }
+    },
+    "turn_id": "turn_4e9828853136",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_3dbca3db6573",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {},
+        "query_variants": [
+          "?? D:\\projects\\nlp-\\code\\web ??????????? .verify_probe.txt,??? ok???????????,???????"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "empty_current_corpus"
+        ]
+      }
+    },
+    "turn_id": "turn_3dbca3db6573",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_a88d5d8e9f9e",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {},
+        "query_variants": [
+          "?????? D:\\projects\\nlp-\\code\\web ??????(? list_directory),???????????????????"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "empty_current_corpus"
+        ]
+      }
+    },
+    "turn_id": "turn_a88d5d8e9f9e",
+    "warnings": []
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "cache": "C:\\Users\\ZhuanZ1\\.agent_data\\cache",
+  "cli": "C:\\Users\\ZhuanZ1\\.agent_data\\cli",
+  "cli_history": "C:\\Users\\ZhuanZ1\\.agent_data\\cli\\cli_history",
+  "config": "C:\\Users\\ZhuanZ1\\.agent_data\\config",
+  "config_env": "C:\\Users\\ZhuanZ1\\.agent_data\\config\\.env.local",
+  "conversation_db": "C:\\Users\\ZhuanZ1\\.agent_data\\conversations\\conversation.db",
+  "conversation_store": "C:\\Users\\ZhuanZ1\\.agent_data\\conversations",
+  "conversations": "C:\\Users\\ZhuanZ1\\.agent_data\\conversations",
+  "data_dir": "C:\\Users\\ZhuanZ1\\.agent_data",
+  "events_db": "C:\\Users\\ZhuanZ1\\.agent_data\\execution\\agent_events.db",
+  "execution": "C:\\Users\\ZhuanZ1\\.agent_data\\execution",
+  "journal_db": "C:\\Users\\ZhuanZ1\\.agent_data\\execution\\agent_journal.db",
+  "long_term_memory": "C:\\Users\\ZhuanZ1\\.agent_data\\long_term_memory",
+  "mcp_config": "C:\\Users\\ZhuanZ1\\.agent_data\\config\\mcp.json",
+  "memory_db": "C:\\Users\\ZhuanZ1\\.agent_data\\long_term_memory\\memory.db",
+  "plugins": "C:\\Users\\ZhuanZ1\\.agent_data\\plugins",
+  "retrieval_traces": "C:\\Users\\ZhuanZ1\\.agent_data\\execution\\retrieval-traces.jsonl",
+  "task_db": "C:\\Users\\ZhuanZ1\\.agent_data\\task_state\\task_state.db",
+  "task_state": "C:\\Users\\ZhuanZ1\\.agent_data\\task_state",
+  "workspace_scope": "C:\\Users\\ZhuanZ1\\.agent_data\\workspaces\\workspace_scope.json",
+  "workspaces": "C:\\Users\\ZhuanZ1\\.agent_data\\workspaces"
+}

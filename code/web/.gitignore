@@ -1,0 +1,8 @@
+# --- 前端层自带的忽略规则（根 .gitignore 属于组员文件，不改） ---
+node_modules/
+dist/
+.vite/
+*.local
+
+# 录制的 fixture 体积可能较大，先不提交；等确认真实响应可公开再放开
+# src/datasource/fixtures/*.json
