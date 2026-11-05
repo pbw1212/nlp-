@@ -1,6 +1,6 @@
 # 协作中的需求驱动证据
 
-状态：Implemented / experimental，更新于 2026-10-31。默认模式仍为 `single`。
+状态：Implemented / experimental，更新于 2026-11-05。默认模式仍为 `single`。
 
 ## 执行流程
 
@@ -26,6 +26,32 @@ SourcePacket 记录总原文字符数、返回窗口和截断状态。显式窗�
 
 read_file 的外部文件当前状态校验由工具适配器承担，区别于读取历史工具回执；
 详见 [来源版本与修复](repair-execution.md)。
+
+## Executor 到下游 Verifier 的原始证据
+
+`receipts` 表示当前 Executor 自己执行的工具回执；只使用依赖成果的子任务可以为空。
+`trace_metadata.source_reads` 记录 SourceResolver 的历史原文读取与哈希，普通 read_file
+执行不会写入该字段；两者为空不等于已验证依赖没有原始证据。
+
+所有子任务验证和整体验证另有宿主组装的 `supporting_evidence` v1：
+
+- `receipts`：从真实执行 Journal 加载、已核对执行者/任务归属的回执，保留参数、状态、原始结果与文件观察元数据。
+- `source_packets`：当前子任务及其声明的已验证依赖实际使用的有界原文窗口。
+- `memories`：实际选择的当前记忆内容、revision 与内容哈希，支持只需摘要的合法证据。
+
+宿主只合并声明的已验证依赖，按证据身份去重；身份相同而内容不同则拒绝。
+`verified_dependencies[*].supporting_evidence` 同时提供给后继 Executor 与 Verifier，
+多层依赖继续传递真实证据，而不只传递回答和 artifact ID。整体验证获得所有已验证子任务的证据集合。
+模型仍须检查原始内容、来源范围与要求是否匹配；有回执不自动等于 PASS，无证据继续 BLOCKED。
+证据数据不具有指令或授权效力；当前 Executor 使用工具时的成功回执支持要求保持不变。
+
+`support:<subtask>` 是独立的 EvidenceHandoff 持久阶段，不新增模型调用；绑定实际 artifact ID
+与完整证据哈希。重启修复复用独立根节点时，只能从仍为 VERIFIED 的原成果恢复完整性核验通过的证据包，
+不会从其他任务或未声明分支补证。已变化分支的旧回执不被合入新成果。
+执行契约指纹包含证据协议版本；缺少该协议的旧记录不能据此授权新版本成果复用，
+需要新请求重新验证，不能猜测补齐旧交接。
+
+缺口、修复及专项证据见 [2026-11-05 修复记录](../maintenance/verifier-evidence-20261105.md)。
 
 ## 预算与恢复
 

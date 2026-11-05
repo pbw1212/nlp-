@@ -142,6 +142,7 @@ class CollaborationCoordinator:
         composer_type = type(self.prompt_composer)
         contract = {
             "version": 1,
+            "verification_evidence_version": 1,
             "provider_type": f"{provider_type.__module__}.{provider_type.__qualname__}",
             "provider_config": public_provider,
             "prompt_composer_type": f"{composer_type.__module__}.{composer_type.__qualname__}",
@@ -1142,6 +1143,51 @@ class CollaborationCoordinator:
         )
         return payload
 
+    @staticmethod
+    def _supporting_evidence(*bundles: dict[str, Any]) -> dict[str, Any]:
+        """Merge host-supplied native evidence without replacing conflicting IDs."""
+        receipts, packets, memories = {}, {}, {}
+        for bundle in bundles:
+            for row in bundle["receipts"]:
+                key = row["evidence_id"]
+                if key in receipts and digest(receipts[key]) != digest(row):
+                    raise SourceFrontierChanged("supporting receipt identity changed")
+                receipts[key] = row
+            for row in bundle["source_packets"]:
+                key = row["source"]["source_ref"]
+                if key in packets and digest(packets[key]) != digest(row):
+                    raise SourceFrontierChanged(
+                        "supporting original source identity changed"
+                    )
+                packets[key] = row
+            for row in bundle.get("memories", []):
+                key = row["memory_id"]
+                if key in memories and digest(memories[key]) != digest(row):
+                    raise SourceFrontierChanged("supporting memory identity changed")
+                memories[key] = row
+        return {
+            "schema_version": 1,
+            "receipts": list(receipts.values()),
+            "source_packets": list(packets.values()),
+            "memories": list(memories.values()),
+        }
+
+    def _record_support(
+        self, run_id: str, key: str, support: dict[str, Any]
+    ) -> dict[str, Any]:
+        artifact_id = identity(run_id, "execute:" + key, "artifact")
+        return self._stage(
+            run_id,
+            "support:" + key,
+            "EvidenceHandoff",
+            {"artifact_id": artifact_id, "evidence_hash": digest(support)},
+            lambda: {
+                "schema_version": 1,
+                "artifact_id": artifact_id,
+                "supporting_evidence": support,
+            },
+        )["supporting_evidence"]
+
     def _current_memories(self, context: AgentTurnContext) -> list[dict[str, Any]]:
         result = []
         for item in context.evidence_bundle.selected if context.evidence_bundle else ():
@@ -1354,6 +1400,11 @@ class CollaborationCoordinator:
                     self.repository.verify_artifact(
                         run_id, "execute:" + subtask.key, "verify:" + subtask.key
                     )
+                    support = self._record_support(
+                        run_id,
+                        subtask.key,
+                        self.repository.get_verified_support(reused["artifact_id"]),
+                    )
                     reused_keys.append(subtask.key)
                     verified[subtask.key] = {
                         "artifact_id": identity(
@@ -1362,6 +1413,7 @@ class CollaborationCoordinator:
                         "answer": reused["verification"]["answer"],
                         "evidence_ids": reused["verification"]["evidence_ids"],
                         "input_hash": reused["input_hash"],
+                        "supporting_evidence": support,
                     }
                     continue
                 role_context = RoleContext(
@@ -1627,6 +1679,31 @@ class CollaborationCoordinator:
                         "tool receipt observations changed or are unavailable"
                     ) from exc
                 evidence_ids = {item["evidence_id"] for item in receipts} | selected
+                support = self._record_support(
+                    run_id,
+                    subtask.key,
+                    self._supporting_evidence(
+                        {
+                            "receipts": receipts,
+                            "source_packets": preparation["source_packets"],
+                            "memories": [
+                                row
+                                for row in inputs["memories"]
+                                if row["memory_id"] in selected
+                            ],
+                        },
+                        *(
+                            row["supporting_evidence"]
+                            for row in inputs["verified_dependencies"].values()
+                        ),
+                    ),
+                )
+                evidence_ids.update(row["evidence_id"] for row in support["receipts"])
+                evidence_ids.update(
+                    row["source"]["source_ref"]
+                    for row in support["source_packets"]
+                    if row["status"] == "RESOLVED"
+                )
                 evidence_ids.update(
                     row["source"]["source_ref"]
                     for row in preparation["source_packets"]
@@ -1644,6 +1721,7 @@ class CollaborationCoordinator:
                     ],
                     "executor_artifact": execution,
                     "receipts": receipts,
+                    "supporting_evidence": support,
                     "memory_selection": selection,
                     **preparation,
                 }
@@ -1702,12 +1780,16 @@ class CollaborationCoordinator:
                     "answer": verdict["answer"],
                     "evidence_ids": verdict["evidence_ids"],
                     "input_hash": digest(executor_input),
+                    "supporting_evidence": support,
                 }
             final_inputs = {
                 "verification_scope": "whole_user_goal",
                 "user_goal": request.turn_request.user_input,
                 "plan": plan,
                 "verified_subtasks": verified,
+                "supporting_evidence": self._supporting_evidence(
+                    *(row["supporting_evidence"] for row in verified.values())
+                ),
                 "memories": self._current_memories(context),
             }
             overall = self._stage(
@@ -1721,6 +1803,15 @@ class CollaborationCoordinator:
             all_evidence = {
                 ref for item in verified.values() for ref in item["evidence_ids"]
             } | {item["artifact_id"] for item in verified.values()}
+            all_evidence.update(
+                row["evidence_id"]
+                for row in final_inputs["supporting_evidence"]["receipts"]
+            )
+            all_evidence.update(
+                row["source"]["source_ref"]
+                for row in final_inputs["supporting_evidence"]["source_packets"]
+                if row["status"] == "RESOLVED"
+            )
             if not set(overall["evidence_ids"]) <= all_evidence:
                 raise CoordinationConflict("overall verifier invented evidence")
             if overall["verdict"] != "PASS":

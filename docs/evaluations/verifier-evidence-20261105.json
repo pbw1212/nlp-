@@ -1,0 +1,66 @@
+{
+  "kind": "native_verifier_evidence_handoff_fix",
+  "date": "2026-11-05",
+  "base_commit": "c10fd0a5818f999827f7081892c0c4755e13f732",
+  "source_sha256": {
+    "code/src/memory/collaboration/coordinator.py": "7ed5bd5ec8d324ce5640eac72e461ee9ef23d52bcc698a14c96457426932811b",
+    "code/src/memory/collaboration/repository.py": "b2e9a98eedc71163750f28ce3ff87c0ae2168f74fe15f665f42887d8c158ef21",
+    "code/src/memory/collaboration/roles.py": "b3bed71ee24c34abc062f8507e43c3c7ecdadee4d654e3238ededc6951aa4f97",
+    "code/tests/test_collaboration.py": "b66ca14577e0fc91fb6d117ef877cd618fec07ce8f66ead80cd6a3212ef9312a",
+    "code/tests/test_verifier_evidence_handoff.py": "ea90c3b459dd02bd58caddd7c255d81cca21fdf9ee9e052c11f72eeb18b5fdde",
+    "code/scripts/verifier_evidence_smoke.py": "b4c2df1a1e54eca8da62736008c55f7f3a3984da9890865c0fac08fb3c20ddc7"
+  },
+  "before_fix_reproduction": {
+    "isolated_real_read_file_and_sqlite": true,
+    "dependent_verifier": "COLLABORATION_VERIFICATION_BLOCKED",
+    "overall_verifier": "COLLABORATION_GOAL_INCOMPLETE",
+    "observed_failing_cases": 2,
+    "original_user_session_logs_available": false
+  },
+  "offline_regression": {
+    "command": "python -m pytest -q --junitxml=docs/evaluations/verifier-evidence-20261105.xml",
+    "junit_path": "docs/evaluations/verifier-evidence-20261105.xml",
+    "tests": 572,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 1,
+    "passed": 571,
+    "elapsed_seconds": 163.496
+  },
+  "new_boundary_test_cases": 11,
+  "checks": {
+    "ruff_changed_python_files": "passed",
+    "ruff_full_tree_E9_F821_F822_F823": "passed",
+    "git_diff_check": "passed"
+  },
+  "live": {
+    "path": "docs/evaluations/live-verifier-evidence-20261105.json",
+    "engineering_assertions_passed": true,
+    "checks": {
+      "real_file_graph_succeeds": true,
+      "both_random_native_tokens_preserved": true,
+      "merge_receives_native_receipts": true,
+      "whole_user_goal_receives_native_receipts": true,
+      "dependency_only_merge_needs_no_duplicate_read": true
+    },
+    "provider_model_calls": 15,
+    "requested_model": "deepseek-v4-flash",
+    "server_model_identity_retained": false,
+    "final_source_snapshot_matches": true
+  },
+  "protocol": {
+    "supporting_evidence_schema_version": 1,
+    "durable_stage_prefix": "support:",
+    "durable_sender": "EvidenceHandoff",
+    "new_model_call_required": false,
+    "current_executor_receipts_still_separate": true,
+    "old_contract_reuse_authorized": false
+  },
+  "scope_limits": [
+    "Original screenshot session was not supplied; reproduced code path in isolated fixtures",
+    "Live smoke tests graph execution; automatic TaskReview/learning is disabled in that targeted run",
+    "Three-subtask serial read-only execution; no distributed guarantee",
+    "Verification still requires grounded semantic judgement and may block when evidence is insufficient"
+  ],
+  "report": "docs/maintenance/verifier-evidence-20261105.md"
+}

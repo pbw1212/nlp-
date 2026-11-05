@@ -6,6 +6,7 @@
 
 核心算法、论文联系、阶段边界与研究方案见 [MAPAS 核心算法与技术方案](research/mapas-core-algorithms.md)；当前架构及协作范围见 [系统架构](architecture/overview.md) 与 [多 Agent P1](architecture/multi-agent-foundation.md)。阶段测试证据见 [P0–P1 报告](phases/multi-agent-p0-p1-20261014.md)。
 最新运行、调度、恢复与同步前验收见 [2026-10-31 系统审计](maintenance/system-audit-20261031.md)。
+后续发现的下游 Verifier 原始证据漏传及最新回归见 [2026-11-05 修复报告](maintenance/verifier-evidence-20261105.md)。
 
 本目录是项目可维护知识的 source of truth。Protected-local 原始材料不属于 canonical Git，也不是正式规格；所需设计知识必须整理进本目录。
 

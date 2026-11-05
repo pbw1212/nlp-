@@ -199,7 +199,18 @@ def test_four_roles_execute_real_calculator_and_replay_without_duplicate_ingesti
                 db.execute("SELECT verification_status FROM artifacts").fetchone()[0]
                 == "VERIFIED"
             )
-            assert db.execute("SELECT COUNT(*) FROM handoffs").fetchone()[0] == 5
+            assert (
+                db.execute(
+                    "SELECT COUNT(*) FROM handoffs WHERE sender<>'EvidenceHandoff'"
+                ).fetchone()[0]
+                == 5
+            )
+            assert (
+                db.execute(
+                    "SELECT COUNT(*) FROM handoffs WHERE sender='EvidenceHandoff'"
+                ).fetchone()[0]
+                == 1
+            )
             assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
     finally:
         app.close()

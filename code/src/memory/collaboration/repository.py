@@ -1011,6 +1011,44 @@ class CoordinationRepository:
                 raise CoordinationConflict("handoff integrity failure")
             return payload
 
+    def get_verified_support(self, artifact_id: str) -> dict[str, Any]:
+        """Read only the host evidence handoff bound to a still-verified artifact."""
+        with self._connect() as db:
+            row = db.execute(
+                "SELECT h.payload_json,h.payload_hash,t.input_hash FROM artifacts a "
+                "JOIN task_attempts x ON x.artifact_id=a.artifact_id AND x.run_id=a.run_id "
+                "JOIN task_nodes n ON n.node_id=x.node_id "
+                "JOIN handoffs h ON h.run_id=a.run_id AND h.stage_key='support:' || n.node_key "
+                "JOIN role_tasks t ON t.run_id=h.run_id AND t.stage_key=h.stage_key "
+                "WHERE a.artifact_id=? AND a.verification_status='VERIFIED' AND x.status='VERIFIED' "
+                "AND n.status='VERIFIED' AND h.sender='EvidenceHandoff' AND t.role='EvidenceHandoff'",
+                (artifact_id,),
+            ).fetchone()
+        if row is None:
+            raise CoordinationConflict(
+                "verified artifact has no native evidence handoff"
+            )
+        try:
+            payload = json.loads(row["payload_json"])
+            support = payload["supporting_evidence"]
+            valid = (
+                payload["schema_version"] == 1
+                and payload["artifact_id"] == artifact_id
+                and support["schema_version"] == 1
+                and digest(payload) == row["payload_hash"]
+                and digest(
+                    {"artifact_id": artifact_id, "evidence_hash": digest(support)}
+                )
+                == row["input_hash"]
+            )
+        except (TypeError, KeyError, ValueError) as exc:
+            raise CoordinationConflict(
+                "native evidence handoff integrity failure"
+            ) from exc
+        if not valid:
+            raise CoordinationConflict("native evidence handoff integrity failure")
+        return support
+
     def accept(
         self,
         run_id: str,
