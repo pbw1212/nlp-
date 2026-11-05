@@ -382,7 +382,9 @@ class JsonlAppServer:
     def handle(self, request: Mapping[str, Any]) -> None:
         request_id = request.get("id")
         method = request.get("method")
-        params = request.get("params") or {}
+        params = request.get("params")
+        if params is None:
+            params = {}
         if not isinstance(method, str) or not isinstance(params, Mapping):
             self._error(request_id, -32600, "invalid request")
             return
@@ -413,6 +415,11 @@ class JsonlAppServer:
                 except json.JSONDecodeError as exc:
                     self._error(None, -32700, f"invalid JSON: {exc.msg}")
                     continue
+                except (ValueError, RecursionError):
+                    self._error(
+                        None, -32700, "invalid JSON: parser resource limit exceeded"
+                    )
+                    continue
                 if not isinstance(request, Mapping):
                     self._error(None, -32600, "request must be a JSON object")
                     continue
@@ -432,7 +439,29 @@ def main() -> None:
         "--execution-mode", choices=("single", "multi_fixed"), default="single"
     )
     args = parser.parse_args()
-    app = PersonalAgentApp(data_dir=args.data_dir, execution_mode=args.execution_mode)
+    try:
+        app = PersonalAgentApp(
+            data_dir=args.data_dir, execution_mode=args.execution_mode
+        )
+    except Exception as exc:  # noqa: BLE001 - JSONL startup boundary
+        metadata = log_boundary_failure(logger, "app_server_startup_failed", exc)
+        sys.stdout.write(
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {
+                        "code": -32000,
+                        "message": "MAPAS startup failed",
+                        "data": {"error_type": metadata["error_type"]},
+                    },
+                },
+                separators=(",", ":"),
+            )
+            + "\n"
+        )
+        sys.stdout.flush()
+        raise SystemExit(1) from None
     JsonlAppServer(app, sys.stdout).serve(sys.stdin)
 
 

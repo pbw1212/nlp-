@@ -38,6 +38,9 @@ def main():
         "verifier_handoffs": [],
     }
     names = [
+        "agent/loop.py",
+        "app/mcp.py",
+        "collaboration/lifecycle.py",
         "collaboration/coordinator.py",
         "collaboration/repository.py",
         "collaboration/roles.py",

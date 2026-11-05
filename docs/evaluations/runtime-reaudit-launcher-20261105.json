@@ -1,0 +1,13 @@
+{
+  "kind": "windows_launcher_smoke",
+  "command": "code/start_agent.cmd --execution-mode multi_fixed --help",
+  "returncode": 0,
+  "usage_printed": true,
+  "execution_mode_argument_forwarded": true,
+  "isolated_home_created": false,
+  "real_api_called": false,
+  "source_sha256": {
+    "code/start_agent.cmd": "1f338f775b38d67c1eae262a39c2510371806fd88a0b9dfa97e90ed0d94a2a6e",
+    "code/scripts/personal_agent.py": "88c0ec74664773458fbd9634c06e6d302411a5b1104b579818718a320d7f668a"
+  }
+}

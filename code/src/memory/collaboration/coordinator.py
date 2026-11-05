@@ -143,6 +143,7 @@ class CollaborationCoordinator:
         contract = {
             "version": 1,
             "verification_evidence_version": 1,
+            "tool_result_identity_version": 1,
             "provider_type": f"{provider_type.__module__}.{provider_type.__qualname__}",
             "provider_config": public_provider,
             "prompt_composer_type": f"{composer_type.__module__}.{composer_type.__qualname__}",

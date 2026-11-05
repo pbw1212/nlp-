@@ -1043,6 +1043,27 @@ class AgentLoopController:
 
         try:
             exec_res = executor.execute(req)
+            if not isinstance(exec_res, ToolCallResult) or not isinstance(
+                exec_res.status, ToolCallStatus
+            ):
+                raise TypeError("executor returned an invalid tool result type/status")
+            if (
+                exec_res.tool_call_id != req.tool_call_id
+                or exec_res.tool_name != req.tool_name
+                or json.dumps(exec_res.arguments, sort_keys=True, ensure_ascii=False)
+                != args_json
+            ):
+                raise ValueError(
+                    "executor result does not belong to the dispatched call"
+                )
+            # Reject invalid extension metadata inside the dispatch boundary,
+            # before it can strand an otherwise known result as DISPATCHING.
+            # This is the same serialization/size ceiling used by the Journal.
+            encoded_observations = json.dumps(
+                exec_res.source_observations, allow_nan=False
+            )
+            if len(encoded_observations) > 16000:
+                raise ValueError("source observations exceed receipt limit")
             is_success = exec_res.status == ToolCallStatus.SUCCESS
             result_content = exec_res.result_content or ""
             err_msg = exec_res.error_message or ""

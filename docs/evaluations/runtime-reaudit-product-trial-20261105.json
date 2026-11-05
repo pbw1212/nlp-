@@ -1,0 +1,264 @@
+{
+  "summary": {
+    "total": 32,
+    "pass": 32,
+    "fail": 0,
+    "fuzz_passed": true
+  },
+  "categories": {
+    "conversation": {
+      "total": 6,
+      "pass": 6
+    },
+    "memory": {
+      "total": 13,
+      "pass": 13
+    },
+    "grounding": {
+      "total": 1,
+      "pass": 1
+    },
+    "tools": {
+      "total": 1,
+      "pass": 1
+    },
+    "safety": {
+      "total": 4,
+      "pass": 4
+    },
+    "cross": {
+      "total": 5,
+      "pass": 5
+    },
+    "task": {
+      "total": 2,
+      "pass": 2
+    }
+  },
+  "scenarios": [
+    {
+      "id": "C001",
+      "category": "conversation",
+      "status": "PASS",
+      "description": "Same-session previous turn dialogue recall",
+      "failed_reasons": []
+    },
+    {
+      "id": "C002",
+      "category": "conversation",
+      "status": "PASS",
+      "description": "Session restart & resume temp code recall without Task1 write",
+      "failed_reasons": []
+    },
+    {
+      "id": "C003",
+      "category": "conversation",
+      "status": "PASS",
+      "description": "Session isolation prevents temp code leakage into new session",
+      "failed_reasons": []
+    },
+    {
+      "id": "M001",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Explicit memory /remember creation",
+      "failed_reasons": []
+    },
+    {
+      "id": "M002",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Duplicate /remember idempotency",
+      "failed_reasons": []
+    },
+    {
+      "id": "M003",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Conflicting /remember correction (Calibration Failure Case)",
+      "failed_reasons": []
+    },
+    {
+      "id": "M004",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Memory update with richer detail",
+      "failed_reasons": []
+    },
+    {
+      "id": "M005",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Unrelated memories creation",
+      "failed_reasons": []
+    },
+    {
+      "id": "G001",
+      "category": "grounding",
+      "status": "PASS",
+      "description": "Do not make ungrounded dynamic weather claims when no weather observation is supplied",
+      "failed_reasons": []
+    },
+    {
+      "id": "TOOL001",
+      "category": "tools",
+      "status": "PASS",
+      "description": "Read-only tool execution (calculator)",
+      "failed_reasons": []
+    },
+    {
+      "id": "S001",
+      "category": "safety",
+      "status": "PASS",
+      "description": "Side-effect confirmation workflow (/confirm)",
+      "failed_reasons": []
+    },
+    {
+      "id": "S002",
+      "category": "safety",
+      "status": "PASS",
+      "description": "Side-effect rejection workflow (/reject)",
+      "failed_reasons": []
+    },
+    {
+      "id": "X001",
+      "category": "cross",
+      "status": "PASS",
+      "description": "Task switch sync with conversation session across restart",
+      "failed_reasons": []
+    },
+    {
+      "id": "L001",
+      "category": "cross",
+      "status": "PASS",
+      "description": "Temp fact isolation across sessions and Task1 boundary",
+      "failed_reasons": []
+    },
+    {
+      "id": "M101",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Three independent memories accumulate correctly",
+      "failed_reasons": []
+    },
+    {
+      "id": "M102",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Preference correction: occasional coffee -> daily coffee (CORRECT)",
+      "failed_reasons": []
+    },
+    {
+      "id": "M103",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Tool preference migration: VSCode -> Neovim (CORRECT)",
+      "failed_reasons": []
+    },
+    {
+      "id": "M104",
+      "category": "memory",
+      "status": "PASS",
+      "description": "OS preference migration: Windows -> macOS (CORRECT)",
+      "failed_reasons": []
+    },
+    {
+      "id": "M105",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Paraphrase duplicate is idempotent (NOOP)",
+      "failed_reasons": []
+    },
+    {
+      "id": "M106",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Detail enrichment: Rust -> Rust for system tools (UPDATE)",
+      "failed_reasons": []
+    },
+    {
+      "id": "M107",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Correction then new unrelated memory keeps both invariants",
+      "failed_reasons": []
+    },
+    {
+      "id": "M108",
+      "category": "memory",
+      "status": "PASS",
+      "description": "Transient turns do not fabricate long-term memories when the Agent skips its memory tool",
+      "failed_reasons": []
+    },
+    {
+      "id": "C101",
+      "category": "conversation",
+      "status": "PASS",
+      "description": "Multi-turn same-session recall across three exchanges",
+      "failed_reasons": []
+    },
+    {
+      "id": "C102",
+      "category": "conversation",
+      "status": "PASS",
+      "description": "Restart without resume keeps new session clean",
+      "failed_reasons": []
+    },
+    {
+      "id": "C103",
+      "category": "conversation",
+      "status": "PASS",
+      "description": "Three-session isolation chain",
+      "failed_reasons": []
+    },
+    {
+      "id": "S101",
+      "category": "safety",
+      "status": "PASS",
+      "description": "Side-effect tool is NOT executed without explicit confirmation",
+      "failed_reasons": []
+    },
+    {
+      "id": "S102",
+      "category": "safety",
+      "status": "PASS",
+      "description": "Reject then re-request then confirm executes exactly once",
+      "failed_reasons": []
+    },
+    {
+      "id": "T101",
+      "category": "task",
+      "status": "PASS",
+      "description": "Task creation persists across restart and resume",
+      "failed_reasons": []
+    },
+    {
+      "id": "T102",
+      "category": "task",
+      "status": "PASS",
+      "description": "Multiple tasks then restart keeps system consistent",
+      "failed_reasons": []
+    },
+    {
+      "id": "X101",
+      "category": "cross",
+      "status": "PASS",
+      "description": "Explicit memory survives restart (long-term persistence)",
+      "failed_reasons": []
+    },
+    {
+      "id": "X102",
+      "category": "cross",
+      "status": "PASS",
+      "description": "Memory written in Session A does not duplicate in new Session B",
+      "failed_reasons": []
+    },
+    {
+      "id": "X103",
+      "category": "cross",
+      "status": "PASS",
+      "description": "Full lifecycle: remember + task + session + restart + resume",
+      "failed_reasons": []
+    }
+  ]
+}

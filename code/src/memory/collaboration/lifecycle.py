@@ -84,21 +84,27 @@ class TaskLifecycle:
         return {**value, "input": payload, "result": result}
 
     def jobs(
-        self, session_id: str, *, pending: bool = False, limit: int = 100
+        self,
+        session_id: str,
+        *,
+        pending: bool = False,
+        limit: int = 100,
+        task_id: str | None = None,
     ) -> list[dict]:
         if type(limit) is not int or not 1 <= limit <= 100:
             raise ValueError("invalid lifecycle job limit")
         with self.repository._connect() as db:
-            order = "created DESC,job_id" if pending else "created,job_id"
-            return [
+            order = "created DESC,job_id" if pending else "created DESC,job_id DESC"
+            values = [
                 self._job(row)
                 for row in db.execute(
-                    "SELECT * FROM lifecycle_jobs WHERE session_id=? AND (?=0 OR state='PENDING') ORDER BY "
+                    "SELECT * FROM lifecycle_jobs WHERE session_id=? AND (?=0 OR state='PENDING') AND (? IS NULL OR task_id=?) ORDER BY "
                     + order
                     + " LIMIT ?",
-                    (session_id, int(pending), limit),
+                    (session_id, int(pending), task_id, task_id, limit),
                 )
             ]
+        return values if pending else list(reversed(values))
 
     def status(self, session_id: str, task_id: str | None = None) -> dict:
         with self.repository._connect() as db:
@@ -161,7 +167,7 @@ class TaskLifecycle:
                     cycle["current_experience_state"] = self.host.experiences.get(
                         experience_id
                     )["state"]
-        return {"tasks": cycles, "jobs": self.jobs(session_id)}
+        return {"tasks": cycles, "jobs": self.jobs(session_id, task_id=task_id)}
 
     def recover_results(self, session_id: str) -> None:
         """Drain the local transactional outbox; never revive an older result."""

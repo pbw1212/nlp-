@@ -1,0 +1,459 @@
+{
+  "kind": "native_verifier_evidence_engineering_smoke",
+  "requested_model": "deepseek-v4-flash",
+  "server_model_identity_retained": false,
+  "fake_model_used": false,
+  "official_benchmark_score": null,
+  "checks": {
+    "real_file_graph_succeeds": true,
+    "both_random_native_tokens_preserved": true,
+    "merge_receives_native_receipts": true,
+    "whole_user_goal_receives_native_receipts": true,
+    "dependency_only_merge_needs_no_duplicate_read": true
+  },
+  "verifier_handoffs": [
+    {
+      "scope": "subgoal",
+      "subgoal": "left",
+      "direct_receipt_count": 1,
+      "supporting_receipts": [
+        {
+          "evidence_id": "call_798706005ff8",
+          "tool_name": "read_file",
+          "status": "SUCCEEDED",
+          "arguments": {
+            "filename": "left.txt"
+          },
+          "result": {
+            "error_message": "",
+            "result_content": "文件: C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\left.txt\nleft_token=LEFT_6d3e9a5117\r\n",
+            "source_observations": [
+              {
+                "byte_length": 28,
+                "kind": "local_file_v1",
+                "locator": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\left.txt",
+                "path": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\left.txt",
+                "sha256": "c0cb1a41d44fbfe4d0d3094c9c87eb0983ae98d8930311d185db12140951e476",
+                "truncated": false
+              }
+            ],
+            "status": "SUCCEEDED",
+            "tool_call_id": "call_798706005ff8",
+            "updated_at": 1793854288.0540667
+          }
+        }
+      ],
+      "source_packet_count": 0,
+      "verdict": "PASS",
+      "evidence_ids": [
+        "call_798706005ff8"
+      ]
+    },
+    {
+      "scope": "subgoal",
+      "subgoal": "right",
+      "direct_receipt_count": 1,
+      "supporting_receipts": [
+        {
+          "evidence_id": "call_813cd48a7a67",
+          "tool_name": "read_file",
+          "status": "SUCCEEDED",
+          "arguments": {
+            "filename": "right.txt"
+          },
+          "result": {
+            "error_message": "",
+            "result_content": "文件: C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\right.txt\nright_token=RIGHT_2a139311a5\r\n",
+            "source_observations": [
+              {
+                "byte_length": 30,
+                "kind": "local_file_v1",
+                "locator": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\right.txt",
+                "path": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\right.txt",
+                "sha256": "dae7cb15d9d3e2570d78c24b5a01618cf962fa470321057aaa806188b2178643",
+                "truncated": false
+              }
+            ],
+            "status": "SUCCEEDED",
+            "tool_call_id": "call_813cd48a7a67",
+            "updated_at": 1793854295.2206979
+          }
+        }
+      ],
+      "source_packet_count": 0,
+      "verdict": "PASS",
+      "evidence_ids": [
+        "call_813cd48a7a67"
+      ]
+    },
+    {
+      "scope": "subgoal",
+      "subgoal": "merge",
+      "direct_receipt_count": 0,
+      "supporting_receipts": [
+        {
+          "evidence_id": "call_798706005ff8",
+          "tool_name": "read_file",
+          "status": "SUCCEEDED",
+          "arguments": {
+            "filename": "left.txt"
+          },
+          "result": {
+            "error_message": "",
+            "result_content": "文件: C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\left.txt\nleft_token=LEFT_6d3e9a5117\r\n",
+            "source_observations": [
+              {
+                "byte_length": 28,
+                "kind": "local_file_v1",
+                "locator": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\left.txt",
+                "path": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\left.txt",
+                "sha256": "c0cb1a41d44fbfe4d0d3094c9c87eb0983ae98d8930311d185db12140951e476",
+                "truncated": false
+              }
+            ],
+            "status": "SUCCEEDED",
+            "tool_call_id": "call_798706005ff8",
+            "updated_at": 1793854288.0540667
+          }
+        },
+        {
+          "evidence_id": "call_813cd48a7a67",
+          "tool_name": "read_file",
+          "status": "SUCCEEDED",
+          "arguments": {
+            "filename": "right.txt"
+          },
+          "result": {
+            "error_message": "",
+            "result_content": "文件: C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\right.txt\nright_token=RIGHT_2a139311a5\r\n",
+            "source_observations": [
+              {
+                "byte_length": 30,
+                "kind": "local_file_v1",
+                "locator": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\right.txt",
+                "path": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\right.txt",
+                "sha256": "dae7cb15d9d3e2570d78c24b5a01618cf962fa470321057aaa806188b2178643",
+                "truncated": false
+              }
+            ],
+            "status": "SUCCEEDED",
+            "tool_call_id": "call_813cd48a7a67",
+            "updated_at": 1793854295.2206979
+          }
+        }
+      ],
+      "source_packet_count": 0,
+      "verdict": "PASS",
+      "evidence_ids": [
+        "call_798706005ff8",
+        "call_813cd48a7a67"
+      ]
+    },
+    {
+      "scope": "whole_user_goal",
+      "subgoal": null,
+      "direct_receipt_count": 0,
+      "supporting_receipts": [
+        {
+          "evidence_id": "call_798706005ff8",
+          "tool_name": "read_file",
+          "status": "SUCCEEDED",
+          "arguments": {
+            "filename": "left.txt"
+          },
+          "result": {
+            "error_message": "",
+            "result_content": "文件: C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\left.txt\nleft_token=LEFT_6d3e9a5117\r\n",
+            "source_observations": [
+              {
+                "byte_length": 28,
+                "kind": "local_file_v1",
+                "locator": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\left.txt",
+                "path": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\left.txt",
+                "sha256": "c0cb1a41d44fbfe4d0d3094c9c87eb0983ae98d8930311d185db12140951e476",
+                "truncated": false
+              }
+            ],
+            "status": "SUCCEEDED",
+            "tool_call_id": "call_798706005ff8",
+            "updated_at": 1793854288.0540667
+          }
+        },
+        {
+          "evidence_id": "call_813cd48a7a67",
+          "tool_name": "read_file",
+          "status": "SUCCEEDED",
+          "arguments": {
+            "filename": "right.txt"
+          },
+          "result": {
+            "error_message": "",
+            "result_content": "文件: C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\right.txt\nright_token=RIGHT_2a139311a5\r\n",
+            "source_observations": [
+              {
+                "byte_length": 30,
+                "kind": "local_file_v1",
+                "locator": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\right.txt",
+                "path": "C:\\Users\\36046\\AppData\\Local\\Temp\\mapas-native-verifier-bsxn59z_\\workspace\\right.txt",
+                "sha256": "dae7cb15d9d3e2570d78c24b5a01618cf962fa470321057aaa806188b2178643",
+                "truncated": false
+              }
+            ],
+            "status": "SUCCEEDED",
+            "tool_call_id": "call_813cd48a7a67",
+            "updated_at": 1793854295.2206979
+          }
+        }
+      ],
+      "source_packet_count": 0,
+      "verdict": "PASS",
+      "evidence_ids": [
+        "call_798706005ff8",
+        "call_813cd48a7a67"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "code/src/memory/agent/loop.py": "68fa22f5d2f7ba6ddfcda2f3235fa202e74e719f55b31518949738a0ce7d8974",
+    "code/src/memory/app/mcp.py": "de4c8c5e6cf7bc7143aa7e38aa47d28a047d2c7b5c7d9fd005a10a309639564c",
+    "code/src/memory/collaboration/lifecycle.py": "aeeec89a0a1c5353f360e0da6211c0ab2c87d9195f3b01fd1696d1e33ce7be98",
+    "code/src/memory/collaboration/coordinator.py": "ddc0eb71aa0b4ed7c6fda64fbbcdc66222fc9fce61f849c3ce30d3860ca372a2",
+    "code/src/memory/collaboration/repository.py": "b2e9a98eedc71163750f28ce3ff87c0ae2168f74fe15f665f42887d8c158ef21",
+    "code/src/memory/collaboration/roles.py": "b3bed71ee24c34abc062f8507e43c3c7ecdadee4d654e3238ededc6951aa4f97"
+  },
+  "limits_per_run": {
+    "max_model_calls": 24,
+    "max_token_units": 240000,
+    "deadline_seconds": 180,
+    "max_completion_tokens": 4096
+  },
+  "result": {
+    "status": "SUCCESS",
+    "answer": "left_token=LEFT_6d3e9a5117, right_token=RIGHT_2a139311a5",
+    "error": null,
+    "executed_tool_call_ids": [
+      "call_798706005ff8",
+      "call_813cd48a7a67"
+    ]
+  },
+  "usage": {
+    "model_calls": 15,
+    "charged_token_units": 37308,
+    "calls": [
+      {
+        "role": "Runtime",
+        "operation": "task_binding_decision_v1",
+        "status": "SUCCEEDED",
+        "charged_units": 525,
+        "usage_json": "{\"input_tokens\":499,\"output_tokens\":26,\"prompt_cache_hit_tokens\":256,\"prompt_cache_miss_tokens\":243}",
+        "elapsed": 0.8926921000238508,
+        "usage": {
+          "input_tokens": 499,
+          "output_tokens": 26,
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 243
+        }
+      },
+      {
+        "role": "Runtime",
+        "operation": "task_state_proposal_batch_v1",
+        "status": "SUCCEEDED",
+        "charged_units": 3069,
+        "usage_json": "{\"input_tokens\":2540,\"output_tokens\":529,\"prompt_cache_hit_tokens\":1920,\"prompt_cache_miss_tokens\":620}",
+        "elapsed": 2.3958102999604307,
+        "usage": {
+          "input_tokens": 2540,
+          "output_tokens": 529,
+          "prompt_cache_hit_tokens": 1920,
+          "prompt_cache_miss_tokens": 620
+        }
+      },
+      {
+        "role": "Planner",
+        "operation": "collaboration_planner_v1",
+        "status": "SUCCEEDED",
+        "charged_units": 3041,
+        "usage_json": "{\"input_tokens\":2803,\"output_tokens\":238,\"prompt_cache_hit_tokens\":640,\"prompt_cache_miss_tokens\":2163}",
+        "elapsed": 2.0278629999957047,
+        "usage": {
+          "input_tokens": 2803,
+          "output_tokens": 238,
+          "prompt_cache_hit_tokens": 640,
+          "prompt_cache_miss_tokens": 2163
+        }
+      },
+      {
+        "role": "Memory",
+        "operation": "collaboration_memory_v2",
+        "status": "SUCCEEDED",
+        "charged_units": 1218,
+        "usage_json": "{\"input_tokens\":1168,\"output_tokens\":50,\"prompt_cache_hit_tokens\":768,\"prompt_cache_miss_tokens\":400}",
+        "elapsed": 1.0284932000213303,
+        "usage": {
+          "input_tokens": 1168,
+          "output_tokens": 50,
+          "prompt_cache_hit_tokens": 768,
+          "prompt_cache_miss_tokens": 400
+        }
+      },
+      {
+        "role": "Executor",
+        "operation": "agent_action",
+        "status": "SUCCEEDED",
+        "charged_units": 2541,
+        "usage_json": "{\"input_tokens\":2506,\"output_tokens\":35,\"prompt_cache_hit_tokens\":1408,\"prompt_cache_miss_tokens\":1098,\"reasoning_tokens\":0}",
+        "elapsed": 1.1566739000263624,
+        "usage": {
+          "input_tokens": 2506,
+          "output_tokens": 35,
+          "prompt_cache_hit_tokens": 1408,
+          "prompt_cache_miss_tokens": 1098,
+          "reasoning_tokens": 0
+        }
+      },
+      {
+        "role": "Executor",
+        "operation": "task_state_proposal_batch_v1",
+        "status": "SUCCEEDED",
+        "charged_units": 3548,
+        "usage_json": "{\"input_tokens\":3264,\"output_tokens\":284,\"prompt_cache_hit_tokens\":1792,\"prompt_cache_miss_tokens\":1472}",
+        "elapsed": 2.5520939999842085,
+        "usage": {
+          "input_tokens": 3264,
+          "output_tokens": 284,
+          "prompt_cache_hit_tokens": 1792,
+          "prompt_cache_miss_tokens": 1472
+        }
+      },
+      {
+        "role": "Verifier",
+        "operation": "collaboration_verifier_v1",
+        "status": "SUCCEEDED",
+        "charged_units": 1879,
+        "usage_json": "{\"input_tokens\":1755,\"output_tokens\":124,\"prompt_cache_hit_tokens\":512,\"prompt_cache_miss_tokens\":1243}",
+        "elapsed": 1.2997863999917172,
+        "usage": {
+          "input_tokens": 1755,
+          "output_tokens": 124,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 1243
+        }
+      },
+      {
+        "role": "Memory",
+        "operation": "collaboration_memory_v2",
+        "status": "SUCCEEDED",
+        "charged_units": 1211,
+        "usage_json": "{\"input_tokens\":1168,\"output_tokens\":43,\"prompt_cache_hit_tokens\":768,\"prompt_cache_miss_tokens\":400}",
+        "elapsed": 1.2258402000297792,
+        "usage": {
+          "input_tokens": 1168,
+          "output_tokens": 43,
+          "prompt_cache_hit_tokens": 768,
+          "prompt_cache_miss_tokens": 400
+        }
+      },
+      {
+        "role": "Executor",
+        "operation": "agent_action",
+        "status": "SUCCEEDED",
+        "charged_units": 2554,
+        "usage_json": "{\"input_tokens\":2500,\"output_tokens\":54,\"prompt_cache_hit_tokens\":1920,\"prompt_cache_miss_tokens\":580,\"reasoning_tokens\":12}",
+        "elapsed": 1.9243870999780484,
+        "usage": {
+          "input_tokens": 2500,
+          "output_tokens": 54,
+          "prompt_cache_hit_tokens": 1920,
+          "prompt_cache_miss_tokens": 580,
+          "reasoning_tokens": 12
+        }
+      },
+      {
+        "role": "Executor",
+        "operation": "task_state_proposal_batch_v1",
+        "status": "SUCCEEDED",
+        "charged_units": 3804,
+        "usage_json": "{\"input_tokens\":3527,\"output_tokens\":277,\"prompt_cache_hit_tokens\":2048,\"prompt_cache_miss_tokens\":1479}",
+        "elapsed": 1.8828682999592274,
+        "usage": {
+          "input_tokens": 3527,
+          "output_tokens": 277,
+          "prompt_cache_hit_tokens": 2048,
+          "prompt_cache_miss_tokens": 1479
+        }
+      },
+      {
+        "role": "Verifier",
+        "operation": "collaboration_verifier_v1",
+        "status": "SUCCEEDED",
+        "charged_units": 1907,
+        "usage_json": "{\"input_tokens\":1744,\"output_tokens\":163,\"prompt_cache_hit_tokens\":512,\"prompt_cache_miss_tokens\":1232}",
+        "elapsed": 1.2765461000381038,
+        "usage": {
+          "input_tokens": 1744,
+          "output_tokens": 163,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 1232
+        }
+      },
+      {
+        "role": "Memory",
+        "operation": "collaboration_memory_v2",
+        "status": "SUCCEEDED",
+        "charged_units": 2227,
+        "usage_json": "{\"input_tokens\":2196,\"output_tokens\":31,\"prompt_cache_hit_tokens\":768,\"prompt_cache_miss_tokens\":1428}",
+        "elapsed": 1.0595153999747708,
+        "usage": {
+          "input_tokens": 2196,
+          "output_tokens": 31,
+          "prompt_cache_hit_tokens": 768,
+          "prompt_cache_miss_tokens": 1428
+        }
+      },
+      {
+        "role": "Executor",
+        "operation": "agent_action",
+        "status": "SUCCEEDED",
+        "charged_units": 3584,
+        "usage_json": "{\"input_tokens\":3376,\"output_tokens\":208,\"prompt_cache_hit_tokens\":1280,\"prompt_cache_miss_tokens\":2096,\"reasoning_tokens\":82}",
+        "elapsed": 3.5219753999845125,
+        "usage": {
+          "input_tokens": 3376,
+          "output_tokens": 208,
+          "prompt_cache_hit_tokens": 1280,
+          "prompt_cache_miss_tokens": 2096,
+          "reasoning_tokens": 82
+        }
+      },
+      {
+        "role": "Verifier",
+        "operation": "collaboration_verifier_v1",
+        "status": "SUCCEEDED",
+        "charged_units": 2935,
+        "usage_json": "{\"input_tokens\":2795,\"output_tokens\":140,\"prompt_cache_hit_tokens\":512,\"prompt_cache_miss_tokens\":2283}",
+        "elapsed": 2.171948000031989,
+        "usage": {
+          "input_tokens": 2795,
+          "output_tokens": 140,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 2283
+        }
+      },
+      {
+        "role": "Verifier",
+        "operation": "collaboration_verifier_v1",
+        "status": "SUCCEEDED",
+        "charged_units": 3265,
+        "usage_json": "{\"input_tokens\":3069,\"output_tokens\":196,\"prompt_cache_hit_tokens\":512,\"prompt_cache_miss_tokens\":2557}",
+        "elapsed": 1.7873765000258572,
+        "usage": {
+          "input_tokens": 3069,
+          "output_tokens": 196,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 2557
+        }
+      }
+    ]
+  },
+  "engineering_assertions_passed": true
+}

@@ -52,6 +52,8 @@ python code/scripts/personal_agent_app_server.py
 python code/scripts/personal_agent.py --execution-mode multi_fixed
 ```
 
+Windows 启动脚本也可传入参数：`code\start_agent.cmd --execution-mode multi_fixed`。
+
 该模式是实验性的 P1 串行协作链路；未指定参数时仍使用默认 `single` 模式。
 协作支持需求驱动补查、原文窗口与来源核验；已适配文件变化可触发依赖修复和重启恢复。
 程序性经验与用户事实分开，整个任务验收并封存后自动排队提炼、审核，后续按适用条件使用。
@@ -87,6 +89,8 @@ python code/scripts/personal_agent_trial.py --output-json artifacts/product_tria
 全量回归、产品场景与有限真实 API 的最终结果见维护报告和 JSON 证据。真实 API 脚本 `code/scripts/maintenance_live_smoke.py` 使用隔离临时目录、最多 30 次请求；运行会消耗 API，离线 pytest 不需要真实密钥。
 最新的运行、调度与故障恢复检查见 [2026-10-31 系统审计](docs/maintenance/system-audit-20261031.md)，
 包含崩溃窗口、取消、抢锁、跨会话查询、全量回归和真实闭环的通过及失败证据。
+后续启动、工具返回、MCP 和长会话状态边界的复检见
+[2026-11-05 运行复检](docs/maintenance/runtime-reaudit-20261105.md)。
 
 ## 当前限制
 

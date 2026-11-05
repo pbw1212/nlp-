@@ -10,7 +10,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-python code\scripts\personal_agent.py
+python code\scripts\personal_agent.py %*
 set "MAPAS_EXIT_CODE=%ERRORLEVEL%"
 
 if not "%MAPAS_EXIT_CODE%"=="0" (

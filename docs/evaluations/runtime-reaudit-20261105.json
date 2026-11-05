@@ -1,0 +1,86 @@
+{
+  "kind": "system_runtime_boundary_reaudit",
+  "date": "2026-11-05",
+  "base_commit": "c1b079cd9c904ffdce586bb939df681dbce9c158",
+  "environment": {
+    "platform": "win32",
+    "python": "3.13.5"
+  },
+  "source_sha256": {
+    "code/start_agent.cmd": "1f338f775b38d67c1eae262a39c2510371806fd88a0b9dfa97e90ed0d94a2a6e",
+    "code/scripts/personal_agent.py": "88c0ec74664773458fbd9634c06e6d302411a5b1104b579818718a320d7f668a",
+    "code/scripts/personal_agent_app_server.py": "6d778824d0b1b0f0b49d9f1f5b97529cf79f650f62d76744b9be112779847b53",
+    "code/scripts/verifier_evidence_smoke.py": "953a41bf3850a661ea2ae163ddb61571f36bbe77f296c8113bf6bfcc5c2b080e",
+    "code/src/memory/agent/loop.py": "68fa22f5d2f7ba6ddfcda2f3235fa202e74e719f55b31518949738a0ce7d8974",
+    "code/src/memory/app/mcp.py": "de4c8c5e6cf7bc7143aa7e38aa47d28a047d2c7b5c7d9fd005a10a309639564c",
+    "code/src/memory/collaboration/coordinator.py": "ddc0eb71aa0b4ed7c6fda64fbbcdc66222fc9fce61f849c3ce30d3860ca372a2",
+    "code/src/memory/collaboration/lifecycle.py": "aeeec89a0a1c5353f360e0da6211c0ab2c87d9195f3b01fd1696d1e33ce7be98",
+    "code/tests/test_runtime_reaudit.py": "493f6d03306881e2ffcbc160c1a2698ce5a851699edb54d304eb8f068d269916"
+  },
+  "baseline": {
+    "junit_path": "docs/evaluations/runtime-reaudit-baseline-20261105.xml",
+    "tests": 572,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 1,
+    "passed": 571,
+    "elapsed_seconds": 182.039
+  },
+  "offline_regression": {
+    "command": "python -m pytest -q --junitxml=docs/evaluations/runtime-reaudit-20261105.xml",
+    "junit_path": "docs/evaluations/runtime-reaudit-20261105.xml",
+    "tests": 595,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 1,
+    "passed": 594,
+    "elapsed_seconds": 178.658
+  },
+  "new_fault_injection_cases": 23,
+  "product_trial": {
+    "path": "docs/evaluations/runtime-reaudit-product-trial-20261105.json",
+    "total": 32,
+    "pass": 32,
+    "fail": 0,
+    "fuzz_passed": true,
+    "seeded_fuzz_steps": 50
+  },
+  "windows_launcher": {
+    "path": "docs/evaluations/runtime-reaudit-launcher-20261105.json",
+    "returncode": 0,
+    "runtime_data_created": false,
+    "source_snapshot_matches": true
+  },
+  "live": {
+    "path": "docs/evaluations/runtime-reaudit-live-20261105.json",
+    "engineering_assertions_passed": true,
+    "checks": {
+      "real_file_graph_succeeds": true,
+      "both_random_native_tokens_preserved": true,
+      "merge_receives_native_receipts": true,
+      "whole_user_goal_receives_native_receipts": true,
+      "dependency_only_merge_needs_no_duplicate_read": true
+    },
+    "requested_model": "deepseek-v4-flash",
+    "server_model_identity_retained": false,
+    "provider_model_calls": 15,
+    "source_snapshot_matches": true,
+    "automatic_task_lifecycle_enabled": false
+  },
+  "checks": {
+    "ruff_all_changed_python_files": "passed",
+    "ruff_full_tree_E9_F821_F822_F823": "passed",
+    "full_tree_compileall": "passed",
+    "git_diff_check": "passed"
+  },
+  "mcp_normative_reference": "https://modelcontextprotocol.io/specification/2024-11-05/basic/lifecycle",
+  "mcp_test_transport": "Real local Python subprocesses; no external MCP service used",
+  "scope_limits": [
+    "Local Windows validation; not proof of absence of all bugs",
+    "Invalid storage, unavailable providers and unsupported MCP versions remain explicit failures",
+    "Live smoke covers graph execution; lifecycle and experience were checked offline in the full suite",
+    "Malformed tool-result fault injection uses read-only executors; a rejected result does not prove a side effect never happened",
+    "No distributed scheduling or permanent background daemon added"
+  ],
+  "report": "docs/maintenance/runtime-reaudit-20261105.md"
+}
