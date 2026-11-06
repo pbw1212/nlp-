@@ -25,7 +25,6 @@ export function Inspector() {
         borderLeft: '1px solid var(--border)',
         background: 'var(--bg)',
         padding: 14,
-        display: 'grid',
         gap: 18,
         alignContent: 'start',
         overflowY: 'auto',

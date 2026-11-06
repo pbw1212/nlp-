@@ -178,7 +178,8 @@ class CoordinationRepository:
             details["stages"] = [
                 dict(stage)
                 for stage in db.execute(
-                    """SELECT t.stage_key,t.role,t.status,h.message_id,h.receiver,
+                    """SELECT t.stage_key,t.role,t.status,h.message_id,h.sender,h.receiver,
+                              h.payload_hash,
                               a.artifact_id,a.verification_status
                        FROM role_tasks t
                        LEFT JOIN handoffs h USING(run_id,stage_key)
@@ -197,7 +198,7 @@ class CoordinationRepository:
                     "nodes": [
                         dict(node)
                         for node in db.execute(
-                            """SELECT n.node_key,n.status,a.attempt_id,a.artifact_id
+                            """SELECT n.node_id,n.node_key,n.status,a.attempt_id,a.artifact_id
                                FROM task_nodes n LEFT JOIN task_attempts a
                                ON a.node_id=n.node_id AND a.run_id=?
                                WHERE n.graph_id=? ORDER BY n.rowid""",

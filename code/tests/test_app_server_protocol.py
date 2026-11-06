@@ -9,6 +9,7 @@ import pytest
 from src.memory.agent.models import PendingAction
 from src.memory.app.console import PersonalAgentApp
 from src.memory.collaboration.budget import CollaborationLimits
+from src.memory.collaboration.models import digest, identity
 from src.memory.conversation import ConversationRole
 from src.memory.core.config import MemoryConfig, ProviderMode
 from src.memory.runtime.task_router import UNBOUND_TASK_ID
@@ -131,7 +132,10 @@ def test_collaboration_run_details_expose_metadata_only_for_owner(tmp_path):
     other = app.create_new_session(persist=True)
     repo = app.coordination_repository
     run_id = repo.begin(owner, "turn", "private request", asdict(CollaborationLimits()))
-    repo.accept(run_id, "plan", "Planner", "Coordinator", {}, {"private": "private payload"}, 0)
+    payload = {"private": "private payload"}
+    repo.accept(run_id, "plan", "Planner", "Coordinator", {}, payload, 0)
+    repo.bind_task(run_id, UNBOUND_TASK_ID)
+    graph_id = repo.record_graph(run_id, UNBOUND_TASK_ID, {"subtasks": [{"key": "read"}]}, {})
     repo.reserve_call(run_id, "Planner", "plan", 400)
     server = JsonlAppServer(app, io.StringIO())
     server._handle("initialize", {})
@@ -139,6 +143,11 @@ def test_collaboration_run_details_expose_metadata_only_for_owner(tmp_path):
         server._handle("collaboration/run/read", {"threadId": other, "runId": run_id})
     run = server._handle("collaboration/run/read", {"threadId": owner, "runId": run_id})["run"]
     assert run["stages"][0]["stage_key"] == "plan"
+    assert run["stages"][0]["sender"] == "Planner"
+    assert run["stages"][0]["payload_hash"] == digest(payload)
+    node = run["graph"]["nodes"][0]
+    assert node["node_id"] == identity(graph_id, "read")
+    assert node["attempt_id"] is None
     assert run["usage"]["estimated_token_units"] == 400
     assert "private" not in json.dumps(run)
     assert app.active_session_id == other

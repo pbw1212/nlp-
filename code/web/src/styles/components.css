@@ -1271,6 +1271,10 @@ html.theme-transition *::after {
   padding: 20px 22px 40px;
 }
 
+.app-inspector {
+  display: grid;
+}
+
 /* 对话页需要整块高度并自己管滚动（时间线滚动、输入框固定在底部） */
 .app-main--flush {
   padding: 0;

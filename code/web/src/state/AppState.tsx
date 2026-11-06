@@ -72,6 +72,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [apiKeyStatus, setApiKeyStatus] = useState<ApiKeyStatus | null>(null)
 
   const source = useMemo(() => createDataSource(sourceKind), [sourceKind])
+  const activeSource = useRef(source)
+  const probe = useRef({ sequence: 0, reloadOnSuccess: false, failed: false })
 
   const setView = useCallback((next: ViewId) => {
     setViewState(next)
@@ -111,10 +113,27 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setEpoch((value) => value + 1)
   }, [])
 
-  const refreshBridge = useCallback(async () => {
-    setBridge({ state: 'checking' })
-    setBridge(await probeDataSource(source))
+  const checkBridge = useCallback(async (manual: boolean) => {
+    if (activeSource.current !== source) return
+    const current = probe.current
+    const sequence = ++current.sequence
+    if (manual) {
+      current.reloadOnSuccess = true
+      setBridge({ state: 'checking' })
+    }
+    const next = await probeDataSource(source)
+    if (sequence !== current.sequence) return
+
+    const reload = current.reloadOnSuccess || current.failed
+    current.reloadOnSuccess = false
+    current.failed = next.state === 'error'
+    setBridge(next)
+    if (next.state === 'ok' && reload) {
+      setEpoch((value) => value + 1)
+    }
   }, [source])
+
+  const refreshBridge = useCallback(() => checkBridge(true), [checkBridge])
 
   /**
    * 切换执行模式。
@@ -127,21 +146,21 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       if (!source.writable) {
         throw new Error('回放模式不能切换后端执行模式')
       }
+      probe.current.sequence += 1
       setBridge({ state: 'checking' })
       try {
         await source.switchMode(mode)
         // 切换后重新走一遍探针：鉴权模式/能力/needsApiKey 都可能有变化，避免手工拼装漂移
-        setBridge(await probeDataSource(source))
-        setEpoch((value) => value + 1)
+        await refreshBridge()
         // 每次切换模式都重新提醒（token 消耗是重要提醒，不该被永久关掉）
         setCollabHintDismissed(false)
       } catch (cause) {
         // 切换失败时保持旧状态可见：重新探测一次，把真实原因交给调用方
-        setBridge(await probeDataSource(source))
+        await checkBridge(false)
         throw cause
       }
     },
-    [source],
+    [source, checkBridge, refreshBridge],
   )
 
   /** 证据页点某条记忆 → 切到记忆库并预选（跨页跳转的最小实现） */
@@ -213,10 +232,20 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(timer)
   }, [theme, themeMode])
 
-  // 启动即探一次连接；换数据源时重探
+  // 启动、切换数据源和后台探活共用同一套连接状态。
   useEffect(() => {
-    void refreshBridge()
-  }, [refreshBridge])
+    activeSource.current = source
+    const current = probe.current
+    current.reloadOnSuccess = false
+    current.failed = false
+    setBridge({ state: 'checking' })
+    void checkBridge(false)
+    const timer = window.setInterval(() => void checkBridge(false), 15_000)
+    return () => {
+      window.clearInterval(timer)
+      current.sequence += 1
+    }
+  }, [source, checkBridge])
 
   // 桥接连上后拉一次 Key 状态（用于顶栏按钮着色）
   useEffect(() => {
@@ -226,24 +255,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     }
     void refreshApiKeyStatus()
   }, [bridge.state, refreshApiKeyStatus])
-
-  // 后台探活（15s）：
-  // - 桥接停机时顶栏能及时变成「后端未连接」，不会一直显示「口令：已验证」；
-  // - 桥接重启/填好新口令后自动恢复，并递增 epoch 让页面重新取数，
-  //   清掉断线期间残留的旧报错（不需要用户再手点一次刷新）。
-  const bridgeStateRef = useRef(bridge.state)
-  bridgeStateRef.current = bridge.state
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      void (async () => {
-        const next = await probeDataSource(source)
-        const recovered = bridgeStateRef.current !== 'ok' && next.state === 'ok'
-        setBridge(next)
-        if (recovered) setEpoch((value) => value + 1)
-      })()
-    }, 15_000)
-    return () => window.clearInterval(timer)
-  }, [source])
 
   const value = useMemo<AppStateValue>(
     () => ({

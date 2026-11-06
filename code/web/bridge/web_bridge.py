@@ -1015,7 +1015,6 @@ class WebBridge:
         """协作运行的任务图视图（`GET /api/collaboration/runs/:runId/graph`）。
 
         与前端 `CollaborationGraphView` 对齐：plan 节点 + 阶段产物 + 交接 + 调用账本。
-        handoff 的 sender 用产生该阶段的角色表示（仓库投影未记录独立 sender 字段）。
         """
         self._require_collaboration()
         repository = self.app.coordination_repository
@@ -1044,7 +1043,7 @@ class WebBridge:
             nodes.append(
                 {
                     "node_key": node_key,
-                    "node_id": node.get("attempt_id") or "",
+                    "node_id": node["node_id"],
                     "attempt_id": node.get("attempt_id"),
                     "status": node.get("status"),
                     "artifact_id": node.get("artifact_id"),
@@ -1067,9 +1066,9 @@ class WebBridge:
                 "message_id": stage.get("message_id"),
                 "run_id": run_id,
                 "stage_key": stage.get("stage_key"),
-                "sender": stage.get("role") or "",
+                "sender": stage["sender"],
                 "receiver": stage.get("receiver") or "",
-                "payload_hash": "",
+                "payload_hash": stage["payload_hash"],
             }
             for stage in stages
             if stage.get("message_id")
@@ -1131,7 +1130,7 @@ class WebBridge:
             {
                 "node_key": node.get("node_key"),
                 "status": node.get("status"),
-                "node_id": node.get("attempt_id") or "",
+                "node_id": node["node_id"],
                 "artifact_id": node.get("artifact_id"),
             }
             for node in (graph.get("nodes") or [])
@@ -1157,7 +1156,7 @@ class WebBridge:
         handoffs = [
             {
                 "stage_key": stage.get("stage_key"),
-                "sender": stage.get("role"),
+                "sender": stage["sender"],
                 "receiver": stage.get("receiver") or "",
             }
             for stage in stages
