@@ -93,11 +93,40 @@ export function Inspector() {
                   </span>
                 ),
             },
-            ...(bridge.state === 'ok'
-              ? [{ k: 'Agent 主目录', v: <span className="mono">{bridge.agentHome}</span> }]
-              : []),
           ]}
         />
+        {bridge.state === 'ok' && (
+          <details style={{ marginTop: 2 }}>
+            <summary
+              style={{
+                cursor: 'pointer',
+                fontSize: 11.5,
+                color: 'var(--fg-subtle)',
+                listStylePosition: 'inside',
+                lineHeight: 1.8,
+              }}
+              title="展开查看本机数据目录（会话/记忆/日志都存放在这里）"
+            >
+              Agent 主目录（点击展开）
+            </summary>
+            <div
+              className="mono"
+              style={{
+                marginTop: 4,
+                padding: '6px 8px',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--bg-sunken)',
+                fontSize: 11,
+                color: 'var(--fg-muted)',
+                wordBreak: 'break-all',
+                lineHeight: 1.6,
+              }}
+            >
+              {bridge.agentHome}
+            </div>
+          </details>
+        )}
         {bridge.state === 'error' && (
           <p style={{ fontSize: 12, color: 'var(--sem-mismatch)', lineHeight: 1.6, margin: 0 }}>
             {withErrorTranslation(bridge.message)}
