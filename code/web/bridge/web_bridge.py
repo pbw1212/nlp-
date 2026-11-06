@@ -1011,6 +1011,99 @@ class WebBridge:
             return {"subtasks": []}
         return parsed if isinstance(parsed, dict) else {"subtasks": []}
 
+    def collaboration_run_graph(self, run_id: str) -> Dict[str, Any]:
+        """协作运行的任务图视图（`GET /api/collaboration/runs/:runId/graph`）。
+
+        与前端 `CollaborationGraphView` 对齐：plan 节点 + 阶段产物 + 交接 + 调用账本。
+        handoff 的 sender 用产生该阶段的角色表示（仓库投影未记录独立 sender 字段）。
+        """
+        self._require_collaboration()
+        repository = self.app.coordination_repository
+        try:
+            run = repository.get_run(run_id)
+        except CoordinationConflict:
+            raise CollaborationRunNotFound(run_id) from None
+        session_id = str(run.get("session_id") or "")
+        try:
+            details = repository.get_run_details(session_id, run_id)
+        except CoordinationConflict:
+            raise CollaborationRunNotFound(run_id) from None
+
+        graph = details.get("graph") or {}
+        graph_id = str(graph.get("graph_id") or "")
+        plan = self._graph_plan(graph_id)
+        specs = {
+            str(item.get("key")): item
+            for item in (plan.get("subtasks") or [])
+            if isinstance(item, dict) and item.get("key")
+        }
+        nodes = []
+        for node in graph.get("nodes") or []:
+            node_key = str(node.get("node_key") or "")
+            spec = specs.get(node_key)
+            nodes.append(
+                {
+                    "node_key": node_key,
+                    "node_id": node.get("attempt_id") or "",
+                    "attempt_id": node.get("attempt_id"),
+                    "status": node.get("status"),
+                    "artifact_id": node.get("artifact_id"),
+                    "spec": spec,
+                }
+            )
+        stages = details.get("stages") or []
+        artifacts = [
+            {
+                "artifact_id": stage.get("artifact_id"),
+                "run_id": run_id,
+                "stage_key": stage.get("stage_key"),
+                "verification_status": stage.get("verification_status") or "PRODUCED",
+            }
+            for stage in stages
+            if stage.get("artifact_id")
+        ]
+        handoffs = [
+            {
+                "message_id": stage.get("message_id"),
+                "run_id": run_id,
+                "stage_key": stage.get("stage_key"),
+                "sender": stage.get("role") or "",
+                "receiver": stage.get("receiver") or "",
+                "payload_hash": "",
+            }
+            for stage in stages
+            if stage.get("message_id")
+        ]
+        usage = details.get("usage") or {}
+        model_calls = [
+            {
+                "call_id": call.get("call_id"),
+                "role": call.get("role"),
+                "operation": call.get("operation"),
+                "status": call.get("status"),
+                "charged_units": int(call.get("charged_units") or 0),
+                "usage_json": call.get("usage") or {},
+                "elapsed": call.get("elapsed"),
+            }
+            for call in usage.get("calls") or []
+        ]
+        return self.app._json_safe_event_value(
+            {
+                "graph_id": graph_id,
+                "run_id": run_id,
+                "task_id": run.get("task_id") or "",
+                "run_status": run.get("status"),
+                "nodes": nodes,
+                "artifacts": artifacts,
+                "handoffs": handoffs,
+                "model_calls": model_calls,
+                "budget": {
+                    "model_calls": len(model_calls),
+                    "charged_units": sum(call["charged_units"] for call in model_calls),
+                },
+            }
+        )
+
     def collaboration_run_detail(self, run_id: str) -> Dict[str, Any]:
         """协作运行只读快照：运行 + 阶段 + 图节点 + 预算用量 + 结果。
 
@@ -1471,7 +1564,7 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
     def _send_options(self) -> None:
         self.send_response(204)
         self._write_cors_headers()
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.send_header(
             "Access-Control-Allow-Headers", "Content-Type, X-MAPAS-Token, Accept"
         )
@@ -1559,6 +1652,36 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
         if method == "OPTIONS":
             self._send_options()
             return
+
+        # CSRF 防护：
+        # 1) 非 GET/OPTIONS 的请求如果带 Origin，必须是白名单内的前端地址；
+        #    否则任何本地网页都能对 127.0.0.1:8787 发"简单请求"改数据（--no-token 时尤其危险）。
+        # 2) 浏览器发起的写请求必须是 application/json（JSON 会触发预检，预检已被 Origin 拦住）。
+        origin = self.headers.get("Origin")
+        if method not in ("GET", "OPTIONS") and origin is not None:
+            if origin not in ALLOWED_ORIGINS:
+                self._try_send_json(
+                    403,
+                    {
+                        "error": "跨源写请求被拒绝",
+                        "detail": "只允许来自 localhost:5173 / localhost:4173 的浏览器请求",
+                    },
+                )
+                return
+            content_type = (self.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+            raw_length = (self.headers.get("Content-Length") or "").strip()
+            has_body = raw_length.isdigit() and int(raw_length) > 0
+            # 只拦"带 body 的非 JSON 写请求"：无 body 的 POST（删除/恢复/暂停等）没有可伪造的载荷，
+            # 且 Origin 白名单已经拦住了跨源请求本身。
+            if method == "POST" and has_body and content_type != "application/json":
+                self._try_send_json(
+                    415,
+                    {
+                        "error": "写请求必须是 application/json",
+                        "detail": f"收到 Content-Type: {content_type or '(缺失)'}",
+                    },
+                )
+                return
 
         if not self._authorized(path):
             self._try_send_json(
@@ -1907,7 +2030,7 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
                 return
             payload = body or {}
             raw_decision = payload.get("decision")
-            if raw_decision not in {"CONFIRM", "REJECT"}:
+            if not isinstance(raw_decision, str) or raw_decision not in {"CONFIRM", "REJECT"}:
                 raise ValueError("decision 必须是 CONFIRM 或 REJECT")
             try:
                 decision = ConfirmationDecision(str(raw_decision))
@@ -2190,6 +2313,21 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
                 lambda: bridge.collaboration_runs(limit, include_all)
             )
             self._send_json(200, {"graphs": graphs})
+            return
+
+        if (
+            len(rest) == 4
+            and rest[0] == "collaboration"
+            and rest[1] == "runs"
+            and rest[3] == "graph"
+        ):
+            if method != "GET":
+                self._method_not_allowed("GET")
+                return
+            graph = bridge.worker.call(
+                lambda: bridge.collaboration_run_graph(rest[2])
+            )
+            self._send_json(200, graph)
             return
 
         if len(rest) == 3 and rest[0] == "collaboration" and rest[1] == "runs":

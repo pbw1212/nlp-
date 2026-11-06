@@ -249,7 +249,14 @@ function ProcessBlock({
             .filter(Boolean)
             .join(' · ')}
         </span>
-        {totalSeconds > 0 && <span style={{ opacity: 0.6 }}>· {formatDuration(totalSeconds)}</span>}
+        {totalSeconds > 0 && (
+          <span
+            style={{ opacity: 0.6 }}
+            title="各阶段与工具的耗时之和（阶段之间可能重叠，不等于整轮墙钟耗时；整轮耗时见轮次头）"
+          >
+            · 累计 {formatDuration(totalSeconds)}
+          </span>
+        )}
         <span className="processbar__spacer" />
         {failCount > 0 && (
           <span style={{ color: 'var(--sem-failed)' }}>{failCount} 失败</span>

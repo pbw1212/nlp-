@@ -98,7 +98,7 @@ function BridgeChip({ bridge, onRetry }: { bridge: BridgeProbe; onRetry: () => v
   return (
     <>
       <ModeSwitcher />
-      <span className="chip" title={bridge.agentHome}>
+      <span className="chip topbar__protocol" title={bridge.agentHome}>
         协议 {bridge.protocolVersion}
       </span>
     </>

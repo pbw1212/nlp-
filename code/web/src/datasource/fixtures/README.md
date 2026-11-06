@@ -61,3 +61,29 @@ cd code/web; pnpm dev
 
 `FixtureSource` 找不到对应文件会抛 `NO_FIXTURE_RECORDED`，界面显示"未录制 + 需要先录制"，
 **不会**退化成空列表或假数据；所有写操作抛 `OFFLINE_FIXTURE_READ_ONLY`。
+
+## 重新录制（2026-11-06）
+
+本目录的录制数据在 2026-11-06 用 `record_fixtures.py` 从真实桥接（multi_fixed 模式）
+**整批重新录制**过，原因是早期录制里的中文全部变成了 `?`（记录链路编码问题），
+导致 `?src=fixture` 回放时对话、检索查询、记忆正文不可读。
+
+重录时做了两件事（只删不改，不编造数据）：
+
+1. 剔除 1 条内容已损坏、原始文本无法恢复的记忆（`mem_9d4bdad9dfbb`）及其两个子文件，
+   并从 `profile.json` 的偏好列表里同步移除、按实际数量校正 `counts`；
+2. 剔除 1 条标题/目标已损坏的任务，以及 5 条查询文本已损坏的检索 trace（及其单条 trace 文件）。
+
+因此回放数据里**不再有任何乱码**，但也因此：
+- 任务页在回放模式下是空的（唯一一条任务的历史文本已不可恢复）；
+- 协作/修复/经验列表为空（当前数据目录里没有对应记录，不是录制失败）。
+
+如需更丰富的回放数据：正常跑几轮真实对话（会自动产生会话/记忆/trace/协作数据），
+然后再执行一次录制：
+
+```powershell
+python code/web/bridge/web_bridge.py --execution-mode multi_fixed --port 8787 --no-token
+python code/web/bridge/record_fixtures.py --bridge http://127.0.0.1:8787
+```
+
+录制前请确认数据目录里没有隐私内容。

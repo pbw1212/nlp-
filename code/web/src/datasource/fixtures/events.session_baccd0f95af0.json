@@ -1,0 +1,182 @@
+[
+  {
+    "created_at": 1793899364.5607164,
+    "event_id": "evt_fc3dbcf2c58e4bd6",
+    "event_type": "thread.started",
+    "payload": {
+      "task_id": null,
+      "title": "Session 2026-11-06 01:22"
+    },
+    "schema_version": 1,
+    "sequence": 360,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": null
+  },
+  {
+    "created_at": 1793899367.1492186,
+    "event_id": "evt_03b71c7155fa4496",
+    "event_type": "turn.started",
+    "payload": {
+      "input_length": 2,
+      "kind": "user_turn",
+      "resume": false,
+      "task_id": null
+    },
+    "schema_version": 1,
+    "sequence": 361,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  },
+  {
+    "created_at": 1793899367.1982033,
+    "event_id": "evt_8894be78844d407e",
+    "event_type": "item.completed",
+    "payload": {
+      "item_type": "user_message",
+      "message_id": "msg_1bbd93677d62"
+    },
+    "schema_version": 1,
+    "sequence": 362,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  },
+  {
+    "created_at": 1793899369.8524597,
+    "event_id": "evt_a916e33f097b4d37",
+    "event_type": "stage.completed",
+    "payload": {
+      "duration_seconds": 0.6519637107849121,
+      "source": "runtime_stage_traces",
+      "stage": "TASK_BINDING",
+      "status": "SUCCESS",
+      "warnings": []
+    },
+    "schema_version": 1,
+    "sequence": 363,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  },
+  {
+    "created_at": 1793899369.8644907,
+    "event_id": "evt_fe58f6682f1b49db",
+    "event_type": "stage.completed",
+    "payload": {
+      "duration_seconds": 0.6520006656646729,
+      "source": "runtime_stage_traces",
+      "stage": "TASK_RESOLUTION",
+      "status": "SUCCESS",
+      "warnings": []
+    },
+    "schema_version": 1,
+    "sequence": 364,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  },
+  {
+    "created_at": 1793899369.874335,
+    "event_id": "evt_f1f26082db32439f",
+    "event_type": "stage.completed",
+    "payload": {
+      "duration_seconds": 1.094031572341919,
+      "source": "runtime_stage_traces",
+      "stage": "TASK_UPDATE",
+      "status": "SKIPPED",
+      "warnings": []
+    },
+    "schema_version": 1,
+    "sequence": 365,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  },
+  {
+    "created_at": 1793899369.8853316,
+    "event_id": "evt_468878d88d6d474a",
+    "event_type": "stage.completed",
+    "payload": {
+      "duration_seconds": 0.0,
+      "source": "runtime_stage_traces",
+      "stage": "MAINTENANCE",
+      "status": "SKIPPED",
+      "warnings": []
+    },
+    "schema_version": 1,
+    "sequence": 366,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  },
+  {
+    "created_at": 1793899369.8985722,
+    "event_id": "evt_1d41e5c2a57b4e4e",
+    "event_type": "stage.completed",
+    "payload": {
+      "duration_seconds": 0.014550447463989258,
+      "source": "runtime_stage_traces",
+      "stage": "RETRIEVAL",
+      "status": "SUCCESS",
+      "warnings": []
+    },
+    "schema_version": 1,
+    "sequence": 367,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  },
+  {
+    "created_at": 1793899369.911396,
+    "event_id": "evt_b728a210370242b1",
+    "event_type": "stage.completed",
+    "payload": {
+      "duration_seconds": 0.0,
+      "source": "runtime_stage_traces",
+      "stage": "CONTEXT_BUILD",
+      "status": "SUCCESS",
+      "warnings": []
+    },
+    "schema_version": 1,
+    "sequence": 368,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  },
+  {
+    "created_at": 1793899369.9234445,
+    "event_id": "evt_432ba18a87524342",
+    "event_type": "turn.completed",
+    "payload": {
+      "agent_run_id": "run_5b61b685c1fc",
+      "duration_seconds": 2.774174,
+      "executed_tool_call_ids": [],
+      "final_response": "你好！我是你的个人智能助理，有什么可以帮你的吗？",
+      "status": "SUCCESS",
+      "step_count": 1,
+      "task_id": "__unbound__",
+      "trace_metadata": {
+        "long_term_memory_update": {
+          "attempted": false,
+          "route": "agent_tool_decision",
+          "tool_call_ids": []
+        }
+      },
+      "warnings": []
+    },
+    "schema_version": 1,
+    "sequence": 369,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  },
+  {
+    "created_at": 1793899369.933488,
+    "event_id": "evt_b55e6cd258964ec6",
+    "event_type": "turn.usage",
+    "payload": {
+      "elapsed_seconds": 2.784,
+      "provider_usage_delta": {
+        "input_tokens": 6053,
+        "output_tokens": 155,
+        "request_count": 3
+      }
+    },
+    "schema_version": 1,
+    "sequence": 370,
+    "session_id": "session_baccd0f95af0",
+    "turn_id": "turn_5892506d8300"
+  }
+]

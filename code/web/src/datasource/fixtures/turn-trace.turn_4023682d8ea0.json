@@ -1,0 +1,42 @@
+{
+  "request_id": "turn_4023682d8ea0",
+  "schema_version": 2,
+  "selected_memory_ids": [],
+  "session_id": "session_4f23ba366a00",
+  "sufficiency": {
+    "missing_aspect_count": 0,
+    "reason_codes": [
+      "NO_ELIGIBLE_EVIDENCE"
+    ],
+    "status": "INSUFFICIENT",
+    "uncertain_memory_ids": [],
+    "unresolved_conflict_memory_ids": []
+  },
+  "task_id": "__unbound__",
+  "trace": {
+    "applicability": {
+      "assessment_count": 0,
+      "rejected_count": 0,
+      "warning_count": 0
+    },
+    "evidence_candidate_count": 0,
+    "evidence_candidates": [],
+    "recall": {
+      "candidate_counts": {
+        "首都禁飞区覆盖了几个省": 0
+      },
+      "query_variants": [
+        "首都禁飞区覆盖了几个省"
+      ],
+      "stages": [
+        "lexical_bm25",
+        "graph_skipped"
+      ],
+      "warnings": [
+        "no_lexical_matches"
+      ]
+    }
+  },
+  "turn_id": "turn_4023682d8ea0",
+  "warnings": []
+}

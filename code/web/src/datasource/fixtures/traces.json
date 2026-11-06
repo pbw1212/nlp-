@@ -1,7 +1,18 @@
 [
   {
-    "request_id": "turn_bf7a61d21ca9",
+    "request_id": "turn_5892506d8300",
+    "schema_version": 2,
     "selected_memory_ids": [],
+    "session_id": "session_baccd0f95af0",
+    "sufficiency": {
+      "missing_aspect_count": 0,
+      "reason_codes": [
+        "NO_ELIGIBLE_EVIDENCE"
+      ],
+      "status": "INSUFFICIENT",
+      "uncertain_memory_ids": [],
+      "unresolved_conflict_memory_ids": []
+    },
     "task_id": "__unbound__",
     "trace": {
       "applicability": {
@@ -9,12 +20,14 @@
         "rejected_count": 0,
         "warning_count": 0
       },
+      "evidence_candidate_count": 0,
+      "evidence_candidates": [],
       "recall": {
         "candidate_counts": {
-          "????????:? read_file ?? D:\\projects\\nlp-\\README.md,??????????????????(?????????),???????????????": 0
+          "你好": 0
         },
         "query_variants": [
-          "????????:? read_file ?? D:\\projects\\nlp-\\README.md,??????????????????(?????????),???????????????"
+          "你好"
         ],
         "stages": [
           "lexical_bm25",
@@ -25,13 +38,213 @@
         ]
       }
     },
-    "turn_id": "turn_bf7a61d21ca9",
+    "turn_id": "turn_5892506d8300",
     "warnings": []
   },
   {
-    "request_id": "turn_97c981cc1b78",
+    "request_id": "turn_e9d70ce72e62",
+    "schema_version": 2,
+    "selected_memory_ids": [],
+    "session_id": "session_87d06f7d7466",
+    "sufficiency": {
+      "missing_aspect_count": 0,
+      "reason_codes": [
+        "NO_ELIGIBLE_EVIDENCE"
+      ],
+      "status": "INSUFFICIENT",
+      "uncertain_memory_ids": [],
+      "unresolved_conflict_memory_ids": []
+    },
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "evidence_candidate_count": 0,
+      "evidence_candidates": [],
+      "recall": {
+        "candidate_counts": {
+          "你好": 0
+        },
+        "query_variants": [
+          "你好"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_e9d70ce72e62",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_4023682d8ea0",
+    "schema_version": 2,
+    "selected_memory_ids": [],
+    "session_id": "session_4f23ba366a00",
+    "sufficiency": {
+      "missing_aspect_count": 0,
+      "reason_codes": [
+        "NO_ELIGIBLE_EVIDENCE"
+      ],
+      "status": "INSUFFICIENT",
+      "uncertain_memory_ids": [],
+      "unresolved_conflict_memory_ids": []
+    },
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "evidence_candidate_count": 0,
+      "evidence_candidates": [],
+      "recall": {
+        "candidate_counts": {
+          "首都禁飞区覆盖了几个省": 0
+        },
+        "query_variants": [
+          "首都禁飞区覆盖了几个省"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_4023682d8ea0",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_f7b7760e2dc2",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "读取 D:\\projects\\nlp-\\README.md 的内容，然后用三点总结这个项目是做什么的。": 0
+        },
+        "query_variants": [
+          "读取 D:\\projects\\nlp-\\README.md 的内容，然后用三点总结这个项目是做什么的。"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_f7b7760e2dc2",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_f199758b2614",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "你好": 0
+        },
+        "query_variants": [
+          "你好"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_f199758b2614",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_73fcf89b9c25",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "读取 D:\\projects\\nlp-\\README.md 的内容，然后用三点总结这个项目是做什么的。": 0
+        },
+        "query_variants": [
+          "读取 D:\\projects\\nlp-\\README.md 的内容，然后用三点总结这个项目是做什么的。"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_73fcf89b9c25",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_2c0a903a35a1",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "你好": 0
+        },
+        "query_variants": [
+          "你好"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_2c0a903a35a1",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_e404fdd64cf9",
     "selected_memory_ids": [
-      "mem_9d4bdad9dfbb"
+      "mem_2aeff57f5750"
     ],
     "task_id": "__unbound__",
     "trace": {
@@ -42,10 +255,10 @@
       },
       "recall": {
         "candidate_counts": {
-          "????????????:???,? read_file ? D:\\projects\\nlp-\\README.md ?? 40 ?;???,??????? Task ???(Task 1/2/3 ??????);???,??????????????": 1
+          "你知道我不喜欢吃哪种调味料吗": 1
         },
         "query_variants": [
-          "????????????:???,? read_file ? D:\\projects\\nlp-\\README.md ?? 40 ?;???,??????? Task ???(Task 1/2/3 ??????);???,??????????????"
+          "你知道我不喜欢吃哪种调味料吗"
         ],
         "stages": [
           "lexical_bm25",
@@ -54,11 +267,11 @@
         "warnings": []
       }
     },
-    "turn_id": "turn_97c981cc1b78",
+    "turn_id": "turn_e404fdd64cf9",
     "warnings": []
   },
   {
-    "request_id": "turn_4e9828853136",
+    "request_id": "turn_55454c6cfb14",
     "selected_memory_ids": [],
     "task_id": "__unbound__",
     "trace": {
@@ -68,24 +281,26 @@
         "warning_count": 0
       },
       "recall": {
-        "candidate_counts": {},
+        "candidate_counts": {
+          "上海市呢": 0
+        },
         "query_variants": [
-          "???? create_file ??,??? list_directory???:path=D:\\projects\\nlp-\\code\\web\\.verify_probe.txt,content=ok??????,?????,????"
+          "上海市呢"
         ],
         "stages": [
           "lexical_bm25",
           "graph_skipped"
         ],
         "warnings": [
-          "empty_current_corpus"
+          "no_lexical_matches"
         ]
       }
     },
-    "turn_id": "turn_4e9828853136",
+    "turn_id": "turn_55454c6cfb14",
     "warnings": []
   },
   {
-    "request_id": "turn_3dbca3db6573",
+    "request_id": "turn_1c610e2be384",
     "selected_memory_ids": [],
     "task_id": "__unbound__",
     "trace": {
@@ -95,24 +310,26 @@
         "warning_count": 0
       },
       "recall": {
-        "candidate_counts": {},
+        "candidate_counts": {
+          "天津市": 0
+        },
         "query_variants": [
-          "?? D:\\projects\\nlp-\\code\\web ??????????? .verify_probe.txt,??? ok???????????,???????"
+          "天津市"
         ],
         "stages": [
           "lexical_bm25",
           "graph_skipped"
         ],
         "warnings": [
-          "empty_current_corpus"
+          "no_lexical_matches"
         ]
       }
     },
-    "turn_id": "turn_3dbca3db6573",
+    "turn_id": "turn_1c610e2be384",
     "warnings": []
   },
   {
-    "request_id": "turn_a88d5d8e9f9e",
+    "request_id": "turn_d0685775dace",
     "selected_memory_ids": [],
     "task_id": "__unbound__",
     "trace": {
@@ -122,20 +339,283 @@
         "warning_count": 0
       },
       "recall": {
-        "candidate_counts": {},
+        "candidate_counts": {
+          "今天天气如何": 0
+        },
         "query_variants": [
-          "?????? D:\\projects\\nlp-\\code\\web ??????(? list_directory),???????????????????"
+          "今天天气如何"
         ],
         "stages": [
           "lexical_bm25",
           "graph_skipped"
         ],
         "warnings": [
-          "empty_current_corpus"
+          "no_lexical_matches"
         ]
       }
     },
-    "turn_id": "turn_a88d5d8e9f9e",
+    "turn_id": "turn_d0685775dace",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_b7a9a6030718",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "你好": 0
+        },
+        "query_variants": [
+          "你好"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_b7a9a6030718",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_982aa36a9612",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "你好": 0
+        },
+        "query_variants": [
+          "你好"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_982aa36a9612",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_c6ba44635dc2",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "你好": 0
+        },
+        "query_variants": [
+          "你好"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_c6ba44635dc2",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_6799775ff6d4",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "你好": 0
+        },
+        "query_variants": [
+          "你好"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_6799775ff6d4",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_c51f5098c215",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "??": 0
+        },
+        "query_variants": [
+          "??"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_c51f5098c215",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_1d9df4f83c5e",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "你能做什么": 0
+        },
+        "query_variants": [
+          "你能做什么"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_1d9df4f83c5e",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_7574789315aa",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "你好": 0
+        },
+        "query_variants": [
+          "你好"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_7574789315aa",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_5bed934f0bfc",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "测试，任意回复": 0
+        },
+        "query_variants": [
+          "测试，任意回复"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_5bed934f0bfc",
+    "warnings": []
+  },
+  {
+    "request_id": "turn_8af9b5b1ddff",
+    "selected_memory_ids": [],
+    "task_id": "__unbound__",
+    "trace": {
+      "applicability": {
+        "assessment_count": 0,
+        "rejected_count": 0,
+        "warning_count": 0
+      },
+      "recall": {
+        "candidate_counts": {
+          "你好": 0
+        },
+        "query_variants": [
+          "你好"
+        ],
+        "stages": [
+          "lexical_bm25",
+          "graph_skipped"
+        ],
+        "warnings": [
+          "no_lexical_matches"
+        ]
+      }
+    },
+    "turn_id": "turn_8af9b5b1ddff",
     "warnings": []
   }
 ]

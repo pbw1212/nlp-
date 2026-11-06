@@ -11,5 +11,6 @@
     "toolCatalog": true
   },
   "executionMode": "multi_fixed",
+  "needsApiKey": false,
   "protocolVersion": "mapas-web-bridge/1"
 }

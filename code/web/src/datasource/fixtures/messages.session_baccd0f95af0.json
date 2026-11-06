@@ -1,0 +1,16 @@
+[
+  {
+    "content": "你好",
+    "createdAt": 1793899367.1831694,
+    "messageId": "msg_1bbd93677d62",
+    "role": "USER",
+    "turnId": "turn_5892506d8300"
+  },
+  {
+    "content": "你好！我是你的个人智能助理，有什么可以帮你的吗？",
+    "createdAt": 1793899369.8410218,
+    "messageId": "msg_9504504823da",
+    "role": "ASSISTANT",
+    "turnId": "turn_5892506d8300"
+  }
+]

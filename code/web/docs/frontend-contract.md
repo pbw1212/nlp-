@@ -166,7 +166,7 @@ process_pending_collaboration_repairs(1932)
 | UI 功能 | Bridge endpoint | 后端方法 | 真实度 |
 |---|---|---|---|
 | 会话内的运行列表 | `GET /api/collaboration/runs` | `coordination_repository.list_session_graphs()` | ✅ |
-| 子任务 DAG（目标/依赖边/工具/完成标准） | `GET /api/collaboration/runs/:runId/graph` | 只读 SQL：`task_graphs.plan_json` + `task_nodes.spec_json` | 🔶 V3 |
+| 子任务 DAG（目标/依赖边/工具/完成标准） | `GET /api/collaboration/runs/:runId/graph` | 只读 SQL：`task_graphs.plan_json` + `task_nodes.spec_json` | ✅（2026-11-06 已实现，返回 nodes/artifacts/handoffs/model_calls/budget） |
 | 节点状态（PENDING/RUNNING/PRODUCED/VERIFIED/FAILED/BLOCKED/STALE） | 同上 | `task_nodes.status` | ✅ |
 | artifact + 核验状态 + hash | 同上 | `task_attempts`/`artifacts` 只读 SQL | 🔶 V3 |
 | handoff（sender/receiver/payload_hash） | 同上 | `handoffs` 只读 SQL | 🔶 V3 |

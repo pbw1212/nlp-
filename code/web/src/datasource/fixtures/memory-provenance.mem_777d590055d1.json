@@ -1,0 +1,20 @@
+[
+  {
+    "change_kind": "ADD",
+    "refs": [
+      {
+        "authority": "EXPLICIT_USER",
+        "content_hash": "0c7ad2e9f3c140ea8f2b081a6fa30096b46c62073ae5bac6db01db4c82bea5c5",
+        "controlled_excerpt": "我画地为牢啊厉娜",
+        "message_id": null,
+        "observed_at": 1793874001.084418,
+        "provenance_id": "prov_b7b2ee465d20468faec1f0a7845653c2",
+        "session_id": null,
+        "source_event_id": "evt_e309b0d1416544758d200052f1b08136",
+        "source_type": "INGESTION_EVENT"
+      }
+    ],
+    "revision_id": "rev_2d31577c1dde40b2b7e34ce221758b1d",
+    "revision_no": 1
+  }
+]

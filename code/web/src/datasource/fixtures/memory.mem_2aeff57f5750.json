@@ -1,11 +1,11 @@
 {
   "confidence": 0.95,
-  "content": "????? 3 ?????,???????????",
+  "content": "我不吃花椒",
   "granularity": "SEMANTIC_INSIGHT",
-  "memory_id": "mem_9d4bdad9dfbb",
+  "memory_id": "mem_2aeff57f5750",
   "provenance_count": 1,
   "retention": "ACTIVE",
-  "revision_id": "rev_baac028c132b4c44b1a8fa887e21dfb8",
+  "revision_id": "rev_b8909520f7f14d9b88feec083fd9eeb5",
   "semantic_validity": "CURRENT",
   "type": "CORE_PROFILE"
 }

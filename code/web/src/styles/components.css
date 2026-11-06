@@ -1300,3 +1300,63 @@ html.theme-transition *::after {
   }
 }
 
+/* 窄屏（≤900px）：顶栏换行、侧栏改为横向导航、对话页会话栏改为顶部横条。
+   手机/窄窗口下不再"把导航藏掉"，而是换成可横向滚动的紧凑布局。 */
+@media (max-width: 900px) {
+  .topbar {
+    height: auto !important;
+    min-height: var(--topbar-h);
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 8px 12px !important;
+  }
+  .topbar .brand__text {
+    display: none;
+  }
+  .topbar__protocol {
+    display: none;
+  }
+
+  .app-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .app-main {
+    padding: 14px 14px 28px !important;
+  }
+
+  .app-side {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 10px !important;
+    gap: 6px !important;
+    white-space: nowrap;
+  }
+  .app-side .side-label,
+  .app-side .side-spacer,
+  .app-side .side-foot,
+  .app-side .clock {
+    display: none !important;
+  }
+  .app-side .nav-item {
+    width: auto !important;
+    flex: 0 0 auto;
+  }
+
+  /* 对话页：左侧会话栏改为顶部横向条，避免 390px 宽度下把正文挤没 */
+  .chat-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+  }
+  .thread-side {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border);
+    height: auto !important;
+    max-height: 46vh;
+  }
+}

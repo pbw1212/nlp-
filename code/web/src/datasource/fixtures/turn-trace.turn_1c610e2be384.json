@@ -1,0 +1,29 @@
+{
+  "request_id": "turn_1c610e2be384",
+  "selected_memory_ids": [],
+  "task_id": "__unbound__",
+  "trace": {
+    "applicability": {
+      "assessment_count": 0,
+      "rejected_count": 0,
+      "warning_count": 0
+    },
+    "recall": {
+      "candidate_counts": {
+        "天津市": 0
+      },
+      "query_variants": [
+        "天津市"
+      ],
+      "stages": [
+        "lexical_bm25",
+        "graph_skipped"
+      ],
+      "warnings": [
+        "no_lexical_matches"
+      ]
+    }
+  },
+  "turn_id": "turn_1c610e2be384",
+  "warnings": []
+}

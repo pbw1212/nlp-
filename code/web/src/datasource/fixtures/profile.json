@@ -1,6 +1,6 @@
 {
   "counts": {
-    "active": 1,
+    "active": 2,
     "inferred": 0,
     "protected": 0,
     "recycled": 0
@@ -17,11 +17,11 @@
     {
       "auto_managed": true,
       "confidence": 0.95,
-      "content": "????? 3 ?????,???????????",
+      "content": "我画地为牢啊厉娜",
       "granularity": "SEMANTIC_INSIGHT",
       "importance_score": 0.5,
       "is_pinned": false,
-      "memory_id": "mem_9d4bdad9dfbb",
+      "memory_id": "mem_777d590055d1",
       "retention": "ACTIVE",
       "semantic_validity": "CURRENT",
       "source": "MANUAL",
@@ -29,7 +29,24 @@
         "EXPLICIT_USER"
       ],
       "type": "CORE_PROFILE",
-      "updated_at": 1793805385.164038
+      "updated_at": 1793874001.9577014
+    },
+    {
+      "auto_managed": true,
+      "confidence": 0.95,
+      "content": "我不吃花椒",
+      "granularity": "SEMANTIC_INSIGHT",
+      "importance_score": 0.5,
+      "is_pinned": false,
+      "memory_id": "mem_2aeff57f5750",
+      "retention": "ACTIVE",
+      "semantic_validity": "CURRENT",
+      "source": "MANUAL",
+      "source_authorities": [
+        "EXPLICIT_USER"
+      ],
+      "type": "CORE_PROFILE",
+      "updated_at": 1793873322.223405
     }
   ],
   "recycled": []

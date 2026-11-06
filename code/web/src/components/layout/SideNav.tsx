@@ -42,6 +42,7 @@ export function SideNav() {
       className="scroll-thin app-side"
     >
       <div
+        className="side-label"
         style={{
           fontSize: 11,
           letterSpacing: '0.08em',
@@ -86,11 +87,12 @@ export function SideNav() {
         )
       })}
 
-      <div style={{ flex: 1 }} />
+      <div className="side-spacer" style={{ flex: 1 }} />
 
       <Clock />
 
       <div
+        className="side-foot"
         style={{
           padding: '10px',
           borderTop: '1px solid var(--border)',

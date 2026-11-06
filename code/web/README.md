@@ -195,7 +195,7 @@ python code/web/bridge/web_bridge.py --execution-mode {single|multi_fixed} --por
 上下文 | `GET /api/context`、`POST /api/context/compact` |
 记忆 | `GET/POST /api/memories`、`/memories/recycle-bin`、`/memories/profile`、`/memories/:id[/history|/provenance|/forget|/restore]` |
 任务 | `GET/POST /api/tasks`、`/tasks/:id[/switch|/status|/current/{pause,resume,complete,cancel}]`、`/task-lifecycle[/drain]` |
-协作 | `GET /api/collaboration/runs`、`GET /api/collaboration/runs/:runId` |
+协作 | `GET /api/collaboration/runs`、`GET /api/collaboration/runs/:runId`、`GET /api/collaboration/runs/:runId/graph` |
 治理 | `/api/repairs[/:id|/run|/revoke|/drain]`、`/api/experiences[/learn|/review|/revoke|/feedback]`、`/api/tools`、`/api/mcp`、`/api/workspace`、`/api/storage`、`/api/status` |
 检索记录 | `GET /api/traces`、`GET /api/turns/:turnId/trace` |
 
@@ -204,7 +204,9 @@ python code/web/bridge/web_bridge.py --execution-mode {single|multi_fixed} --por
 - **单 worker 串行化**：所有 `PersonalAgentApp` 调用排队执行；
 - **异步作业**：写操作立即返回 `jobId`，前端轮询终态；长任务期间事件流可持续增量读取；
 - **降噪**：宿主对未绑定任务轮次产生的技术 warnings 在桥接层过滤（前端不做关键词过滤）；
-- **错误映射**：不存在 → 404、参数错 → 400、未配置 Key → 503 + 统一中文提示、协作能力不可用 → 400。
+- **错误映射**：不存在 → 404、参数错 → 400、未配置 Key → 503 + 统一中文提示、协作能力不可用 → 400；
+- **安全**：非 GET/OPTIONS 请求校验 `Origin` 白名单（`localhost:5173/4173`），跨源写请求直接 403；
+  带 body 的 POST 必须是 `application/json`（阻止跨源「简单请求」伪造写操作）；DELETE 已加入 CORS 预检允许方法。
 
 ---
 
@@ -390,6 +392,7 @@ python code\web\bridge\web_bridge.py --execution-mode single --port 8787
 #### 5. 启动前端（终端 B）
 
 **快捷启动：**
+cd <你的仓库路径>\nlp-\code\web
 Windows 可以直接双击 `dev.cmd`，或在 PowerShell 里执行 `.\dev.cmd`（等价于安装依赖 + 启动）。
 
 旧启动方法（可能存在依赖问题）：

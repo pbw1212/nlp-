@@ -1,0 +1,20 @@
+[
+  {
+    "change_kind": "ADD",
+    "refs": [
+      {
+        "authority": "EXPLICIT_USER",
+        "content_hash": "43c645afa19f65582bc1a4a8dc8e869046ef41f43b6f88c68ea203d1d4ced394",
+        "controlled_excerpt": "我不吃花椒",
+        "message_id": null,
+        "observed_at": 1793873320.9399931,
+        "provenance_id": "prov_69b0caccd76e4ca2b38d6fc505c06103",
+        "session_id": null,
+        "source_event_id": "evt_0d44e5b0fe6f47c8878c4742b9e2743c",
+        "source_type": "INGESTION_EVENT"
+      }
+    ],
+    "revision_id": "rev_b8909520f7f14d9b88feec083fd9eeb5",
+    "revision_no": 1
+  }
+]

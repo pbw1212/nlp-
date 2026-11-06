@@ -1,5 +1,5 @@
 {
-  "request_id": "turn_a88d5d8e9f9e",
+  "request_id": "turn_f7b7760e2dc2",
   "selected_memory_ids": [],
   "task_id": "__unbound__",
   "trace": {
@@ -9,19 +9,21 @@
       "warning_count": 0
     },
     "recall": {
-      "candidate_counts": {},
+      "candidate_counts": {
+        "读取 D:\\projects\\nlp-\\README.md 的内容，然后用三点总结这个项目是做什么的。": 0
+      },
       "query_variants": [
-        "?????? D:\\projects\\nlp-\\code\\web ??????(? list_directory),???????????????????"
+        "读取 D:\\projects\\nlp-\\README.md 的内容，然后用三点总结这个项目是做什么的。"
       ],
       "stages": [
         "lexical_bm25",
         "graph_skipped"
       ],
       "warnings": [
-        "empty_current_corpus"
+        "no_lexical_matches"
       ]
     }
   },
-  "turn_id": "turn_a88d5d8e9f9e",
+  "turn_id": "turn_f7b7760e2dc2",
   "warnings": []
 }

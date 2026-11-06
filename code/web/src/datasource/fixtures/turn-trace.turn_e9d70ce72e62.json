@@ -1,0 +1,42 @@
+{
+  "request_id": "turn_e9d70ce72e62",
+  "schema_version": 2,
+  "selected_memory_ids": [],
+  "session_id": "session_87d06f7d7466",
+  "sufficiency": {
+    "missing_aspect_count": 0,
+    "reason_codes": [
+      "NO_ELIGIBLE_EVIDENCE"
+    ],
+    "status": "INSUFFICIENT",
+    "uncertain_memory_ids": [],
+    "unresolved_conflict_memory_ids": []
+  },
+  "task_id": "__unbound__",
+  "trace": {
+    "applicability": {
+      "assessment_count": 0,
+      "rejected_count": 0,
+      "warning_count": 0
+    },
+    "evidence_candidate_count": 0,
+    "evidence_candidates": [],
+    "recall": {
+      "candidate_counts": {
+        "你好": 0
+      },
+      "query_variants": [
+        "你好"
+      ],
+      "stages": [
+        "lexical_bm25",
+        "graph_skipped"
+      ],
+      "warnings": [
+        "no_lexical_matches"
+      ]
+    }
+  },
+  "turn_id": "turn_e9d70ce72e62",
+  "warnings": []
+}

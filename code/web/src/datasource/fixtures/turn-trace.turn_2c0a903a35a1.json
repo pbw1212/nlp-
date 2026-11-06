@@ -1,0 +1,29 @@
+{
+  "request_id": "turn_2c0a903a35a1",
+  "selected_memory_ids": [],
+  "task_id": "__unbound__",
+  "trace": {
+    "applicability": {
+      "assessment_count": 0,
+      "rejected_count": 0,
+      "warning_count": 0
+    },
+    "recall": {
+      "candidate_counts": {
+        "你好": 0
+      },
+      "query_variants": [
+        "你好"
+      ],
+      "stages": [
+        "lexical_bm25",
+        "graph_skipped"
+      ],
+      "warnings": [
+        "no_lexical_matches"
+      ]
+    }
+  },
+  "turn_id": "turn_2c0a903a35a1",
+  "warnings": []
+}

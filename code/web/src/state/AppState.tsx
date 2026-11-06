@@ -105,7 +105,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const theme: Theme = themeMode === 'auto' ? autoTheme : themeMode
 
   const changeSource = useCallback((kind: SourceKind) => {
+    // 换数据源必须整页重挂载：否则对话页会继续显示上一个数据源的会话/消息
+    // （例如从"桥接"切到"回放"后，列表还是实时数据）。
     setSourceKind(kind)
+    setEpoch((value) => value + 1)
   }, [])
 
   const refreshBridge = useCallback(async () => {
@@ -223,6 +226,24 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     }
     void refreshApiKeyStatus()
   }, [bridge.state, refreshApiKeyStatus])
+
+  // 后台探活（15s）：
+  // - 桥接停机时顶栏能及时变成「后端未连接」，不会一直显示「口令：已验证」；
+  // - 桥接重启/填好新口令后自动恢复，并递增 epoch 让页面重新取数，
+  //   清掉断线期间残留的旧报错（不需要用户再手点一次刷新）。
+  const bridgeStateRef = useRef(bridge.state)
+  bridgeStateRef.current = bridge.state
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      void (async () => {
+        const next = await probeDataSource(source)
+        const recovered = bridgeStateRef.current !== 'ok' && next.state === 'ok'
+        setBridge(next)
+        if (recovered) setEpoch((value) => value + 1)
+      })()
+    }, 15_000)
+    return () => window.clearInterval(timer)
+  }, [source])
 
   const value = useMemo<AppStateValue>(
     () => ({

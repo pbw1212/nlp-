@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { AgentEvent, Message, PendingApproval, Thread, ThreadExportPayload } from '@/types'
+import type {
+  AgentEvent,
+  Message,
+  PendingApproval,
+  Thread,
+  ThreadExportPayload,
+  UnfinishedTurn,
+} from '@/types'
 import { downloadJson, sanitizeFileName } from '@/lib/download'
 import type { DataSource } from '@/types'
 import { describeError } from '@/datasource'
@@ -15,6 +22,8 @@ export interface ChatSession {
   messages: Message[]
   events: AgentEvent[]
   approvals: PendingApproval[]
+  /** 该会话里「上次进程中断、后端仍可恢复」的轮次 */
+  unfinishedTurns: UnfinishedTurn[]
   timeline: TurnBlock[]
   /** 刚发出、后端还没回显的用户消息（单独渲染在时间线末尾） */
   pendingMessage: Message | null
@@ -35,6 +44,8 @@ export interface ChatSession {
   deleteThread(threadId: string): Promise<void>
   send(input: string): Promise<void>
   decide(pendingActionId: string, decision: 'CONFIRM' | 'REJECT'): Promise<void>
+  /** 继续执行一个未完成的轮次（桥接侧的 resume 接口） */
+  resumeUnfinished(turnId: string): Promise<void>
   reload(): Promise<void>
 }
 
@@ -53,6 +64,7 @@ export function useChatSession(source: DataSource): ChatSession {
   const [messages, setMessages] = useState<Message[]>([])
   const [events, setEvents] = useState<AgentEvent[]>([])
   const [approvals, setApprovals] = useState<PendingApproval[]>([])
+  const [unfinishedTurns, setUnfinishedTurns] = useState<UnfinishedTurn[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // 乐观显示：用户按下 Enter 的瞬间就要看见自己这句话（不等后端轮询）
@@ -76,9 +88,10 @@ export function useChatSession(source: DataSource): ChatSession {
   const loadThreadData = useCallback(
     async (threadId: string, opts?: { resetEvents?: boolean }) => {
       const ds = sourceRef.current
-      const [nextMessages, nextApprovals, eventPage] = await Promise.all([
+      const [nextMessages, nextApprovals, nextUnfinished, eventPage] = await Promise.all([
         ds.readMessages(threadId),
         ds.listApprovals(threadId),
+        ds.listUnfinishedTurns(threadId),
         ds.readEvents({
           afterSequence: opts?.resetEvents === true ? 0 : cursorRef.current,
           threadId,
@@ -87,6 +100,7 @@ export function useChatSession(source: DataSource): ChatSession {
       ])
       setMessages(nextMessages)
       setApprovals(nextApprovals)
+      setUnfinishedTurns(nextUnfinished)
       setEvents((prev) => (opts?.resetEvents === true ? eventPage.events : [...prev, ...eventPage.events]))
       cursorRef.current = eventPage.nextSequence
     },
@@ -145,6 +159,7 @@ export function useChatSession(source: DataSource): ChatSession {
         activeThreadIdRef.current = target.threadId
         setMessages([])
         setEvents([])
+        setUnfinishedTurns([])
         cursorRef.current = 0
         return
       }
@@ -156,6 +171,7 @@ export function useChatSession(source: DataSource): ChatSession {
         activeThreadIdRef.current = thread.threadId
         setMessages([])
         setEvents([])
+        setUnfinishedTurns([])
         cursorRef.current = 0
         await loadThreadData(thread.threadId, { resetEvents: true })
       } catch (cause) {
@@ -178,6 +194,7 @@ export function useChatSession(source: DataSource): ChatSession {
         activeThreadIdRef.current = thread.threadId
         setMessages([])
         setEvents([])
+        setUnfinishedTurns([])
         cursorRef.current = 0
       } catch (cause) {
         setError(describeError(cause))
@@ -373,6 +390,29 @@ export function useChatSession(source: DataSource): ChatSession {
     [watchJob],
   )
 
+  /** 继续执行一个未完成的轮次：桥接恢复作业，随后与普通作业一样轮询 */
+  const resumeUnfinished = useCallback(
+    async (turnId: string) => {
+      const threadId = activeThreadIdRef.current
+      if (threadId === null) {
+        setError('还没有选中的会话')
+        return
+      }
+      setError(null)
+      setNotice('正在恢复未完成的轮次…')
+      setBusy(true)
+      try {
+        const job = await sourceRef.current.resumeTurn(threadId, turnId)
+        watchJob(job.jobId)
+      } catch (cause) {
+        setBusy(false)
+        setNotice(null)
+        setError(describeError(cause))
+      }
+    },
+    [watchJob],
+  )
+
   const reload = useCallback(async () => {
     const threadId = activeThreadIdRef.current
     setError(null)
@@ -410,6 +450,7 @@ export function useChatSession(source: DataSource): ChatSession {
     messages,
     events,
     approvals,
+    unfinishedTurns,
     timeline,
     /** 刚发出、后端还没回显的用户消息（时间线末尾单独渲染） */
     pendingMessage: pendingVisible,
@@ -424,6 +465,7 @@ export function useChatSession(source: DataSource): ChatSession {
     deleteThread,
     send,
     decide,
+    resumeUnfinished,
     reload,
   }
 }

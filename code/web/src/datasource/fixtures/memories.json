@@ -1,8 +1,14 @@
 [
   {
-    "content": "????? 3 ?????,???????????",
+    "content": "我不吃花椒",
     "granularity": "SEMANTIC_INSIGHT",
-    "memory_id": "mem_9d4bdad9dfbb",
+    "memory_id": "mem_2aeff57f5750",
+    "type": "CORE_PROFILE"
+  },
+  {
+    "content": "我画地为牢啊厉娜",
+    "granularity": "SEMANTIC_INSIGHT",
+    "memory_id": "mem_777d590055d1",
     "type": "CORE_PROFILE"
   }
 ]

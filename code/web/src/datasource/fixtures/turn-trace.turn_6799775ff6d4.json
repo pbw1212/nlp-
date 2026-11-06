@@ -1,5 +1,5 @@
 {
-  "request_id": "turn_3dbca3db6573",
+  "request_id": "turn_6799775ff6d4",
   "selected_memory_ids": [],
   "task_id": "__unbound__",
   "trace": {
@@ -9,19 +9,21 @@
       "warning_count": 0
     },
     "recall": {
-      "candidate_counts": {},
+      "candidate_counts": {
+        "你好": 0
+      },
       "query_variants": [
-        "?? D:\\projects\\nlp-\\code\\web ??????????? .verify_probe.txt,??? ok???????????,???????"
+        "你好"
       ],
       "stages": [
         "lexical_bm25",
         "graph_skipped"
       ],
       "warnings": [
-        "empty_current_corpus"
+        "no_lexical_matches"
       ]
     }
   },
-  "turn_id": "turn_3dbca3db6573",
+  "turn_id": "turn_6799775ff6d4",
   "warnings": []
 }

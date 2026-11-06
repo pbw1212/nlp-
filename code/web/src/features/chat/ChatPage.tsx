@@ -95,6 +95,7 @@ export function ChatPage() {
 
   return (
     <div
+      className="chat-layout"
       style={{
         height: '100%',
         display: 'grid',
@@ -214,6 +215,44 @@ export function ChatPage() {
             }}
           >
             {session.notice}
+          </div>
+        )}
+
+        {session.unfinishedTurns.length > 0 && (
+          <div
+            style={{
+              padding: '8px 16px',
+              borderBottom: '1px solid var(--border)',
+              background:
+                'color-mix(in oklab, var(--sem-warning, var(--sem-unknown)) 10%, transparent)',
+              fontSize: 12,
+              display: 'flex',
+              gap: 12,
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 200 }}>
+              该会话有 <b>{session.unfinishedTurns.length}</b> 个未完成的轮次（上次执行被中断）。
+              桥接可以从中断处继续执行。
+            </div>
+            {session.unfinishedTurns.map((turn) => (
+              <button
+                key={turn.turn_id}
+                type="button"
+                className="chip chip--button"
+                disabled={session.busy}
+                title={`轮次 ${turn.turn_id}，开始于 ${new Date(turn.started_at * 1000).toLocaleString('zh-CN')}`}
+                onClick={() => void session.resumeUnfinished(turn.turn_id)}
+              >
+                继续执行 {turn.turn_id.slice(0, 12)}
+              </button>
+            ))}
+            {!session.busy && (
+              <button type="button" className="chip chip--button" onClick={() => void session.reload()}>
+                刷新
+              </button>
+            )}
           </div>
         )}
 

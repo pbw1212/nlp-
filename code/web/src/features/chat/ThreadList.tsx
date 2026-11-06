@@ -122,6 +122,7 @@ export function ThreadList({
 
   return (
     <div
+      className="thread-side"
       style={{
         borderRight: '1px solid var(--border)',
         display: 'flex',
