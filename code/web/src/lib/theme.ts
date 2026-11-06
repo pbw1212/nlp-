@@ -8,7 +8,7 @@
  * - sunset 夕阳（橙黄色调 + 渐变晚霞氛围）
  *
  * 自动模式的时段规则（按北京时间 UTC+8，与左下角时钟同源）：
- *   04:00–08:59 晨光 · 09:00–15:59 浅色 · 16:00–17:59 夕阳 · 18:00–03:59 深色
+ *   05:00–08:59 晨光 · 09:00–15:59 浅色 · 16:00–18:59 夕阳 · 19:00–04:59 深色
  * （用户给的是"4点到8点/9点到16点/16点到18点/18点到次日6点"，这里取左闭右开区间覆盖全天）
  */
 
@@ -52,9 +52,9 @@ export function shanghaiHour(date: Date = new Date()): number {
 /** 按北京时间算出当前应使用的主题 */
 export function resolveAutoTheme(date: Date = new Date()): Theme {
   const hour = shanghaiHour(date)
-  if (hour >= 4 && hour < 9) return 'dawn'
+  if (hour >= 5 && hour < 9) return 'dawn'
   if (hour >= 9 && hour < 16) return 'light'
-  if (hour >= 16 && hour < 18) return 'sunset'
+  if (hour >= 16 && hour < 19) return 'sunset'
   return 'dark'
 }
 

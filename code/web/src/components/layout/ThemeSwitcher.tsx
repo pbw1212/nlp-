@@ -91,7 +91,7 @@ export function ThemeSwitcher() {
             )
           })}
           <div className="theme-menu__hint">
-            自动模式按<b>北京时间</b>切换：04–09 晨光 · 09–16 浅色 · 16–18 夕阳 · 18–04 深色
+            自动模式按<b>北京时间</b>切换：05–09 晨光 · 09–16 浅色 · 16–19 夕阳 · 19–05 深色
           </div>
         </div>
       )}
