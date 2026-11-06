@@ -36,7 +36,16 @@ docs/           9 个文档
 
 ## 2. 快速开始
 
-仓库根目录执行：
+**最快方式（Windows）**：在 `code\web` 下双击 **`start.cmd`**（或执行 `.\start.cmd`）——
+自动启动桥接（免口令）+ 前端开发服务器，并打开 http://localhost:5173。
+
+```powershell
+.\start.cmd            # 默认 single 模式
+.\start.cmd multi      # 桥接以多 Agent 协作模式启动
+.\start.cmd check      # 只检查环境（Python / Node / 端口），不启动
+```
+
+手动分步启动（等价）：
 
 ```powershell
 python -m pip install -e .            # 后端依赖（jsonschema）
@@ -120,8 +129,9 @@ code/web/
 │  ├─ session_transfer.py  # 会话导出/导入（后端暂无对应 API，桥接受控读写）
 │  └─ record_fixtures.py   # 录制真实响应到 fixtures/
 ├─ docs/                   # 见 §11 文档索引
-├─ scripts/                # dev.ps1 / build.ps1（供下面的一键脚本调用）
-├─ dev.cmd                 # Windows 一键启动（自动装依赖 + 起开发服务器）
+├─ scripts/                # start.ps1 / dev.ps1 / build.ps1（供一键脚本调用）
+├─ start.cmd               # Windows 一键启动：桥接 + 前端 + 打开浏览器
+├─ dev.cmd                 # Windows 只启动前端（自动装依赖 + 起开发服务器）
 ├─ build.cmd               # Windows 一键构建（typecheck + build）
 ├─ dev.sh                  # macOS / Linux 一键启动
 ├─ index.html             # Vite 入口 HTML
@@ -299,9 +309,9 @@ P6 | 协作拓扑页（DAG）、模式热切换、API Key 管理、四主题、�
 
 ## 14. 前端测试与使用指南
 
-> 前面是主流程（照着做即可），最后是附录（细节、原理、排障）。
+> 先看 **快捷版（0–8 步，照抄即可）**；后面是详细版：逐步说明、界面速览、常见问题与附录。
 
-### 一、5 分钟跑起来（主流程）
+### 快捷版（0–8 步，照抄即可）
 
 #### 0. 你需要什么
 
@@ -311,6 +321,73 @@ Python | **3.10+** | 跑后端 Agent 与本地桥接 |
 Node.js | **20.19+ 或 22.12+** | Vite 8 的硬要求 |
 pnpm | 9+（推荐） | 仓库带 `pnpm-lock.yaml`；用 `npm` 也能装，但版本可能漂移 |
 DeepSeek API Key | `sk-` 开头 | 只能 DeepSeek（后端 Provider 固定） |
+
+#### 1. 安装后端依赖（仓库根目录，一次）
+
+```powershell
+cd <你的仓库路径>\nlp-
+python -m pip install -e .
+```
+
+macOS/Linux 用 `python3 -m pip install -e .`（会装上后端依赖 `jsonschema`）。
+
+#### 2. 安装前端依赖（一次）
+
+```powershell
+cd code\web
+pnpm install
+```
+
+没装 pnpm：`corepack enable`（Node 自带）或 `npm.cmd i -g pnpm`。
+Windows 报「禁止运行脚本」：改用 `pnpm.cmd install`（详见文末常见问题）。
+
+#### 3. 准备 API Key（可跳过）
+
+推荐**跳过本步**，启动后直接在网页里填（见第 7 步）。
+想提前写文件也可以：`C:\Users\<你>\.agent_data\config\.env.local`（UTF-8 无 BOM）：
+
+```ini
+MEMORY_PROVIDER_MODE=REQUIRED
+DEEPSEEK_API_KEY=sk-你的密钥
+```
+
+#### 4. 启动桥接 + 前端（一键）
+
+```powershell
+cd D:\projects\nlp-\code\web
+.\start.cmd
+```
+
+- 自动完成：启动桥接（single、免口令）→ 启动前端 → 打开浏览器；
+- 若只检查环境，无需打开浏览器：`.\start.cmd check`。
+
+> 想分开手动启动：桥接（终端 A）`python code\web\bridge\web_bridge.py --execution-mode single --port 8787 --no-token`；
+> 前端（终端 B）`cd code\web` 后 `pnpm dev`。
+
+#### 5. 打开浏览器
+
+**http://localhost:5173**（`start.cmd` 会自动打开；手动启动则自己输入）。
+必须用 `localhost`，不能用 `127.0.0.1`（桥接 CORS 白名单只允许 localhost）。
+
+#### 6. 口令（用 start.cmd 时无需操作）
+
+桥接以 `--no-token` 启动，顶栏显示 🟢 **口令：本机免校验**，不用填。
+若手动以需要口令的方式启动：点顶栏「口令」，粘贴终端打印的 `token=…`，点「保存并重连」。
+
+#### 7. 填 API Key（只需一次）
+
+顶栏「API Key」→ 粘贴 `sk-...` → 点「更新」；按钮变 🟢 **API Key 可用**
+（黄色=未填，红色=不可用）。页面只写不读，不会回显密钥。
+
+#### 8. 新建会话，开始对话
+
+左侧「会话」列 → **＋ 新建** → 底部输入内容 → **Enter**；
+顶部显示「执行中…」，回答出现后过程自动折叠成一行「过程 N 项」。
+
+### 一、详细版：逐步说明
+
+> 下面是**详细版**（含每一步的说明、预期现象和排障），快捷版已经能跑通时不需要逐条看。
+
 
 #### 1. 安装后端依赖（仓库根目录执行一次）
 
@@ -391,15 +468,14 @@ python code\web\bridge\web_bridge.py --execution-mode single --port 8787
 
 #### 5. 启动前端（终端 B）
 
-**快捷启动：**
-cd <你的仓库路径>\nlp-\code\web
-Windows 可以直接双击 `dev.cmd`，或在 PowerShell 里执行 `.\dev.cmd`（等价于安装依赖 + 启动）。
+手动启动（一键脚本会自动做这件事）：
 
-旧启动方法（可能存在依赖问题）：
 ```powershell
 cd <你的仓库路径>\nlp-\code\web
 pnpm dev
 ```
+
+只启动前端、不启动桥接时可以用 `dev.cmd`（会自动装依赖并启动 dev server）。
 
 #### 6. 打开浏览器
 
@@ -419,7 +495,7 @@ pnpm dev
 
 1. 左侧「会话」列 → **＋ 新建**（图标按钮）；
 2. 底部输入框输入内容 → **Enter** 发送；
-3. agent处理会话，顶栏显示「执行中…」；
+3. Agent 处理本轮会话，顶栏显示「执行中…」；
 4. 回答出现后，过程自动折叠成一行「过程 N 项」。
 
 **到这里就成功了。**
@@ -529,7 +605,7 @@ code/web/
 │  ├─ state/               # 全局状态
 │  ├─ styles/              # tokens（四主题）/ components（组件样式）
 │  └─ types/               # 与后端契约对应的类型
-├─ README.md               # 交付记录（做了什么、为什么、怎么撤）
+├─ README.md               # 项目说明 + 本使用指南
 └─ CHANGELOG-web.md        # 版本记录
 ```
 
@@ -538,9 +614,9 @@ code/web/
 | 内容 | 位置 |
 |---|---|
 会话与消息 | `<data>/conversations/conversation.db` |
-长期记忆 | `<data>/memory/memory.db` |
-任务/上下文 | `<data>/task_state/*.db` |
-协作/事件流/检索记录 | `<data>/execution/*.db`、`retrieval-traces.jsonl` |
+长期记忆 | `<data>/long_term_memory/memory.db` |
+任务/上下文 | `<data>/task_state/task_state.db` |
+协作/事件流/检索记录 | `<data>/execution/`（`coordination.db`、`agent_events.db`、`agent_journal.db`、`retrieval-traces.jsonl`） |
 凭据 | `<data>/config/.env.local` |
 
 `<data>` 的解析顺序：`AGENT_DATA_DIR` → `AGENT_HOME` → `~/.agent_data`。
